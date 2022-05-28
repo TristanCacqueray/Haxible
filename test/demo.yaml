@@ -1,0 +1,24 @@
+- name: Create network
+  create_network:
+    name: "private"
+  register: network
+
+- name: Create storage
+  create_storage:
+    name: "db"
+  register: storage
+
+- name: Create instances
+  create_instance:
+    network: "{{ network.uid }}"
+    name: "{{ item }}"
+  loop:
+    - backend
+    - frontend
+    - monitoring
+
+- name: Create database
+  create_instance:
+    network: "{{ network.uid }}"
+    name: "database"
+    volume: "{{ storage.uid }}"

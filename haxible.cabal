@@ -1,0 +1,87 @@
+cabal-version: 3.0
+name:          haxible
+version:       0.1.0.0
+synopsis:      Ansible interpreter powered by Haxl
+description:   Ansible interpreter powered by Haxl.
+license:       Apache-2.0
+license-file:  LICENSE
+author:        Tristan Cacqueray
+maintainer:    tdecacqu@redhat.com
+copyright:     2022 Red Hat
+category:      Development
+tested-with:   GHC ==9.2.2
+
+source-repository head
+  type:     git
+  location: https://github.com/TristanCacqueray/Haxible.git
+
+common common-options
+  build-depends:      base <5
+  default-language:   GHC2021
+  default-extensions:
+    BlockArguments
+    DataKinds
+    DuplicateRecordFields
+    ImportQualifiedPost
+    OverloadedStrings
+    QuasiQuotes
+    TypeFamilies
+    TypeOperators
+    OverloadedRecordDot
+
+  ghc-options:
+    -Wall -Wpartial-fields -Wincomplete-uni-patterns
+    -Wincomplete-record-updates -Wunused-packages
+
+library
+  import:          common-options
+  hs-source-dirs:  src
+  build-depends:
+    , aeson
+    , aeson-qq
+    , async
+    , bytestring
+    , data-default
+    , ginger
+    , hashable
+    , haxl
+    , say
+    , template-haskell
+    , text
+    , typed-process
+    , vector
+    , yaml
+
+  exposed-modules:
+    Haxible.Connection
+    Haxible.DataSource
+    Haxible.Eval
+    Haxible.Parser
+
+executable haxible
+  import:         common-options
+  hs-source-dirs: app
+  main-is:        Main.hs
+  build-depends:
+    , bytestring
+    , haxible
+    , optparse-generic
+    , text
+    , typed-process
+
+  ghc-options:    -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-T
+
+test-suite haxible-test
+  import:         common-options
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is:        Spec.hs
+  build-depends:
+    , bytestring
+    , haxible
+    , pretty-simple
+    , tasty
+    , tasty-golden
+    , text
+
+  ghc-options:    -threaded -rtsopts -with-rtsopts=-N

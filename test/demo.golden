@@ -1,0 +1,102 @@
+( Playbook
+    [ Task
+        { name = Just "Create network"
+        , action = "create_network"
+        , attributes = Object
+            ( fromList
+                [
+                    ( "name"
+                    , String "private"
+                    )
+                ]
+            )
+        , requires = []
+        , register = Just "network"
+        , loop = Nothing
+        }
+    , Task
+        { name = Just "Create storage"
+        , action = "create_storage"
+        , attributes = Object
+            ( fromList
+                [
+                    ( "name"
+                    , String "db"
+                    )
+                ]
+            )
+        , requires = []
+        , register = Just "storage"
+        , loop = Nothing
+        }
+    , Task
+        { name = Just "Create instances"
+        , action = "create_instance"
+        , attributes = Object
+            ( fromList
+                [
+                    ( "name"
+                    , String "{{ item }}"
+                    )
+                ,
+                    ( "network"
+                    , String "{{ network.uid }}"
+                    )
+                ]
+            )
+        , requires = [ "network" ]
+        , register = Nothing
+        , loop = Just
+            [ "backend"
+            , "frontend"
+            , "monitoring"
+            ]
+        }
+    , Task
+        { name = Just "Create database"
+        , action = "create_instance"
+        , attributes = Object
+            ( fromList
+                [
+                    ( "name"
+                    , String "database"
+                    )
+                ,
+                    ( "network"
+                    , String "{{ network.uid }}"
+                    )
+                ,
+                    ( "volume"
+                    , String "{{ storage.uid }}"
+                    )
+                ]
+            )
+        , requires =
+            [ "network"
+            , "storage"
+            ]
+        , register = Nothing
+        , loop = Nothing
+        }
+    ]
+, "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
+  {- cabal:
+  build-depends: base, haxible
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-T
+  -}
+  module Main (main) where
+
+  import Haxible.Eval
+
+  main :: IO ()
+  main = runHaxible playbook
+
+  playbook :: AnsibleHaxl ()
+  playbook = do
+    network <- runTask (Just "Create network") "create_network" [json| {"name":"private"} |]
+    storage <- runTask (Just "Create storage") "create_storage" [json| {"name":"db"} |]
+    traverse (\item ->  runTask (Just "Create instances") "create_instance" (renderTemplates [("item", item), ("network", network)] [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |]) ) ["backend","frontend","monitoring"]
+    runTask (Just "Create database") "create_instance" (renderTemplates [("network", network), ("storage", storage)] [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |])
+    pure ()
+  "
+)

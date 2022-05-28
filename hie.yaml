@@ -1,0 +1,9 @@
+# haskell-language-server configuration
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:haxible"
+    - path: "./app"
+      component: "exe:haxible-playbook"
+    - path: "./test"
+      component: "test:haxible-test"
