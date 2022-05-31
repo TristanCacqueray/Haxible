@@ -15,21 +15,6 @@
         , loop = Nothing
         }
     , Task
-        { name = Just "Create storage"
-        , action = "create_storage"
-        , attributes = Object
-            ( fromList
-                [
-                    ( "name"
-                    , String "db"
-                    )
-                ]
-            )
-        , requires = []
-        , register = Just "storage"
-        , loop = Nothing
-        }
-    , Task
         { name = Just "Create instances"
         , action = "create_instance"
         , attributes = Object
@@ -51,6 +36,21 @@
             , "frontend"
             , "monitoring"
             ]
+        }
+    , Task
+        { name = Just "Create storage"
+        , action = "create_storage"
+        , attributes = Object
+            ( fromList
+                [
+                    ( "name"
+                    , String "db"
+                    )
+                ]
+            )
+        , requires = []
+        , register = Just "storage"
+        , loop = Nothing
         }
     , Task
         { name = Just "Create database"
@@ -78,6 +78,36 @@
         , register = Nothing
         , loop = Nothing
         }
+    , Task
+        { name = Just "Create object"
+        , action = "create_object"
+        , attributes = Object
+            ( fromList
+                [
+                    ( "name"
+                    , String "standalone-object"
+                    )
+                ]
+            )
+        , requires = []
+        , register = Nothing
+        , loop = Nothing
+        }
+    , Task
+        { name = Just "Create network object"
+        , action = "create_object"
+        , attributes = Object
+            ( fromList
+                [
+                    ( "name"
+                    , String "network-{{ network.uid }}"
+                    )
+                ]
+            )
+        , requires = [ "network" ]
+        , register = Nothing
+        , loop = Nothing
+        }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
   {- cabal:
@@ -94,9 +124,11 @@
   playbook :: AnsibleHaxl ()
   playbook = do
     network <- runTask (Just "Create network") "create_network" [json| {"name":"private"} |]
-    storage <- runTask (Just "Create storage") "create_storage" [json| {"name":"db"} |]
     traverse (\item ->  runTask (Just "Create instances") "create_instance" (renderTemplates [("item", item), ("network", network)] [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |]) ) ["backend","frontend","monitoring"]
+    storage <- runTask (Just "Create storage") "create_storage" [json| {"name":"db"} |]
     runTask (Just "Create database") "create_instance" (renderTemplates [("network", network), ("storage", storage)] [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |])
+    runTask (Just "Create object") "create_object" [json| {"name":"standalone-object"} |]
+    runTask (Just "Create network object") "create_object" (renderTemplates [("network", network)] [json| {"name":"network-{{ network.uid }}"} |])
     pure ()
   "
 )

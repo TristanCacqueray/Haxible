@@ -3,11 +3,6 @@
     name: "private"
   register: network
 
-- name: Create storage
-  create_storage:
-    name: "db"
-  register: storage
-
 - name: Create instances
   create_instance:
     network: "{{ network.uid }}"
@@ -17,8 +12,21 @@
     - frontend
     - monitoring
 
+- name: Create storage
+  create_storage:
+    name: "db"
+  register: storage
+
 - name: Create database
   create_instance:
     network: "{{ network.uid }}"
     name: "database"
     volume: "{{ storage.uid }}"
+
+- name: Create object
+  create_object:
+    name: "standalone-object"
+
+- name: Create network object
+  create_object:
+    name: "network-{{ network.uid }}"
