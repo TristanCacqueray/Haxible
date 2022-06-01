@@ -1,6 +1,5 @@
 module Main (main) where
 
-import Data.ByteString
 import Data.Text.Lazy.Encoding qualified as LText
 import Haxible.Parser qualified
 import Test.Tasty
@@ -20,5 +19,5 @@ tests =
   [goldenParse "demo"]
   where
     goldenParse name = goldenTest name do
-      pb <- Haxible.Parser.decodePlaybook <$> Data.ByteString.readFile ("test/" <> name <> ".yaml")
+      pb <- Haxible.Parser.decodePlaybook ("test/" <> name <> ".yaml")
       pure (pb, Haxible.Parser.renderScript pb)

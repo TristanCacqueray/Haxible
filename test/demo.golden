@@ -1,112 +1,140 @@
 ( Playbook
-    [ Task
-        { name = Just "Create network"
-        , action = "create_network"
-        , attributes = Object
-            ( fromList
-                [
-                    ( "name"
-                    , String "private"
+    [ HostPlay
+        { hosts = "localhost"
+        , tasks =
+            [ Task
+                { name = Just "Create network"
+                , action = "create_network"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "private"
+                            )
+                        ]
                     )
-                ]
-            )
-        , requires = []
-        , register = Just "network"
-        , loop = Nothing
-        }
-    , Task
-        { name = Just "Create instances"
-        , action = "create_instance"
-        , attributes = Object
-            ( fromList
-                [
-                    ( "name"
-                    , String "{{ item }}"
+                , requires = []
+                , register = Just "network"
+                , loop = Nothing
+                , vars = Nothing
+                }
+            , Task
+                { name = Just "Create instances"
+                , action = "create_instance"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "{{ item }}"
+                            )
+                        ,
+                            ( "network"
+                            , String "{{ network.uid }}"
+                            )
+                        ]
                     )
-                ,
-                    ( "network"
-                    , String "{{ network.uid }}"
+                , requires = [ "network" ]
+                , register = Nothing
+                , loop = Just
+                    [ "backend"
+                    , "frontend"
+                    , "monitoring"
+                    ]
+                , vars = Nothing
+                }
+            , Task
+                { name = Just "Create storage"
+                , action = "create_storage"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "db"
+                            )
+                        ]
                     )
-                ]
-            )
-        , requires = [ "network" ]
-        , register = Nothing
-        , loop = Just
-            [ "backend"
-            , "frontend"
-            , "monitoring"
+                , requires = []
+                , register = Just "storage"
+                , loop = Nothing
+                , vars = Nothing
+                }
+            , Task
+                { name = Just "Create database"
+                , action = "create_instance"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "database"
+                            )
+                        ,
+                            ( "network"
+                            , String "{{ network.uid }}"
+                            )
+                        ,
+                            ( "volume"
+                            , String "{{ storage.uid }}"
+                            )
+                        ]
+                    )
+                , requires =
+                    [ "network"
+                    , "storage"
+                    ]
+                , register = Nothing
+                , loop = Nothing
+                , vars = Nothing
+                }
+            , Task
+                { name = Just "Create object"
+                , action = "create_object"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "standalone-object"
+                            )
+                        ]
+                    )
+                , requires = []
+                , register = Nothing
+                , loop = Nothing
+                , vars = Nothing
+                }
+            , Task
+                { name = Just "Create network object"
+                , action = "create_object"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "network-{{ network.uid }}"
+                            )
+                        ]
+                    )
+                , requires = [ "network" ]
+                , register = Nothing
+                , loop = Nothing
+                , vars = Nothing
+                }
+            , Task
+                { name = Nothing
+                , action = "debug"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Creating container service"
+                            )
+                        ]
+                    )
+                , requires = []
+                , register = Nothing
+                , loop = Nothing
+                , vars = Nothing
+                }
             ]
-        }
-    , Task
-        { name = Just "Create storage"
-        , action = "create_storage"
-        , attributes = Object
-            ( fromList
-                [
-                    ( "name"
-                    , String "db"
-                    )
-                ]
-            )
-        , requires = []
-        , register = Just "storage"
-        , loop = Nothing
-        }
-    , Task
-        { name = Just "Create database"
-        , action = "create_instance"
-        , attributes = Object
-            ( fromList
-                [
-                    ( "name"
-                    , String "database"
-                    )
-                ,
-                    ( "network"
-                    , String "{{ network.uid }}"
-                    )
-                ,
-                    ( "volume"
-                    , String "{{ storage.uid }}"
-                    )
-                ]
-            )
-        , requires =
-            [ "network"
-            , "storage"
-            ]
-        , register = Nothing
-        , loop = Nothing
-        }
-    , Task
-        { name = Just "Create object"
-        , action = "create_object"
-        , attributes = Object
-            ( fromList
-                [
-                    ( "name"
-                    , String "standalone-object"
-                    )
-                ]
-            )
-        , requires = []
-        , register = Nothing
-        , loop = Nothing
-        }
-    , Task
-        { name = Just "Create network object"
-        , action = "create_object"
-        , attributes = Object
-            ( fromList
-                [
-                    ( "name"
-                    , String "network-{{ network.uid }}"
-                    )
-                ]
-            )
-        , requires = [ "network" ]
-        , register = Nothing
-        , loop = Nothing
+        , vars = Nothing
         }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
@@ -123,12 +151,18 @@
 
   playbook :: AnsibleHaxl ()
   playbook = do
-    network <- runTask (Just "Create network") "create_network" [json| {"name":"private"} |]
-    traverse (\item ->  runTask (Just "Create instances") "create_instance" (renderTemplates [("item", item), ("network", network)] [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |]) ) ["backend","frontend","monitoring"]
-    storage <- runTask (Just "Create storage") "create_storage" [json| {"name":"db"} |]
-    runTask (Just "Create database") "create_instance" (renderTemplates [("network", network), ("storage", storage)] [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |])
-    runTask (Just "Create object") "create_object" [json| {"name":"standalone-object"} |]
-    runTask (Just "Create network object") "create_object" (renderTemplates [("network", network)] [json| {"name":"network-{{ network.uid }}"} |])
+    play_localhost
+    pure ()
+
+  play_localhost :: AnsibleHaxl ()
+  play_localhost = do
+    network <- runTask "localhost" (Just "Create network") "create_network" [json| {"name":"private"} |]
+    traverse (\item ->  runTask "localhost" (Just "Create instances") "create_instance" (renderTemplates [("item", item), ("network", network)] [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |]) ) ["backend","frontend","monitoring"]
+    storage <- runTask "localhost" (Just "Create storage") "create_storage" [json| {"name":"db"} |]
+    runTask "localhost" (Just "Create database") "create_instance" (renderTemplates [("network", network), ("storage", storage)] [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |])
+    runTask "localhost" (Just "Create object") "create_object" [json| {"name":"standalone-object"} |]
+    runTask "localhost" (Just "Create network object") "create_object" (renderTemplates [("network", network)] [json| {"name":"network-{{ network.uid }}"} |])
+    runTask "localhost" (Nothing) "debug" [json| {"msg":"Creating container service"} |]
     pure ()
   "
 )

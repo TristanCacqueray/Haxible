@@ -22,8 +22,8 @@ import Text.Ginger
 json :: Language.Haskell.TH.Quote.QuasiQuoter
 json = aesonQQ
 
-runTask :: Maybe Text -> Text -> Value -> AnsibleHaxl Value
-runTask name action attr = dataFetch (RunTask name action attr)
+runTask :: Text -> Maybe Text -> Text -> Value -> AnsibleHaxl Value
+runTask _host name action attr = dataFetch (RunTask name action attr)
 
 applyTemplate :: [(Text, Value)] -> Text -> Text
 applyTemplate vars src = runGinger context template

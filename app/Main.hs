@@ -2,7 +2,6 @@
 module Main (main) where
 
 import Control.Monad (unless)
-import Data.ByteString qualified (readFile)
 import Data.Text.IO qualified (writeFile)
 import Haxible.Parser (decodePlaybook, renderScript)
 import Options.Generic
@@ -20,7 +19,7 @@ main = do
   cli <- parseArgs
 
   -- parse
-  pb <- decodePlaybook <$> Data.ByteString.readFile cli.playbook
+  pb <- decodePlaybook cli.playbook
 
   -- render
   let script = cli.playbook <> ".hs"

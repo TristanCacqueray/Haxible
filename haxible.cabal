@@ -39,8 +39,11 @@ library
   build-depends:
     , aeson
     , aeson-qq
+    , lens-aeson
+    , lens
     , async
     , bytestring
+    , filepath
     , data-default
     , ginger
     , hashable
@@ -49,7 +52,6 @@ library
     , template-haskell
     , text
     , typed-process
-    , vector
     , yaml
 
   exposed-modules:
@@ -57,13 +59,13 @@ library
     Haxible.DataSource
     Haxible.Eval
     Haxible.Parser
+    Haxible.Play
 
 executable haxible
   import:         common-options
   hs-source-dirs: app
   main-is:        Main.hs
   build-depends:
-    , bytestring
     , haxible
     , optparse-generic
     , text
@@ -77,7 +79,6 @@ test-suite haxible-test
   hs-source-dirs: test
   main-is:        Spec.hs
   build-depends:
-    , bytestring
     , haxible
     , pretty-simple
     , tasty

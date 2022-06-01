@@ -30,7 +30,7 @@ Haxible does the following:
 
 The implementation is presently missing:
 
-- Dynamic attributes and tasks such as `include_vars` or `include_role`.
+- Dynamic vars such as host vars or `include_vars`
 - Control flow such as `when` or `block`.
 - Ansible python module usage: the action just returns fake uid.
 - Remote execution: the python process runs locally.
@@ -38,48 +38,55 @@ The implementation is presently missing:
 
 ## Demo
 
-Given these tasks:
+Given this playbook:
 
 ```yaml
-- name: Create network
-  create_network:
-    name: "private"
-  register: network
+- hosts: localhost
+  tasks:
+    - name: Create network
+      create_network:
+        name: "private"
+      register: network
 
-- name: Create instances
-  create_instance:
-    network: "{{ network.uid }}"
-    name: "{{ item }}"
-  loop:
-    - backend
-    - frontend
-    - monitoring
+    - name: Create instances
+      create_instance:
+        network: "{{ network.uid }}"
+        name: "{{ item }}"
+      loop:
+        - backend
+        - frontend
+        - monitoring
 
-- name: Create storage
-  create_storage:
-    name: "db"
-  register: storage
+    - name: Create storage
+      create_storage:
+        name: "db"
+      register: storage
 
-- name: Create database
-  create_instance:
-    network: "{{ network.uid }}"
-    name: "database"
-    volume: "{{ storage.uid }}"
+    - name: Create database
+      create_instance:
+        network: "{{ network.uid }}"
+        name: "database"
+        volume: "{{ storage.uid }}"
 
-- name: Create object
-  create_object:
-    name: "standalone-object"
+    - name: Create object
+      create_object:
+        name: "standalone-object"
 
-- name: Create network object
-  create_object:
-    name: "network-{{ network.uid }}"
+    - name: Create network object
+      create_object:
+        name: "network-{{ network.uid }}"
+
+    - name: Start local service
+      include_role:
+        name: "container-service"
 ```
 
 Haxible runs three batches:
 
 ```
 [python] Runner ready
-[+] Batching 1 tasks
+[+] Batching 2 tasks
+  ▶ Running debug with {'msg': 'Starting local service'}
   ▶ Running create_network with {'name': 'private'}
 [+] Batching 6 tasks
   ▶ Running create_object with {'name': 'network-create_network_private_uuid'}
