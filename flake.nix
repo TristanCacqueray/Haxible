@@ -37,7 +37,7 @@
           };
         };
 
-        python = pkgs.python310.withPackages (ps: with ps; [ ]);
+        python = pkgs.python310.withPackages (ps: with ps; [ ansible ansible-core ]);
 
         haskellPackages =
           pkgs.haskell.packages.ghc922.override haskellOverrides;

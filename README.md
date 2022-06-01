@@ -32,7 +32,7 @@ The implementation is presently missing:
 
 - Dynamic vars such as host vars or `include_vars`
 - Control flow such as `when` or `block`.
-- Ansible python module usage: the action just returns fake uid.
+- Ansible actions and connections such as `add_hosts` or `become`: the modules are executed directly.
 - Remote execution: the python process runs locally.
 
 
