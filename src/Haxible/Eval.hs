@@ -23,7 +23,7 @@ json :: Language.Haskell.TH.Quote.QuasiQuoter
 json = aesonQQ
 
 runTask :: Text -> Maybe Text -> Text -> Value -> AnsibleHaxl Value
-runTask _host name action attr = dataFetch (RunTask name action attr)
+runTask host name task attrs = dataFetch (RunTask (TaskParam {host, name, task, attrs}))
 
 applyTemplate :: [(Text, Value)] -> Text -> Text
 applyTemplate vars src = runGinger context template
@@ -46,6 +46,6 @@ renderTemplates vars = go
 
 runHaxible :: AnsibleHaxl () -> IO ()
 runHaxible action = withConnection $ \python -> do
-  ansibleState <- initHaxibleState 1 python
+  ansibleState <- initHaxibleState python
   ansibleEnv <- initEnv (stateSet ansibleState stateEmpty) ()
   runHaxl ansibleEnv action

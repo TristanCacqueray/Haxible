@@ -30,18 +30,20 @@ def call_module(mod, args):
         stdout.close()
         return json.loads(output)
 
-def run_task(inputs):
-    [task, attr] = inputs
-    mod = importlib.import_module(f"ansible.modules.{task}")
-    loggy(f"Running module {task} with {attr}")
-    res = call_module(mod, attr)
-    loggy(f"-> {res}")
-    return res
+def run_tasks(inputs):
+    results = []
+    for (task, attr) in inputs:
+        mod = importlib.import_module(f"ansible.modules.{task}")
+        loggy(f"Running module {task} with {attr}")
+        res = call_module(mod, attr)
+        loggy(f"-> {res}")
+        results.append(res)
+    return results
 
 loggy("Runner ready")
 while True:
     cmd = sys.stdin.readline()
     if not cmd:
         break
-    print(json.dumps(run_task(json.loads(cmd))), flush=True)
+    print(json.dumps(run_tasks(json.loads(cmd))), flush=True)
 loggy("Runner completed")
