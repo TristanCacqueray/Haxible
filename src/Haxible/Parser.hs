@@ -2,6 +2,8 @@ module Haxible.Parser (decodePlaybook, renderScript) where
 
 import Control.Lens
 import Data.Aeson
+import Data.Aeson.Key qualified
+import Data.Aeson.KeyMap qualified
 import Data.Aeson.Lens
 import Data.ByteString (toStrict)
 import Data.Foldable
@@ -35,10 +37,21 @@ annotateDependency = reverse . fst . foldl' go ([], [])
           Just reg -> reg : available
           Nothing -> available
 
+fixupArgs :: Task -> Task
+fixupArgs task = task {attributes}
+  where
+    attributes = Object (Data.Aeson.KeyMap.fromList $ args <> params)
+    params = []
+    args :: [(Data.Aeson.Key.Key, Value)]
+    args = case task.attributes of
+      String _ -> [("_raw_params", task.attributes)]
+      Object obj -> Data.Aeson.KeyMap.toList obj
+      v -> error $ "Unexpected attributes: " <> show v
+
 resolveHostPlay :: FilePath -> HostPlay -> IO HostPlay
 resolveHostPlay source hostPlay = do
   tasks <-
-    annotateDependency . concat <$> traverse resolveImport hostPlay.tasks
+    annotateDependency . map fixupArgs . concat <$> traverse resolveImport hostPlay.tasks
   pure $ hostPlay {tasks}
   where
     resolveImport :: Task -> IO [Task]

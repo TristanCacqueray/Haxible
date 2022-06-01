@@ -16,7 +16,7 @@ goldenTest name action = goldenVsString name ("test/" <> name <> ".golden") do
 
 tests :: [TestTree]
 tests =
-  [goldenParse "demo"]
+  [goldenParse "demo", goldenParse "simple"]
   where
     goldenParse name = goldenTest name do
       pb <- Haxible.Parser.decodePlaybook ("test/" <> name <> ".yaml")

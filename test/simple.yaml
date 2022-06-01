@@ -1,0 +1,7 @@
+- hosts: localhost
+  tasks:
+    - stat:
+        path: /tmp
+      register: tmpstat
+
+    - command: "echo tmp exist: {{ tmpstat.stat.exists }}"

@@ -1,0 +1,64 @@
+( Playbook
+    [ HostPlay
+        { hosts = "localhost"
+        , tasks =
+            [ Task
+                { name = Nothing
+                , action = "stat"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "path"
+                            , String "/tmp"
+                            )
+                        ]
+                    )
+                , requires = []
+                , register = Just "tmpstat"
+                , loop = Nothing
+                , vars = Nothing
+                }
+            , Task
+                { name = Nothing
+                , action = "command"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "_raw_params"
+                            , String "echo tmp exist: {{ tmpstat.stat.exists }}"
+                            )
+                        ]
+                    )
+                , requires = [ "tmpstat" ]
+                , register = Nothing
+                , loop = Nothing
+                , vars = Nothing
+                }
+            ]
+        , vars = Nothing
+        }
+    ]
+, "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
+  {- cabal:
+  build-depends: base, haxible
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-T
+  -}
+  module Main (main) where
+
+  import Haxible.Eval
+
+  main :: IO ()
+  main = runHaxible playbook
+
+  playbook :: AnsibleHaxl ()
+  playbook = do
+    play_localhost
+    pure ()
+
+  play_localhost :: AnsibleHaxl ()
+  play_localhost = do
+    tmpstat <- runTask "localhost" (Nothing) "stat" [json| {"path":"/tmp"} |]
+    runTask "localhost" (Nothing) "command" (renderTemplates [("tmpstat", tmpstat)] [json| {"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"} |])
+    pure ()
+  "
+)
