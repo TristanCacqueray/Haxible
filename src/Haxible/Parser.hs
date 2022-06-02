@@ -86,13 +86,23 @@ resolveHostPlay source hostPlay = do
         let role_name = unpack $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.attributes
             role_path = takeDirectory source </> "roles" </> role_name </> "tasks" </> "main.yaml"
             role_default = takeDirectory source </> "roles" </> role_name </> "defaults" </> "main.yaml"
-            new_history = role_path : history
+            new_history = checkHistory role_path history
         when (task.loop /= Null) $ error "Loop import is not supported"
-        when (role_path `elem` history) $ error $ "Cyclic import detected: " <> show history
         roleDefaults <- objToVar <$> decodeFile role_default
-        roleTasks <- decodeFile @[Task] role_path
-        map (addVars (task.vars <> roleDefaults)) . concat <$> traverse (resolveImport new_history) roleTasks
+        newTasks <- decodeFile @[Task] role_path
+        map (addVars (task.vars <> roleDefaults)) . concat <$> traverse (resolveImport new_history) newTasks
+      "include_tasks" -> do
+        let task_name = unpack $ fromMaybe "missing name" $ preview _String task.attributes
+            task_path = takeDirectory source </> task_name
+            new_history = checkHistory task_path history
+        when (task.loop /= Null) $ error "Loop include is not supported"
+        newTasks <- decodeFile @[Task] task_path
+        map (addVars task.vars) . concat <$> traverse (resolveImport new_history) newTasks
       _ -> pure [task]
+    checkHistory :: FilePath -> [FilePath] -> [FilePath]
+    checkHistory fp history
+      | fp `elem` history = error $ "Cyclic import detected: " <> show history
+      | otherwise = fp : history
     addVars :: [(Text, Value)] -> Task -> Task
     addVars kv task = task {vars = task.vars <> kv}
 
