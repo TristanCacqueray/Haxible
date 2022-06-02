@@ -2,7 +2,7 @@
 module Haxible.DataSource (AnsibleHaxl, initHaxibleState, dataFetch, TaskReq (..)) where
 
 import Control.Concurrent.Async (async)
-import Control.Exception (SomeException, try)
+import Control.Exception (Exception, SomeException, try)
 import Control.Monad (void)
 import Data.Aeson (Value)
 import Data.Foldable (traverse_)
@@ -47,6 +47,11 @@ fetchTask state _flags _user =
     say $ "[+] Batching " <> Text.pack (show (List.length reqs)) <> " tasks"
     traverse_ (fetchAsync state.connections) reqs
 
+data TaskError = TaskError Int Value
+  deriving (Show)
+
+instance Exception TaskError
+
 fetchAsync :: Connections -> BlockedFetch TaskReq -> IO ()
 fetchAsync python (BlockedFetch (RunTask task) rvar) =
   void $
@@ -55,5 +60,6 @@ fetchAsync python (BlockedFetch (RunTask task) rvar) =
       resultsE <- Control.Exception.try $ python.run [task]
       case resultsE of
         Left ex -> putFailure rvar (ex :: SomeException)
-        Right [result] -> putSuccess rvar result
+        Right [(0, result)] -> putSuccess rvar result
+        Right [(code, res)] -> putFailure rvar (TaskError code res)
         Right xs -> error $ "Expected one result, go " <> show xs

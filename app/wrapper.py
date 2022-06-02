@@ -59,7 +59,7 @@ def run_task(inputs):
             loader=loader, passwords=None, forks=5, stdout_callback=cb)
         play = Play().load(dict(
             name="Haxible Play", hosts=host, gather_facts='no', tasks=[{task: attr}], vars=env))
-        tqm.run(play)
+        run_res = tqm.run(play)
         if len(cb.results) != 1:
             loggy(f"The impossible has happen!: {cb.results}")
             exit(1)
@@ -67,8 +67,8 @@ def run_task(inputs):
         tqm.cleanup()
     except Exception:
         raise
-    loggy(f"-> {res}")
-    return res
+    loggy(f"-> {run_res} {json.dumps(res)}")
+    return [run_res, res]
 
 # run_task(["zuul_scheduler", "test", "stat", dict(path="/etc/zuul"), {}])
 # run_task(["localhost", "test", "file", dict(path="/etc/zuul", state="directory"), {}])

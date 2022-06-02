@@ -3,6 +3,7 @@
 -- | This module contains the logic to interact with the python interpreter
 module Haxible.Connection (Connections (..), TaskCall (..), withConnections) where
 
+import Control.Exception (bracket)
 import Data.Aeson (Value (Null, Object, String), eitherDecodeStrict, encode)
 import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
@@ -31,19 +32,17 @@ data TaskCall = TaskCall
   deriving (Eq, Show, Typeable, Generic, Hashable)
 
 -- | Python calls takes a list of action and attribute, and it produces a list of result.
-newtype Connections = Connections {run :: [TaskCall] -> IO [Value]}
+newtype Connections = Connections {run :: [TaskCall] -> IO [(Int, Value)]}
 
 -- | Creates the Python interpreters.
 withConnections :: Int -> (Connections -> IO ()) -> IO ()
-withConnections count callback = do
-  pool <- Data.Pool.newPool poolConfig
-  go pool
-  Data.Pool.destroyAllResources pool
+withConnections count callback =
+  bracket (Data.Pool.newPool poolConfig) Data.Pool.destroyAllResources go
   where
     go pool = do
       putStrLn "Pool ready"
 
-      let runTask :: TaskCall -> Process Handle Handle () -> IO Value
+      let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
             let envObj = Object $ Data.Aeson.KeyMap.fromList $ map (first Data.Aeson.Key.fromText) taskCall.env
                 nameValue = maybe Null String taskCall.name
@@ -56,7 +55,7 @@ withConnections count callback = do
               Right res -> pure res
               Left err -> error $ show output <> ": " <> err
 
-      let cb :: [TaskCall] -> IO [Value]
+      let cb :: [TaskCall] -> IO [(Int, Value)]
           cb tasks = do
             traverse (Data.Pool.withResource pool . runTask) tasks
 
