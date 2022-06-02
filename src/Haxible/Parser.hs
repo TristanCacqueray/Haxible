@@ -118,36 +118,42 @@ renderScript (Playbook plays) =
       "import Haxible.Eval\n",
       "main :: IO ()",
       "main = runHaxible playbook\n",
-      "playbook :: AnsibleHaxl ()",
+      "playbook :: AnsibleHaxl [Value]",
       "playbook = do"
     ]
-      <> ((\play -> "  play_" <> play.hosts) <$> plays)
-      <> ["  pure ()", ""]
+      <> ((\(idx, play) -> "  " <> playVar idx <> " <- play_" <> play.hosts) <$> indexedPlays)
+      <> ["  pure $ " <> Text.intercalate " <> " ((\(idx, _) -> playVar idx) <$> indexedPlays), ""]
       <> concatMap renderPlay plays
   where
+    indexedPlays = zip [(0 :: Int) ..] plays
+    playVar idx = "_play" <> Text.pack (show idx)
     renderPlay :: HostPlay -> [Text]
     renderPlay play =
-      [ "play_" <> play.hosts <> " :: AnsibleHaxl ()",
+      [ "play_" <> play.hosts <> " :: AnsibleHaxl [Value]",
         "play_" <> play.hosts <> " = do"
       ]
-        <> (mappend "  " . renderCode play.hostVars play.hosts <$> play.tasks)
-        <> ["  pure ()"]
+        <> (mappend "  " <$> map snd tasks)
+        <> ["  pure " <> textList (map fst tasks), ""]
+      where
+        tasks = renderCode play.hostVars play.hosts <$> (zip [0 ..] play.tasks)
 
 quote :: Text -> Text
 quote = Text.cons '"' . flip Text.snoc '"'
 
-renderCode :: [(Text, Value)] -> Text -> Task -> Text
-renderCode globalEnv host task = Text.unwords (registerBind <> taskCall)
+textList :: [Text] -> Text
+textList xs = "[" <> Text.intercalate ", " xs <> "]"
+
+renderCode :: [(Text, Value)] -> Text -> (Int, Task) -> (Text, Text)
+renderCode globalEnv host (idx, task) = (bindVar, Text.unwords (registerBind : taskCall))
   where
-    registerBind = case task.register of
-      Just v -> [v, "<-"]
-      Nothing -> []
+    bindVar = case task.register of
+      Just v -> v
+      Nothing -> "_var" <> Text.pack (show idx)
+    registerBind = bindVar <> " <-"
 
     taskCall = case task.loop of
       Null -> directCall
-      Array xs ->
-        mkTraverse $
-          "[" <> Text.intercalate ", " (attributes <$> toList xs) <> "]"
+      Array xs -> mkTraverse $ textList (attributes <$> toList xs)
       String v -> mkTraverse $ "envLoop " <> v <> " " <> envArg
       _ -> error $ "Invalid task.loop: " <> show task.loop
 

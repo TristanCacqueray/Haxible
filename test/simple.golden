@@ -134,27 +134,30 @@
   main :: IO ()
   main = runHaxible playbook
 
-  playbook :: AnsibleHaxl ()
+  playbook :: AnsibleHaxl [Value]
   playbook = do
-    play_localhost
-    play_zuul_executor
-    play_zuul_scheduler
-    pure ()
+    _play0 <- play_localhost
+    _play1 <- play_zuul_executor
+    _play2 <- play_zuul_scheduler
+    pure $ _play0 <> _play1 <> _play2
 
-  play_localhost :: AnsibleHaxl ()
+  play_localhost :: AnsibleHaxl [Value]
   play_localhost = do
     tmpstat <- runTask "localhost" (Nothing) "stat" [json| {"path":"/tmp"} |] []
-    runTask "localhost" (Nothing) "command" [json| {"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"} |] [("tmpstat", tmpstat)]
-    pure ()
-  play_zuul_executor :: AnsibleHaxl ()
+    _var1 <- runTask "localhost" (Nothing) "command" [json| {"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"} |] [("tmpstat", tmpstat)]
+    pure [tmpstat, _var1]
+
+  play_zuul_executor :: AnsibleHaxl [Value]
   play_zuul_executor = do
     _etc_zuul <- runTask "zuul_executor" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
-    runTask "zuul_executor" (Nothing) "command" [json| {"_raw_params":"echo Starting executor -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
-    pure ()
-  play_zuul_scheduler :: AnsibleHaxl ()
+    _var1 <- runTask "zuul_executor" (Nothing) "command" [json| {"_raw_params":"echo Starting executor -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
+    pure [_etc_zuul, _var1]
+
+  play_zuul_scheduler :: AnsibleHaxl [Value]
   play_zuul_scheduler = do
     _etc_zuul <- runTask "zuul_scheduler" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
-    runTask "zuul_scheduler" (Nothing) "command" [json| {"_raw_params":"echo Starting scheduler -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
-    pure ()
+    _var1 <- runTask "zuul_scheduler" (Nothing) "command" [json| {"_raw_params":"echo Starting scheduler -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
+    pure [_etc_zuul, _var1]
+
   "
 )
