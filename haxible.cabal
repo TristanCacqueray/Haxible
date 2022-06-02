@@ -44,8 +44,6 @@ library
     , async
     , bytestring
     , filepath
-    , data-default
-    , ginger
     , hashable
     , haxl
     , say

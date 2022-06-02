@@ -1,17 +1,37 @@
--- | This module contains the logic to interact with the python interpreter
-module Haxible.Connection (Connections (..), withConnections) where
+{-# LANGUAGE DeriveAnyClass #-}
 
-import Data.Aeson (Value (String), eitherDecodeStrict, encode)
+-- | This module contains the logic to interact with the python interpreter
+module Haxible.Connection (Connections (..), TaskCall (..), withConnections) where
+
+import Data.Aeson (Value (Null, Object, String), eitherDecodeStrict, encode)
+import Data.Aeson.Key qualified
+import Data.Aeson.KeyMap qualified
+import Data.Bifunctor (first)
 import Data.ByteString (hGetLine, toStrict)
 import Data.ByteString.Char8 (hPutStrLn)
+import Data.Hashable (Hashable)
 import Data.Pool qualified
 import Data.Text (Text)
+import Data.Text qualified as Text
+import Data.Typeable (Typeable)
+import GHC.Generics (Generic)
 import GHC.IO.Handle (hFlush)
+import Say
 import System.IO (Handle, hClose)
 import System.Process.Typed
 
+data TaskCall = TaskCall
+  { host :: Text,
+    name :: Maybe Text,
+    -- task is a module or action name
+    task :: Text,
+    attrs :: Value,
+    env :: [(Text, Value)]
+  }
+  deriving (Eq, Show, Typeable, Generic, Hashable)
+
 -- | Python calls takes a list of action and attribute, and it produces a list of result.
-newtype Connections = Connections {call :: [(Text, Value)] -> IO [Value]}
+newtype Connections = Connections {run :: [TaskCall] -> IO [Value]}
 
 -- | Creates the Python interpreters.
 withConnections :: Int -> (Connections -> IO ()) -> IO ()
@@ -23,18 +43,22 @@ withConnections count callback = do
     go pool = do
       putStrLn "Pool ready"
 
-      let runTask :: (Text, Value) -> Process Handle Handle () -> IO Value
-          runTask (task, attr) p = do
-            hPutStrLn (getStdin p) (toStrict $ encode [String task, attr])
+      let runTask :: TaskCall -> Process Handle Handle () -> IO Value
+          runTask taskCall p = do
+            let envObj = Object $ Data.Aeson.KeyMap.fromList $ map (first Data.Aeson.Key.fromText) taskCall.env
+                nameValue = maybe Null String taskCall.name
+                callParams = [String taskCall.host, nameValue, String taskCall.task, taskCall.attrs, envObj]
+            say $ " ▶ Calling " <> Text.pack (show taskCall)
+            hPutStrLn (getStdin p) (toStrict $ encode callParams)
             hFlush (getStdin p)
             output <- hGetLine (getStdout p)
             case eitherDecodeStrict output of
               Right res -> pure res
               Left err -> error $ show output <> ": " <> err
 
-      let cb :: [(Text, Value)] -> IO [Value]
+      let cb :: [TaskCall] -> IO [Value]
           cb tasks = do
-            traverse (\x -> Data.Pool.withResource pool (runTask x)) tasks
+            traverse (Data.Pool.withResource pool . runTask) tasks
 
       callback (Connections cb)
 

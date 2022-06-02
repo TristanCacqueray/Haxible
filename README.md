@@ -25,8 +25,7 @@ Haxible does the following:
 
 - Parse playbook and annotate task dependencies, e.g. when a task attribute contains a registered variable name.
 - Generate a Haxl computation.
-- Evaluate the jinja templates.
-- Execute the tasks through a persistent Python process using the JSON Lines protocol.
+- Execute the tasks concurrently.
 
 The implementation is presently missing:
 

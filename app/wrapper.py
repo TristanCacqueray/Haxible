@@ -9,16 +9,6 @@ from ansible.plugins.callback import CallbackBase
 def loggy(msg):
     print(f" {os.getpid()} [python] {msg}", file=sys.stderr)
 
-def call_module(runner, task, args):
-    (cb, tqm) = runner
-    play = Play().load(dict(name="Haxible Play", hosts="localhost", gather_facts='no', tasks=[{task: args}]))
-    tqm.run(play)
-    if len(cb.results) != 1:
-        loggy(f"The impossible has happen!: {cb.results}")
-        exit(1)
-    tqm.cleanup()
-    return cb.results.pop()
-
 # A callback to record task results
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.0
@@ -57,17 +47,24 @@ cli = Haxible(["haxible"])
 cli.parse()
 loader, inventory, variable_manager = cli._play_prereqs()
 
-# A store of task queue manager to be re-used between invocation
-def get_tqm(key):
-    cb = CallbackModule()
-    return (cb, TaskQueueManager(
-        inventory=inventory, variable_manager=variable_manager,
-        loader=loader, passwords=None, forks=5, stdout_callback=cb))
-
 def run_task(inputs):
-    [task, attr] = inputs
-    loggy(f"Running module {task} with {attr}")
-    res = call_module(get_tqm("localhost"), task, attr)
+    [host, name, task, attr, env] = inputs
+    loggy(f"{host}: Running task {name} ({task} with {attr}) env: {env}")
+    try:
+        cb = CallbackModule()
+        tqm = TaskQueueManager(
+            inventory=inventory, variable_manager=variable_manager,
+            loader=loader, passwords=None, forks=5, stdout_callback=cb)
+        play = Play().load(dict(
+            name="Haxible Play", hosts=host, gather_facts='no', tasks=[{task: attr}], vars=env))
+        tqm.run(play)
+        if len(cb.results) != 1:
+            loggy(f"The impossible has happen!: {cb.results}")
+            exit(1)
+        res = cb.results[0]
+        tqm.cleanup()
+    except Exception:
+        raise
     loggy(f"-> {res}")
     return res
 

@@ -169,13 +169,13 @@
 
   play_localhost :: AnsibleHaxl ()
   play_localhost = do
-    network <- runTask "localhost" (Just "Create network") "create_network" [json| {"name":"private"} |]
-    traverse (\item ->  runTask "localhost" (Just "Create instances") "create_instance" (renderTemplates [("item", item), ("network", network)] [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |]) ) ["backend","frontend","monitoring"]
-    storage <- runTask "localhost" (Just "Create storage") "create_storage" [json| {"name":"db"} |]
-    runTask "localhost" (Just "Create database") "create_instance" (renderTemplates [("network", network), ("storage", storage)] [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |])
-    runTask "localhost" (Just "Create object") "create_object" [json| {"name":"standalone-object"} |]
-    runTask "localhost" (Just "Create network object") "create_object" (renderTemplates [("network", network)] [json| {"name":"network-{{ network.uid }}"} |])
-    runTask "localhost" (Nothing) "debug" (renderTemplates [("image_name", [json| "ubi8" |]), ("image_name", [json| "test" |]), ("image_tag", [json| "latest" |])] [json| {"msg":"Creating container service {{ image_name }}:{{ image_tag }}"} |])
+    network <- runTask "localhost" (Just "Create network") "create_network" [json| {"name":"private"} |] []
+    traverse (\item ->  runTask "localhost" (Just "Create instances") "create_instance" [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |] [("item", item), ("network", network)] ) ["backend","frontend","monitoring"]
+    storage <- runTask "localhost" (Just "Create storage") "create_storage" [json| {"name":"db"} |] []
+    runTask "localhost" (Just "Create database") "create_instance" [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |] [("network", network), ("storage", storage)]
+    runTask "localhost" (Just "Create object") "create_object" [json| {"name":"standalone-object"} |] []
+    runTask "localhost" (Just "Create network object") "create_object" [json| {"name":"network-{{ network.uid }}"} |] [("network", network)]
+    runTask "localhost" (Nothing) "debug" [json| {"msg":"Creating container service {{ image_name }}:{{ image_tag }}"} |] [("image_name", [json| "ubi8" |]), ("image_name", [json| "test" |]), ("image_tag", [json| "latest" |])]
     pure ()
   "
 )

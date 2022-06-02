@@ -111,16 +111,16 @@
 
   play_localhost :: AnsibleHaxl ()
   play_localhost = do
-    tmpstat <- runTask "localhost" (Nothing) "stat" [json| {"path":"/tmp"} |]
-    runTask "localhost" (Nothing) "command" (renderTemplates [("tmpstat", tmpstat)] [json| {"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"} |])
+    tmpstat <- runTask "localhost" (Nothing) "stat" [json| {"path":"/tmp"} |] []
+    runTask "localhost" (Nothing) "command" [json| {"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"} |] [("tmpstat", tmpstat)]
     pure ()
   play_zuul_executor :: AnsibleHaxl ()
   play_zuul_executor = do
-    runTask "zuul_executor" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |]
+    runTask "zuul_executor" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
     pure ()
   play_zuul_scheduler :: AnsibleHaxl ()
   play_zuul_scheduler = do
-    runTask "zuul_scheduler" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |]
+    runTask "zuul_scheduler" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
     pure ()
   "
 )

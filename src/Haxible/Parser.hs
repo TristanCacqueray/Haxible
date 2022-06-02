@@ -68,7 +68,7 @@ resolveHostPlay source hostPlay = do
             role_path = takeDirectory source </> "roles" </> role_name </> "tasks" </> "main.yaml"
             role_default = takeDirectory source </> "roles" </> role_name </> "defaults" </> "main.yaml"
             new_history = role_path : history
-        when (elem role_path history) $ error $ "Cyclic import detected: " <> show history
+        when (role_path `elem` history) $ error $ "Cyclic import detected: " <> show history
         roleDefaults <- objToVar <$> decodeFile role_default
         roleTasks <- decodeFile @[Task] role_path
         map (addVars (task.vars <> roleDefaults)) . concat <$> traverse (resolveImport new_history) roleTasks
@@ -117,11 +117,16 @@ renderCode host task = Text.unwords (registerBind <> taskCall)
       Nothing -> directCall
       Just xs -> ["traverse", "(\\item -> "] <> directCall <> [") " <> Text.pack (show xs)]
 
-    directCall = ["runTask", quote host, "(" <> Text.pack (show task.name) <> ")", quote task.action, arguments]
+    directCall =
+      [ "runTask",
+        quote host,
+        "(" <> Text.pack (show task.name) <> ")",
+        quote task.action,
+        attributes task.attributes,
+        "[" <> Text.intercalate ", " env <> "]"
+      ]
 
-    arguments = case (mkJsonArg <$> task.vars) <> (mkArg <$> requirements) of
-      [] -> attributes task.attributes
-      xs -> "(renderTemplates [" <> Text.intercalate ", " xs <> "] " <> attributes task.attributes <> ")"
+    env = (mkJsonArg <$> task.vars) <> (mkArg <$> requirements)
 
     attributes v = "[json| " <> decodeUtf8 (Data.ByteString.toStrict $ Data.Aeson.encode v) <> " |]"
 
