@@ -5,3 +5,15 @@
       register: tmpstat
 
     - command: "echo tmp exist: {{ tmpstat.stat.exists }}"
+
+- hosts: zuul_executor
+  tasks:
+    - file:
+        path: /etc/zuul
+        state: directory
+
+- hosts: zuul_scheduler
+  tasks:
+    - file:
+        path: /etc/zuul
+        state: directory

@@ -49,6 +49,7 @@ library
     , hashable
     , haxl
     , say
+    , resource-pool >= 0.3
     , template-haskell
     , text
     , typed-process

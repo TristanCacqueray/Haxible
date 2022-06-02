@@ -37,6 +37,58 @@
             ]
         , hostVars = Nothing
         }
+    , HostPlay
+        { hosts = "zuul_executor"
+        , tasks =
+            [ Task
+                { name = Nothing
+                , action = "file"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "path"
+                            , String "/etc/zuul"
+                            )
+                        ,
+                            ( "state"
+                            , String "directory"
+                            )
+                        ]
+                    )
+                , requires = []
+                , register = Nothing
+                , loop = Nothing
+                , vars = []
+                }
+            ]
+        , hostVars = Nothing
+        }
+    , HostPlay
+        { hosts = "zuul_scheduler"
+        , tasks =
+            [ Task
+                { name = Nothing
+                , action = "file"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "path"
+                            , String "/etc/zuul"
+                            )
+                        ,
+                            ( "state"
+                            , String "directory"
+                            )
+                        ]
+                    )
+                , requires = []
+                , register = Nothing
+                , loop = Nothing
+                , vars = []
+                }
+            ]
+        , hostVars = Nothing
+        }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
   {- cabal:
@@ -53,12 +105,22 @@
   playbook :: AnsibleHaxl ()
   playbook = do
     play_localhost
+    play_zuul_executor
+    play_zuul_scheduler
     pure ()
 
   play_localhost :: AnsibleHaxl ()
   play_localhost = do
     tmpstat <- runTask "localhost" (Nothing) "stat" [json| {"path":"/tmp"} |]
     runTask "localhost" (Nothing) "command" (renderTemplates [("tmpstat", tmpstat)] [json| {"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"} |])
+    pure ()
+  play_zuul_executor :: AnsibleHaxl ()
+  play_zuul_executor = do
+    runTask "zuul_executor" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |]
+    pure ()
+  play_zuul_scheduler :: AnsibleHaxl ()
+  play_zuul_scheduler = do
+    runTask "zuul_scheduler" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |]
     pure ()
   "
 )

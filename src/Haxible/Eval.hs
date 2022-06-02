@@ -45,7 +45,7 @@ renderTemplates vars = go
       _ -> v
 
 runHaxible :: AnsibleHaxl () -> IO ()
-runHaxible action = withConnection $ \python -> do
-  ansibleState <- initHaxibleState python
+runHaxible action = withConnections 5 $ \connections -> do
+  ansibleState <- initHaxibleState connections
   ansibleEnv <- initEnv (stateSet ansibleState stateEmpty) ()
   runHaxl ansibleEnv action

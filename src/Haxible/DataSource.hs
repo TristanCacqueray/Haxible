@@ -10,7 +10,7 @@ import Data.List qualified as List
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Typeable (Typeable)
-import Haxible.Connection (Python (..))
+import Haxible.Connection (Connections (..))
 import Haxl.Core
 import Say
 
@@ -39,7 +39,7 @@ instance Hashable (TaskReq a) where
   hashWithSalt s (RunTask param) = hashWithSalt s (0 :: Int, param.host, param.task, param.attrs)
 
 instance StateKey TaskReq where
-  data State TaskReq = AnsibleState {python :: Python}
+  data State TaskReq = AnsibleState {connections :: Connections}
 
 instance DataSourceName TaskReq where
   dataSourceName _ = "Ansible"
@@ -47,9 +47,8 @@ instance DataSourceName TaskReq where
 instance DataSource u TaskReq where
   fetch = fetchTask
 
-initHaxibleState :: Python -> IO (State TaskReq)
-initHaxibleState python = do
-  pure $ AnsibleState {python}
+initHaxibleState :: Connections -> IO (State TaskReq)
+initHaxibleState connections = pure $ AnsibleState {connections}
 
 groupTasksByHost :: [BlockedFetch TaskReq] -> [[BlockedFetch TaskReq]]
 groupTasksByHost = List.groupBy groupByHost . List.sortBy compareHost
@@ -64,9 +63,9 @@ fetchTask :: State TaskReq -> Flags -> u -> PerformFetch TaskReq
 fetchTask state _flags _user =
   BackgroundFetch $ \reqs -> do
     say $ "[+] Batching " <> Text.pack (show (List.length reqs)) <> " tasks"
-    mapM_ (fetchAsync state.python) (groupTasksByHost reqs)
+    mapM_ (fetchAsync state.connections) (groupTasksByHost reqs)
 
-fetchAsync :: Python -> [BlockedFetch TaskReq] -> IO ()
+fetchAsync :: Connections -> [BlockedFetch TaskReq] -> IO ()
 fetchAsync python xs =
   void $
     async $ do
@@ -82,7 +81,7 @@ fetchAsync python xs =
         Left ex -> mapM_ (\(BlockedFetch _ rvar) -> putFailure rvar (ex :: SomeException)) xs
         Right results -> mapM_ (\(res, rvar) -> putSuccess rvar res) (zip results tasksResults)
 
-runTaskReq :: Python -> [TaskParam] -> IO [Value]
+runTaskReq :: Connections -> [TaskParam] -> IO [Value]
 runTaskReq python xs = do
   say $ " ▶ Calling " <> Text.pack (show actions)
   python.call actions

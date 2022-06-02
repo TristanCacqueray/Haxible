@@ -34,6 +34,14 @@
               base = pkgs.haskell.lib.dontCheck
                 (hpPrev.callCabal2nix "haxl" src { });
             in base;
+            resource-pool = let
+              src = builtins.fetchGit {
+                url = "https://github.com/scrive/pool";
+                ref = "master";
+                rev = "e270972c3f92c7658fab764d791d28edac26b950";
+              };
+              base = hpPrev.callCabal2nix "resource-pool" src { };
+            in base;
           };
         };
 
