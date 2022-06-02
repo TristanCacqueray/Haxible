@@ -1,0 +1,8 @@
+[zuul_scheduler]
+localhost ansible_connection=local
+
+[zuul_executor]
+localhost ansible_connection=local
+
+[zookeeper]
+localhost ansible_connection=local

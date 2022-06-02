@@ -33,17 +33,19 @@ class CallbackModule(CallbackBase):
 class Haxible(CLI):
     def init_parser(self):
         super().init_parser()
+        self.parser.add_argument("--inventory")
 
     def post_process_args(self, opts):
         opts.vault_ids = []
         opts.vault_password_files = []
         opts.ask_vault_pass = None
-        opts.inventory = ""
         return super().post_process_args(opts)
 
     def run():
         ...
-cli = Haxible(["haxible"])
+# TODO: pass inventory path
+inventory = "test/inventory"
+cli = Haxible(["haxible", "--inventory", inventory])
 cli.parse()
 loader, inventory, variable_manager = cli._play_prereqs()
 
@@ -68,9 +70,8 @@ def run_task(inputs):
     loggy(f"-> {res}")
     return res
 
-# run_task(["stat", dict(path="/etc/zuul")])
-# run_task(["template", dict(dest="/tmp/conf", src="foo.j2")])
-# run_task(["file", dict(path="/etc/zuul", state="directory")])
+# run_task(["zuul_scheduler", "test", "stat", dict(path="/etc/zuul"), {}])
+# run_task(["localhost", "test", "file", dict(path="/etc/zuul", state="directory"), {}])
 
 loggy("Runner ready")
 while True:
