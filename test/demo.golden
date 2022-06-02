@@ -16,7 +16,7 @@
                 , requires = []
                 , register = Just "network"
                 , loop = Nothing
-                , vars = Nothing
+                , vars = []
                 }
             , Task
                 { name = Just "Create instances"
@@ -40,7 +40,7 @@
                     , "frontend"
                     , "monitoring"
                     ]
-                , vars = Nothing
+                , vars = []
                 }
             , Task
                 { name = Just "Create storage"
@@ -56,7 +56,7 @@
                 , requires = []
                 , register = Just "storage"
                 , loop = Nothing
-                , vars = Nothing
+                , vars = []
                 }
             , Task
                 { name = Just "Create database"
@@ -83,7 +83,7 @@
                     ]
                 , register = Nothing
                 , loop = Nothing
-                , vars = Nothing
+                , vars = []
                 }
             , Task
                 { name = Just "Create object"
@@ -99,7 +99,7 @@
                 , requires = []
                 , register = Nothing
                 , loop = Nothing
-                , vars = Nothing
+                , vars = []
                 }
             , Task
                 { name = Just "Create network object"
@@ -115,7 +115,7 @@
                 , requires = [ "network" ]
                 , register = Nothing
                 , loop = Nothing
-                , vars = Nothing
+                , vars = []
                 }
             , Task
                 { name = Nothing
@@ -124,17 +124,26 @@
                     ( fromList
                         [
                             ( "msg"
-                            , String "Creating container service"
+                            , String "Creating container service {{ image_name }}"
                             )
                         ]
                     )
                 , requires = []
                 , register = Nothing
                 , loop = Nothing
-                , vars = Nothing
+                , vars =
+                    [
+                        ( "image_name"
+                        , String "test"
+                        )
+                    ,
+                        ( "image_name"
+                        , String "ubi8"
+                        )
+                    ]
                 }
             ]
-        , vars = Nothing
+        , hostVars = Nothing
         }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
@@ -162,7 +171,7 @@
     runTask "localhost" (Just "Create database") "create_instance" (renderTemplates [("network", network), ("storage", storage)] [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |])
     runTask "localhost" (Just "Create object") "create_object" [json| {"name":"standalone-object"} |]
     runTask "localhost" (Just "Create network object") "create_object" (renderTemplates [("network", network)] [json| {"name":"network-{{ network.uid }}"} |])
-    runTask "localhost" (Nothing) "debug" [json| {"msg":"Creating container service"} |]
+    runTask "localhost" (Nothing) "debug" (renderTemplates [("image_name", [json| "test" |]), ("image_name", [json| "ubi8" |])] [json| {"msg":"Creating container service {{ image_name }}"} |])
     pure ()
   "
 )

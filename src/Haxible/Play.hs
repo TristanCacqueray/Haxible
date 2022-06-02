@@ -11,7 +11,7 @@ import Data.Yaml qualified (decodeEither')
 
 newtype Playbook = Playbook [HostPlay] deriving (Eq, Show)
 
-newtype Variables = Variables [(Text, Value)] deriving (Eq, Show)
+newtype Variables = Variables {getVars :: [(Text, Value)]} deriving (Eq, Show)
 
 instance FromJSON Variables where
   parseJSON =
@@ -21,7 +21,7 @@ instance FromJSON Variables where
 data HostPlay = HostPlay
   { hosts :: Text,
     tasks :: [Task],
-    vars :: Maybe Variables
+    hostVars :: Maybe Variables
   }
   deriving (Eq, Show)
 
@@ -39,7 +39,7 @@ data Task = Task
     requires :: [Text],
     register :: Maybe Text,
     loop :: Maybe [Text],
-    vars :: Maybe Variables
+    vars :: [(Text, Value)]
   }
   deriving (Eq, Show)
 
@@ -56,9 +56,9 @@ instance FromJSON Task where
       <*> pure []
       <*> v .:? "register"
       <*> v .:? "loop"
-      <*> v .:? "vars"
+      <*> (maybe [] getVars <$> (v .:? "vars"))
     where
-      taskAttribute n = n `notElem` ["name", "register", "loop"]
+      taskAttribute n = n `notElem` ["name", "register", "loop", "vars"]
 
 decodeFile :: (Show a, FromJSON a) => FilePath -> IO a
 decodeFile fp = do

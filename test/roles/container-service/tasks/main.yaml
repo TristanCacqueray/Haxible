@@ -1,2 +1,4 @@
 - debug:
-    msg: "Creating container service"
+    msg: "Creating container service {{ image_name }}"
+  vars:
+    image_name: "ubi8"

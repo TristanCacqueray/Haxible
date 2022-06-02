@@ -36,3 +36,5 @@
     - name: Start local service
       include_role:
         name: "container-service"
+      vars:
+        image_name: "test"

@@ -24,7 +24,7 @@ annotateDependency = reverse . fst . foldl' go ([], [])
     go :: ([Task], [Text]) -> Task -> ([Task], [Text])
     go (xs, available) task = (task {requires = requires} : xs, newAvailable)
       where
-        requires = findRequirements task.attributes
+        requires = concatMap findRequirements (task.attributes : map snd task.vars)
         findRequirements :: Value -> [Text]
         findRequirements v = case v of
           String x -> case filter (`Text.isInfixOf` x) available of
@@ -59,8 +59,10 @@ resolveHostPlay source hostPlay = do
       "include_role" -> do
         let role_name = unpack $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.attributes
             role_path = takeDirectory source </> "roles" </> role_name </> "tasks" </> "main.yaml"
-        concat <$> (traverse resolveImport =<< decodeFile @[Task] role_path)
+        map (addVars task.vars) . concat <$> (traverse resolveImport =<< decodeFile @[Task] role_path)
       _ -> pure [task]
+    addVars :: [(Text, Value)] -> Task -> Task
+    addVars kv task = task {vars = kv <> task.vars}
 
 renderScript :: Playbook -> Text
 renderScript (Playbook plays) =
@@ -105,14 +107,15 @@ renderCode host task = Text.unwords (registerBind <> taskCall)
 
     directCall = ["runTask", quote host, "(" <> Text.pack (show task.name) <> ")", quote task.action, arguments]
 
-    arguments = case requirements of
-      [] -> attributes
-      xs -> "(renderTemplates [" <> Text.intercalate ", " (mkArg <$> xs) <> "] " <> attributes <> ")"
+    arguments = case (mkJsonArg <$> task.vars) <> (mkArg <$> requirements) of
+      [] -> attributes task.attributes
+      xs -> "(renderTemplates [" <> Text.intercalate ", " xs <> "] " <> attributes task.attributes <> ")"
 
-    attributes = "[json| " <> decodeUtf8 (Data.ByteString.toStrict $ Data.Aeson.encode task.attributes) <> " |]"
+    attributes v = "[json| " <> decodeUtf8 (Data.ByteString.toStrict $ Data.Aeson.encode v) <> " |]"
 
     requirements = case task.loop of
       Nothing -> task.requires
       Just _ -> "item" : task.requires
 
     mkArg v = "(" <> quote v <> ", " <> v <> ")"
+    mkJsonArg (n, v) = "(" <> quote n <> ", " <> attributes v <> ")"

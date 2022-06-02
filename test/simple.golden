@@ -16,7 +16,7 @@
                 , requires = []
                 , register = Just "tmpstat"
                 , loop = Nothing
-                , vars = Nothing
+                , vars = []
                 }
             , Task
                 { name = Nothing
@@ -32,10 +32,10 @@
                 , requires = [ "tmpstat" ]
                 , register = Nothing
                 , loop = Nothing
-                , vars = Nothing
+                , vars = []
                 }
             ]
-        , vars = Nothing
+        , hostVars = Nothing
         }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
