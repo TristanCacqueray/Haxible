@@ -5,6 +5,7 @@ import Control.Concurrent.Async (async)
 import Control.Exception (SomeException, try)
 import Control.Monad (void)
 import Data.Aeson (Value)
+import Data.Foldable (traverse_)
 import Data.Hashable (Hashable (hashWithSalt))
 import Data.List qualified as List
 import Data.Text qualified as Text
@@ -44,20 +45,15 @@ fetchTask :: State TaskReq -> Flags -> u -> PerformFetch TaskReq
 fetchTask state _flags _user =
   BackgroundFetch $ \reqs -> do
     say $ "[+] Batching " <> Text.pack (show (List.length reqs)) <> " tasks"
-    fetchAsync state.connections reqs
+    traverse_ (fetchAsync state.connections) reqs
 
-fetchAsync :: Connections -> [BlockedFetch TaskReq] -> IO ()
-fetchAsync python xs =
+fetchAsync :: Connections -> BlockedFetch TaskReq -> IO ()
+fetchAsync python (BlockedFetch (RunTask task) rvar) =
   void $
     async $ do
-      let tasksResults :: [ResultVar Value]
-          tasks :: [TaskCall]
-          (tasks, tasksResults) =
-            unzip
-              [(task, r) | BlockedFetch (RunTask task) r <- xs]
-
       -- TODO: spawn a wrapper per host
-      resultsE <- Control.Exception.try $ python.run tasks
+      resultsE <- Control.Exception.try $ python.run [task]
       case resultsE of
-        Left ex -> mapM_ (\(BlockedFetch _ rvar) -> putFailure rvar (ex :: SomeException)) xs
-        Right results -> mapM_ (\(res, rvar) -> putSuccess rvar res) (zip results tasksResults)
+        Left ex -> putFailure rvar (ex :: SomeException)
+        Right [result] -> putSuccess rvar result
+        Right xs -> error $ "Expected one result, go " <> show xs
