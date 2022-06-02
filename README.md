@@ -30,10 +30,8 @@ Haxible does the following:
 
 The implementation is presently missing:
 
-- Dynamic vars such as host vars or `include_vars`
+- Dynamic vars such as `add_hosts` or `include_vars`.
 - Control flow such as `when` or `block`.
-- Ansible actions and connections such as `add_hosts` or `become`: the modules are executed directly.
-- Remote execution: the python process runs locally.
 
 
 ## Demo

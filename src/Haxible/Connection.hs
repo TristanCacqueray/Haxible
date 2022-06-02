@@ -10,14 +10,15 @@ import GHC.IO.Handle (hFlush)
 import System.IO (Handle, hClose)
 import System.Process.Typed
 
--- | Python calls takes a JSON value and produces a JSON value.
+-- | Python calls takes a list of action and attribute, and it produces a list of result.
 newtype Connections = Connections {call :: [(Text, Value)] -> IO [Value]}
 
--- | Creates the Python interpreter.
+-- | Creates the Python interpreters.
 withConnections :: Int -> (Connections -> IO ()) -> IO ()
 withConnections count callback = do
   pool <- Data.Pool.newPool poolConfig
   go pool
+  Data.Pool.destroyAllResources pool
   where
     go pool = do
       putStrLn "Pool ready"
