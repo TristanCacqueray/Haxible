@@ -1,5 +1,6 @@
 module Haxible.Parser (decodePlaybook, renderScript) where
 
+import Control.Applicative ((<|>))
 import Control.Lens
 import Control.Monad (when)
 import Data.Aeson
@@ -28,21 +29,39 @@ decodePlaybook fp =
 annotateDependency :: [Task] -> [Task]
 annotateDependency = reverse . fst . foldl' go ([], [])
   where
-    go :: ([Task], [Text]) -> Task -> ([Task], [Text])
-    go (xs, available) task = (task {requires = requires} : xs, newAvailable)
+    go :: ([Task], [(Text, Text)]) -> Task -> ([Task], [(Text, Text)])
+    go (xs, available) task = (task {requires, register} : xs, newAvailable)
       where
-        requires = concatMap findRequirements (task.attributes : map snd task.vars)
+        -- look in all string value to see if an available is used.
         findRequirements :: Value -> [Text]
         findRequirements v = case v of
-          String x -> case filter (`Text.isInfixOf` x) available of
+          String x -> case filter (\(_, n) -> n `Text.isInfixOf` x) available of
             [] -> []
-            requirement -> requirement
+            requirement -> map fst requirement
           Object x -> concatMap findRequirements x
           Array x -> concatMap findRequirements x
           _ -> []
-        newAvailable = case task.register of
-          Just reg -> reg : available
-          Nothing -> available
+
+        requires = concatMap findRequirements (task.attributes : map snd task.vars)
+        register =
+          -- If there is no register but a file destination, then add a fake register
+          task.register <|> case dest of
+            [(r, _)] -> Just r
+            _ -> Nothing
+
+        newAvailable = reg <> dest <> available
+        reg = case task.register of
+          Just n -> [(n, n)]
+          Nothing -> []
+
+        getAttr n = preview (key n . _String) task.attributes
+        dest = case getAttr "path" <|> getAttr "dest" of
+          Just n -> case task.register of
+            -- re-use the register named
+            Just r -> [(r, n)]
+            -- add a fake register value
+            Nothing -> [(Text.replace "/" "_" $ Text.replace "." "_" n, n)]
+          Nothing -> []
 
 fixupArgs :: Task -> Task
 fixupArgs task = task {attributes}

@@ -11,9 +11,11 @@
     - file:
         path: /etc/zuul
         state: directory
+    - command: "echo Starting executor -c /etc/zuul/zuul.conf"
 
 - hosts: zuul_scheduler
   tasks:
     - file:
         path: /etc/zuul
         state: directory
+    - command: "echo Starting scheduler -c /etc/zuul/zuul.conf"

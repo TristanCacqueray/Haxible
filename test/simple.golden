@@ -56,6 +56,22 @@
                         ]
                     )
                 , requires = []
+                , register = Just "_etc_zuul"
+                , loop = Nothing
+                , vars = []
+                }
+            , Task
+                { name = Nothing
+                , action = "command"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "_raw_params"
+                            , String "echo Starting executor -c /etc/zuul/zuul.conf"
+                            )
+                        ]
+                    )
+                , requires = [ "_etc_zuul" ]
                 , register = Nothing
                 , loop = Nothing
                 , vars = []
@@ -82,6 +98,22 @@
                         ]
                     )
                 , requires = []
+                , register = Just "_etc_zuul"
+                , loop = Nothing
+                , vars = []
+                }
+            , Task
+                { name = Nothing
+                , action = "command"
+                , attributes = Object
+                    ( fromList
+                        [
+                            ( "_raw_params"
+                            , String "echo Starting scheduler -c /etc/zuul/zuul.conf"
+                            )
+                        ]
+                    )
+                , requires = [ "_etc_zuul" ]
                 , register = Nothing
                 , loop = Nothing
                 , vars = []
@@ -116,11 +148,13 @@
     pure ()
   play_zuul_executor :: AnsibleHaxl ()
   play_zuul_executor = do
-    runTask "zuul_executor" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
+    _etc_zuul <- runTask "zuul_executor" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
+    runTask "zuul_executor" (Nothing) "command" [json| {"_raw_params":"echo Starting executor -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
     pure ()
   play_zuul_scheduler :: AnsibleHaxl ()
   play_zuul_scheduler = do
-    runTask "zuul_scheduler" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
+    _etc_zuul <- runTask "zuul_scheduler" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
+    runTask "zuul_scheduler" (Nothing) "command" [json| {"_raw_params":"echo Starting scheduler -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
     pure ()
   "
 )
