@@ -1,4 +1,4 @@
 - debug:
-    msg: "Creating container service {{ image_name }}"
+    msg: "Creating container service {{ image_name }}:{{ image_tag }}"
   vars:
     image_name: "ubi8"

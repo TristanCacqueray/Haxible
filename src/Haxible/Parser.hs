@@ -5,6 +5,7 @@ import Data.Aeson
 import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
 import Data.Aeson.Lens
+import Data.Bifunctor (first)
 import Data.ByteString (toStrict)
 import Data.Foldable
 import Data.Maybe
@@ -13,6 +14,11 @@ import Data.Text qualified as Text
 import Data.Text.Encoding
 import Haxible.Play
 import System.FilePath
+
+objToVar :: Value -> [(Text, Value)]
+objToVar v = case v of
+  Object obj -> first Data.Aeson.Key.toText <$> Data.Aeson.KeyMap.toList obj
+  _ -> error $ "Expecting object, got " <> show v
 
 decodePlaybook :: FilePath -> IO Playbook
 decodePlaybook fp =
@@ -59,10 +65,12 @@ resolveHostPlay source hostPlay = do
       "include_role" -> do
         let role_name = unpack $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.attributes
             role_path = takeDirectory source </> "roles" </> role_name </> "tasks" </> "main.yaml"
-        map (addVars task.vars) . concat <$> (traverse resolveImport =<< decodeFile @[Task] role_path)
+            role_default = takeDirectory source </> "roles" </> role_name </> "defaults" </> "main.yaml"
+        roleDefaults <- objToVar <$> decodeFile role_default
+        map (addVars (task.vars <> roleDefaults)) . concat <$> (traverse resolveImport =<< decodeFile @[Task] role_path)
       _ -> pure [task]
     addVars :: [(Text, Value)] -> Task -> Task
-    addVars kv task = task {vars = kv <> task.vars}
+    addVars kv task = task {vars = task.vars <> kv}
 
 renderScript :: Playbook -> Text
 renderScript (Playbook plays) =
