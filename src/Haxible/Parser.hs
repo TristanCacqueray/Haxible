@@ -1,6 +1,7 @@
 module Haxible.Parser (decodePlaybook, renderScript) where
 
 import Control.Lens
+import Control.Monad (when)
 import Data.Aeson
 import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
@@ -57,17 +58,20 @@ fixupArgs task = task {attributes}
 resolveHostPlay :: FilePath -> HostPlay -> IO HostPlay
 resolveHostPlay source hostPlay = do
   tasks <-
-    annotateDependency . map fixupArgs . concat <$> traverse resolveImport hostPlay.tasks
+    annotateDependency . map fixupArgs . concat <$> traverse (resolveImport []) hostPlay.tasks
   pure $ hostPlay {tasks}
   where
-    resolveImport :: Task -> IO [Task]
-    resolveImport task = case task.action of
+    resolveImport :: [FilePath] -> Task -> IO [Task]
+    resolveImport history task = case task.action of
       "include_role" -> do
         let role_name = unpack $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.attributes
             role_path = takeDirectory source </> "roles" </> role_name </> "tasks" </> "main.yaml"
             role_default = takeDirectory source </> "roles" </> role_name </> "defaults" </> "main.yaml"
+            new_history = role_path : history
+        when (elem role_path history) $ error $ "Cyclic import detected: " <> show history
         roleDefaults <- objToVar <$> decodeFile role_default
-        map (addVars (task.vars <> roleDefaults)) . concat <$> (traverse resolveImport =<< decodeFile @[Task] role_path)
+        roleTasks <- decodeFile @[Task] role_path
+        map (addVars (task.vars <> roleDefaults)) . concat <$> traverse (resolveImport new_history) roleTasks
       _ -> pure [task]
     addVars :: [(Text, Value)] -> Task -> Task
     addVars kv task = task {vars = task.vars <> kv}
