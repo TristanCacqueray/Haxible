@@ -6,6 +6,7 @@ import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
 import Data.Bifunctor (first)
 import Data.ByteString (readFile)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Data.Yaml qualified (decodeEither')
 
@@ -21,7 +22,7 @@ instance FromJSON Variables where
 data HostPlay = HostPlay
   { hosts :: Text,
     tasks :: [Task],
-    hostVars :: Maybe Variables
+    hostVars :: [(Text, Value)]
   }
   deriving (Eq, Show)
 
@@ -30,7 +31,7 @@ instance FromJSON HostPlay where
     HostPlay
       <$> v .: "hosts"
       <*> v .: "tasks"
-      <*> v .:? "vars"
+      <*> (maybe [] getVars <$> (v .:? "vars"))
 
 data Task = Task
   { name :: Maybe Text,
@@ -38,7 +39,7 @@ data Task = Task
     attributes :: Value,
     requires :: [Text],
     register :: Maybe Text,
-    loop :: Maybe [Text],
+    loop :: Value,
     vars :: [(Text, Value)]
   }
   deriving (Eq, Show)
@@ -55,7 +56,7 @@ instance FromJSON Task where
       <*> pure attributes
       <*> pure []
       <*> v .:? "register"
-      <*> v .:? "loop"
+      <*> (fromMaybe Null <$> v .:? "loop")
       <*> (maybe [] getVars <$> (v .:? "vars"))
     where
       taskAttribute n = n `notElem` ["name", "register", "loop", "vars"]

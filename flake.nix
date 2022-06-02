@@ -16,6 +16,15 @@
 
         haskellOverrides = {
           overrides = hpFinal: hpPrev: {
+            ginger = let
+              src = builtins.fetchGit {
+                url = "https://github.com/tdammers/ginger";
+                ref = "master";
+                rev = "eb33b2bdb481d9fcc08e1d59722c52a79687e665";
+              };
+              base = pkgs.haskell.lib.dontCheck
+                (hpPrev.callCabal2nix "ginger" src { });
+            in base;
             haxl = let
               src = builtins.fetchGit {
                 url = "https://github.com/TristanCacqueray/haxl";

@@ -42,7 +42,7 @@ annotateDependency = reverse . fst . foldl' go ([], [])
           Array x -> concatMap findRequirements x
           _ -> []
 
-        requires = concatMap findRequirements (task.attributes : map snd task.vars)
+        requires = concatMap findRequirements (task.loop : task.attributes : map snd task.vars)
         register =
           -- If there is no register but a file destination, then add a fake register
           task.register <|> case dest of
@@ -87,6 +87,7 @@ resolveHostPlay source hostPlay = do
             role_path = takeDirectory source </> "roles" </> role_name </> "tasks" </> "main.yaml"
             role_default = takeDirectory source </> "roles" </> role_name </> "defaults" </> "main.yaml"
             new_history = role_path : history
+        when (task.loop /= Null) $ error "Loop import is not supported"
         when (role_path `elem` history) $ error $ "Cyclic import detected: " <> show history
         roleDefaults <- objToVar <$> decodeFile role_default
         roleTasks <- decodeFile @[Task] role_path
@@ -119,22 +120,28 @@ renderScript (Playbook plays) =
       [ "play_" <> play.hosts <> " :: AnsibleHaxl ()",
         "play_" <> play.hosts <> " = do"
       ]
-        <> (mappend "  " . renderCode play.hosts <$> play.tasks)
+        <> (mappend "  " . renderCode play.hostVars play.hosts <$> play.tasks)
         <> ["  pure ()"]
 
 quote :: Text -> Text
 quote = Text.cons '"' . flip Text.snoc '"'
 
-renderCode :: Text -> Task -> Text
-renderCode host task = Text.unwords (registerBind <> taskCall)
+renderCode :: [(Text, Value)] -> Text -> Task -> Text
+renderCode globalEnv host task = Text.unwords (registerBind <> taskCall)
   where
     registerBind = case task.register of
       Just v -> [v, "<-"]
       Nothing -> []
 
     taskCall = case task.loop of
-      Nothing -> directCall
-      Just xs -> ["traverse", "(\\item -> "] <> directCall <> [") " <> Text.pack (show xs)]
+      Null -> directCall
+      Array xs ->
+        mkTraverse $
+          "[" <> Text.intercalate ", " (attributes <$> toList xs) <> "]"
+      String v -> mkTraverse $ "envLoop " <> v <> " " <> envArg
+      _ -> error $ "Invalid task.loop: " <> show task.loop
+
+    mkTraverse arg = ["traverse", "(\\item -> "] <> directCall <> [") ", arg]
 
     directCall =
       [ "runTask",
@@ -142,16 +149,17 @@ renderCode host task = Text.unwords (registerBind <> taskCall)
         "(" <> Text.pack (show task.name) <> ")",
         quote task.action,
         attributes task.attributes,
-        "[" <> Text.intercalate ", " env <> "]"
+        envArg
       ]
 
-    env = (mkJsonArg <$> task.vars) <> (mkArg <$> requirements)
+    envArg = "[" <> Text.intercalate ", " env <> "]"
+    env = (mkJsonArg <$> (task.vars <> globalEnv)) <> (mkArg <$> (loopVar <> task.requires))
 
     attributes v = "[json| " <> decodeUtf8 (Data.ByteString.toStrict $ Data.Aeson.encode v) <> " |]"
 
-    requirements = case task.loop of
-      Nothing -> task.requires
-      Just _ -> "item" : task.requires
+    loopVar = case task.loop of
+      Null -> []
+      _ -> ["item"]
 
     mkArg v = "(" <> quote v <> ", " <> v <> ")"
     mkJsonArg (n, v) = "(" <> quote n <> ", " <> attributes v <> ")"

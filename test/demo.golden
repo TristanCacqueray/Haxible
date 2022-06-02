@@ -15,7 +15,7 @@
                     )
                 , requires = []
                 , register = Just "network"
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             , Task
@@ -35,10 +35,10 @@
                     )
                 , requires = [ "network" ]
                 , register = Nothing
-                , loop = Just
-                    [ "backend"
-                    , "frontend"
-                    , "monitoring"
+                , loop = Array
+                    [ String "backend"
+                    , String "frontend"
+                    , String "monitoring"
                     ]
                 , vars = []
                 }
@@ -55,7 +55,7 @@
                     )
                 , requires = []
                 , register = Just "storage"
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             , Task
@@ -82,7 +82,7 @@
                     , "storage"
                     ]
                 , register = Nothing
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             , Task
@@ -98,7 +98,7 @@
                     )
                 , requires = []
                 , register = Nothing
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             , Task
@@ -114,7 +114,7 @@
                     )
                 , requires = [ "network" ]
                 , register = Nothing
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             , Task
@@ -130,7 +130,7 @@
                     )
                 , requires = []
                 , register = Nothing
-                , loop = Nothing
+                , loop = Null
                 , vars =
                     [
                         ( "image_name"
@@ -147,7 +147,7 @@
                     ]
                 }
             ]
-        , hostVars = Nothing
+        , hostVars = []
         }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
@@ -170,7 +170,7 @@
   play_localhost :: AnsibleHaxl ()
   play_localhost = do
     network <- runTask "localhost" (Just "Create network") "create_network" [json| {"name":"private"} |] []
-    traverse (\item ->  runTask "localhost" (Just "Create instances") "create_instance" [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |] [("item", item), ("network", network)] ) ["backend","frontend","monitoring"]
+    traverse (\item ->  runTask "localhost" (Just "Create instances") "create_instance" [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |] [("item", item), ("network", network)] )  [[json| "backend" |], [json| "frontend" |], [json| "monitoring" |]]
     storage <- runTask "localhost" (Just "Create storage") "create_storage" [json| {"name":"db"} |] []
     runTask "localhost" (Just "Create database") "create_instance" [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |] [("network", network), ("storage", storage)]
     runTask "localhost" (Just "Create object") "create_object" [json| {"name":"standalone-object"} |] []

@@ -15,7 +15,7 @@
                     )
                 , requires = []
                 , register = Just "tmpstat"
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             , Task
@@ -31,11 +31,11 @@
                     )
                 , requires = [ "tmpstat" ]
                 , register = Nothing
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             ]
-        , hostVars = Nothing
+        , hostVars = []
         }
     , HostPlay
         { hosts = "zuul_executor"
@@ -57,7 +57,7 @@
                     )
                 , requires = []
                 , register = Just "_etc_zuul"
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             , Task
@@ -73,11 +73,11 @@
                     )
                 , requires = [ "_etc_zuul" ]
                 , register = Nothing
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             ]
-        , hostVars = Nothing
+        , hostVars = []
         }
     , HostPlay
         { hosts = "zuul_scheduler"
@@ -99,7 +99,7 @@
                     )
                 , requires = []
                 , register = Just "_etc_zuul"
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             , Task
@@ -115,11 +115,11 @@
                     )
                 , requires = [ "_etc_zuul" ]
                 , register = Nothing
-                , loop = Nothing
+                , loop = Null
                 , vars = []
                 }
             ]
-        , hostVars = Nothing
+        , hostVars = []
         }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
