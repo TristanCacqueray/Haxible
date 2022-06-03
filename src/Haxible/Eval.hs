@@ -45,8 +45,8 @@ envLoop n env = runGinger context template
 runTask :: [(Text, Value)] -> Value -> [(Text, Value)] -> AnsibleHaxl Value
 runTask playAttrs taskObject env = dataFetch (RunTask (TaskCall {playAttrs, taskObject, env}))
 
-runHaxible :: AnsibleHaxl [Value] -> IO ()
-runHaxible action = withConnections 5 $ \connections -> do
+runHaxible :: FilePath -> AnsibleHaxl [Value] -> IO ()
+runHaxible inventory action = withConnections 5 inventory $ \connections -> do
   ansibleState <- initHaxibleState connections
   ansibleEnv <- initEnv (stateSet ansibleState stateEmpty) ()
   xs <- runHaxl ansibleEnv action

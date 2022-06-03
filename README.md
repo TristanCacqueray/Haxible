@@ -113,6 +113,7 @@ Usage: haxible --playbook FILE [--dry]
 Available options:
   --help                   Show this help text
   --playbook FILE          YAML file to interpret
+  --inventory FILE         Inventory path
   --dry                    Don't run the playbook, just compile it
 ```
 

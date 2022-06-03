@@ -20,4 +20,4 @@ tests =
   where
     goldenParse name = goldenTest name do
       pb <- Haxible.Parser.decodePlaybook ("test/" <> name <> ".yaml")
-      pure (pb, Haxible.Parser.renderScript pb)
+      pure (pb, Haxible.Parser.renderScript "inventory.yaml" pb)

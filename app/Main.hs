@@ -9,6 +9,7 @@ import System.Process.Typed (proc, runProcess_)
 
 data CLI w = CLI
   { playbook :: w ::: FilePath <?> "YAML file to interpret",
+    inventory :: w ::: FilePath <?> "Inventory path",
     dry :: w ::: Bool <?> "Don't run the playbook, just compile it"
   }
   deriving (Generic)
@@ -23,7 +24,7 @@ main = do
 
   -- render
   let script = cli.playbook <> ".hs"
-  Data.Text.IO.writeFile script (renderScript pb)
+  Data.Text.IO.writeFile script (renderScript cli.inventory pb)
 
   -- execute
   unless cli.dry do

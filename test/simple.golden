@@ -161,7 +161,8 @@
             ]
         }
     ]
-, "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
+, "-- Generated with haxible
+  {-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
   {- cabal:
   build-depends: base, haxible
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-T
@@ -171,7 +172,7 @@
   import Haxible.Eval
 
   main :: IO ()
-  main = runHaxible playbook
+  main = runHaxible "inventory.yaml" playbook
 
   playbook :: AnsibleHaxl [Value]
   playbook = do

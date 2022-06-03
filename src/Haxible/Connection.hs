@@ -33,8 +33,8 @@ data TaskCall = TaskCall
 newtype Connections = Connections {run :: TaskCall -> IO (Int, Value)}
 
 -- | Creates the Python interpreters.
-withConnections :: Int -> (Connections -> IO ()) -> IO ()
-withConnections count callback =
+withConnections :: Int -> FilePath -> (Connections -> IO ()) -> IO ()
+withConnections count inventory callback =
   bracket (Data.Pool.newPool poolConfig) Data.Pool.destroyAllResources go
   where
     go pool = do
@@ -59,7 +59,10 @@ withConnections count callback =
     poolConfig =
       Data.Pool.PoolConfig
         { createResource = do
-            startProcess (setStdin createPipe $ setStdout createPipe "python ./app/wrapper.py"),
+            startProcess
+              . setStdin createPipe
+              . setStdout createPipe
+              $ proc "python" ["./app/wrapper.py", inventory],
           freeResource = \p -> do
             hClose (getStdin p)
             stopProcess p,

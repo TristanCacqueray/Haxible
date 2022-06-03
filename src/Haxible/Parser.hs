@@ -11,7 +11,7 @@ import Data.Bifunctor (first)
 import Data.ByteString (toStrict)
 import Data.Foldable
 import Data.Maybe
-import Data.Text (Text, unpack)
+import Data.Text (Text, pack, unpack)
 import Data.Text qualified as Text
 import Data.Text.Encoding
 import Haxible.Play
@@ -103,10 +103,11 @@ resolveHostPlay source hostPlay = do
     addVars :: [(Text, Value)] -> Task -> Task
     addVars kv task = task {vars = task.vars <> kv}
 
-renderScript :: Playbook -> Text
-renderScript (Playbook plays) =
+renderScript :: FilePath -> Playbook -> Text
+renderScript inventory (Playbook plays) =
   Text.unlines $
-    [ "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}",
+    [ "-- Generated with haxible",
+      "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}",
       "{- cabal:",
       "build-depends: base, haxible",
       "ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-T",
@@ -114,7 +115,7 @@ renderScript (Playbook plays) =
       "module Main (main) where\n",
       "import Haxible.Eval\n",
       "main :: IO ()",
-      "main = runHaxible playbook\n",
+      "main = runHaxible " <> quote (pack inventory) <> " playbook\n",
       "playbook :: AnsibleHaxl [Value]",
       "playbook = do"
     ]

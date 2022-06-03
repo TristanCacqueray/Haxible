@@ -66,7 +66,12 @@ class PlaybookRunner:
         return [run_result, task_result]
 
 # TODO: pass inventory path
-runner = PlaybookRunner("test/inventory")
+try:
+    inventory = sys.argv[1]
+except IndexError:
+    print("usage: wrapper.py inventory")
+    exit(1)
+runner = PlaybookRunner(inventory)
 
 def run_task(inputs):
     [play, task, env] = inputs
