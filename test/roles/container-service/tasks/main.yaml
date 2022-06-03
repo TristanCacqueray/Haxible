@@ -1,6 +1,9 @@
 - include_vars: "redhat.yaml"
 
-- debug:
-    msg: "{{ runtime }} Creating container service {{ image_name }}:{{ image_tag }}"
+- set_fact:
+    command: "{{ runtime }} run {{ image_name }}:{{ image_tag }}"
   vars:
     image_name: "ubi8"
+
+- debug:
+    msg: "Running {{ command }}"

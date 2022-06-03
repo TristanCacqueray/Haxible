@@ -53,17 +53,23 @@ instance FromJSON HostPlay where
 
 type VarName = Text
 
-data Dependency = Register VarName | Path VarName FilePath deriving (Eq, Show)
+data Dependency
+  = Register VarName
+  | Path VarName FilePath
+  | Var VarName [Dependency]
+  deriving (Eq, Show)
 
-dependencyVar :: Dependency -> VarName
+dependencyVar :: Dependency -> [VarName]
 dependencyVar = \case
-  Register n -> n
-  Path n _ -> n
+  Register n -> [n]
+  Path n _ -> [n]
+  Var n xs -> n : concatMap dependencyVar xs
 
 dependencyName :: Dependency -> Text
 dependencyName = \case
   Register n -> n
   Path _ p -> pack p
+  Var n _ -> n
 
 data Module = Module
   { name :: Text,

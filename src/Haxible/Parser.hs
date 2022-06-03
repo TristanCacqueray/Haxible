@@ -46,7 +46,7 @@ annotateDependency = reverse . fst . foldl' go ([], [])
         requires = concatMap findRequirements (task.loop : task.tmodule.params : map snd task.vars)
         taskRegister =
           -- If there is no register but a file destination, then add a fake register
-          task.register <|> dependencyVar <$> dest
+          task.register <|> head . dependencyVar <$> dest
 
         newAvailable = reg <> maybeToList dest <> varModule <> available
         reg = maybeToList $ Register <$> task.register
@@ -62,11 +62,11 @@ annotateDependency = reverse . fst . foldl' go ([], [])
 
         -- include_vars and set_facts provide ad-hoc variables
         (varModule, vars, register)
-          | isVarsTask task = (Register <$> map fst (objToVar task.tmodule.params), [], Nothing)
+          | isVarsTask task = (flip Var requires <$> map fst (objToVar task.tmodule.params), [], Nothing)
           | otherwise = ([], task.vars, taskRegister)
 
 isVarsTask :: Task -> Bool
-isVarsTask task = task.tmodule.name `elem` ["include_vars", "set_facts"]
+isVarsTask task = task.tmodule.name `elem` ["include_vars", "set_fact"]
 
 fixupArgs :: Task -> Task
 fixupArgs task = task {tmodule}
@@ -113,6 +113,10 @@ resolveHostPlay playSource hostPlay = do
               Just n -> Object $ Data.Aeson.KeyMap.fromList [(Data.Aeson.Key.fromText n, includedVars)]
               Nothing -> includedVars
         pure [task {tmodule}]
+      "set_fact" -> do
+        let cacheable = preview (key "cacheable") task.tmodule.params
+        when (isJust cacheable) $ error "Cacheable facts are not supported"
+        pure [task]
       _ -> pure [task]
     checkHistory :: FilePath -> [FilePath] -> [FilePath]
     checkHistory fp history
@@ -198,7 +202,7 @@ renderCode globalEnv (idx, task)
       ]
 
     envArg = "[" <> Text.intercalate ", " env <> "]"
-    env = (mkJsonArg <$> (task.vars <> globalEnv)) <> (mkArg <$> (loopVar <> (dependencyVar <$> task.requires)))
+    env = (mkJsonArg <$> (task.vars <> globalEnv)) <> (mkArg <$> (loopVar <> (concatMap dependencyVar task.requires)))
 
     loopVar = case task.loop of
       Null -> []
