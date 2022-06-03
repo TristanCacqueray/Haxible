@@ -21,6 +21,7 @@ common common-options
   default-extensions:
     BlockArguments
     DataKinds
+    DeriveAnyClass
     DuplicateRecordFields
     ImportQualifiedPost
     OverloadedStrings

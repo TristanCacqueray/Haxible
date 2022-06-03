@@ -1,6 +1,4 @@
-{-# LANGUAGE DeriveAnyClass #-}
-
--- | This module contains the logic to interact with the python interpreter
+-- | This module contains the logic to interact with the python wrapper
 module Haxible.Connection (Connections (..), TaskCall (..), withConnections) where
 
 import Control.Exception (bracket)
@@ -22,17 +20,17 @@ import System.IO (Handle, hClose)
 import System.Process.Typed
 
 data TaskCall = TaskCall
-  { playAttrs :: [(Text, Value)],
+  { -- | The playbook attributes, such as `hosts` or `become`
+    playAttrs :: [(Text, Value)],
+    -- | The task object, e.g `{"file": {"path": "/etc/zuul"}}`
     taskObject :: Value,
+    -- | A list of variables, such as `register` names or `include_vars`
     env :: [(Text, Value)]
   }
   deriving (Eq, Show, Typeable, Generic, Hashable)
 
--- | Python calls takes a list of action and attribute, and it produces a list of result.
-newtype Connections = Connections {run :: [TaskCall] -> IO [(Int, Value)]}
-
-mkObj :: [(Text, Value)] -> Value
-mkObj = Object . Data.Aeson.KeyMap.fromList . map (first Data.Aeson.Key.fromText)
+-- | A connection run converts a TaskCall into a (result code, result value)
+newtype Connections = Connections {run :: TaskCall -> IO (Int, Value)}
 
 -- | Creates the Python interpreters.
 withConnections :: Int -> (Connections -> IO ()) -> IO ()
@@ -53,11 +51,9 @@ withConnections count callback =
               Right res -> pure res
               Left err -> error $ show output <> ": " <> err
 
-      let cb :: [TaskCall] -> IO [(Int, Value)]
-          cb tasks = do
-            traverse (Data.Pool.withResource pool . runTask) tasks
+      callback (Connections $ Data.Pool.withResource pool . runTask)
 
-      callback (Connections cb)
+    mkObj = Object . Data.Aeson.KeyMap.fromList . map (first Data.Aeson.Key.fromText)
 
     poolConfig :: Data.Pool.PoolConfig (Process Handle Handle ())
     poolConfig =

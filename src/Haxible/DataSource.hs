@@ -57,9 +57,8 @@ fetchAsync python (BlockedFetch (RunTask task) rvar) =
   void $
     async $ do
       -- TODO: spawn a wrapper per host
-      resultsE <- Control.Exception.try $ python.run [task]
+      resultsE <- Control.Exception.try $ python.run task
       case resultsE of
         Left ex -> putFailure rvar (ex :: SomeException)
-        Right [(0, result)] -> putSuccess rvar result
-        Right [(code, res)] -> putFailure rvar (TaskError code res)
-        Right xs -> error $ "Expected one result, go " <> show xs
+        Right (0, result) -> putSuccess rvar result
+        Right (code, res) -> putFailure rvar (TaskError code res)
