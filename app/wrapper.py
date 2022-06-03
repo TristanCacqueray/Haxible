@@ -69,18 +69,19 @@ class PlaybookRunner:
 runner = PlaybookRunner("test/inventory")
 
 def run_task(inputs):
-    [play, name, task, attr, env] = inputs
+    [play, task, env] = inputs
     if env:
         play.setdefault("vars", {})
         play["vars"].update(env)
-    play["tasks"] = [{task: attr}]
-    loggy(f"{play}: Running task {name} ({task} with {attr})")
+    loggy(f"{json.dumps(play)}: Running task {json.dumps(task)}")
+    play["tasks"] = [task]
     play["gather_facts"] = "no"
-    res = runner.run(play)
-    loggy(f"-> {res}")
-    return res
+    result = runner.run(play.copy())
+    loggy(f"-> {result}")
+    result[1]["__play"] = play
+    return result
 
-run_task([dict(hosts="zuul_scheduler"), "test", "stat", dict(path="/etc/zuul"), {}])
+# run_task([dict(hosts="zuul_scheduler"), dict(stat=dict(path="/etc/zuul")), {}])
 
 loggy("Runner ready")
 while True:

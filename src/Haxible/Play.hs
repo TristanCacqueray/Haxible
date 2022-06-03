@@ -42,31 +42,32 @@ instance FromJSON HostPlay where
 
 data Task = Task
   { name :: Maybe Text,
-    action :: Text,
-    attributes :: Value,
+    taskModule :: (Text, Value),
     requires :: [Text],
     register :: Maybe Text,
     loop :: Value,
-    vars :: [(Text, Value)]
+    vars :: [(Text, Value)],
+    taskAttrs :: [(Text, Value)]
   }
   deriving (Eq, Show)
 
 instance FromJSON Task where
   parseJSON = withObject "Task" $ \v -> do
-    (action, attributes) <- case filter (\(n, _) -> taskAttribute n) (Data.Aeson.KeyMap.toList v) of
-      [(n, attr)] -> pure (Data.Aeson.Key.toText n, attr)
+    (taskModule, attributes) <- case filter (\(n, _) -> taskAttribute n) (items v) of
+      [(n, attr)] -> pure (n, attr)
       [] -> error "Missing task"
       xs -> error $ "Unknown task: " <> show xs
     Task
       <$> v .:? "name"
-      <*> pure action
-      <*> pure attributes
+      <*> pure (taskModule, attributes)
       <*> pure []
       <*> v .:? "register"
       <*> (fromMaybe Null <$> v .:? "loop")
       <*> (maybe [] getVars <$> (v .:? "vars"))
+      <*> pure (filter (\(n, _) -> rest taskModule n) (items v))
     where
       taskAttribute n = n `notElem` ["name", "register", "loop", "vars"]
+      rest taskModule n = n `notElem` [taskModule, "register", "loop"]
 
 decodeFile :: (Show a, FromJSON a) => FilePath -> IO a
 decodeFile fp = do

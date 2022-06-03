@@ -4,7 +4,7 @@
 module Haxible.Connection (Connections (..), TaskCall (..), withConnections) where
 
 import Control.Exception (bracket)
-import Data.Aeson (Value (Null, Object, String), eitherDecodeStrict, encode)
+import Data.Aeson (Value (Object), eitherDecodeStrict, encode)
 import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
 import Data.Bifunctor (first)
@@ -23,10 +23,7 @@ import System.Process.Typed
 
 data TaskCall = TaskCall
   { playAttrs :: [(Text, Value)],
-    name :: Maybe Text,
-    -- task is a module or action name
-    task :: Text,
-    attrs :: Value,
+    taskObject :: Value,
     env :: [(Text, Value)]
   }
   deriving (Eq, Show, Typeable, Generic, Hashable)
@@ -47,9 +44,7 @@ withConnections count callback =
 
       let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
-            let envObj = mkObj taskCall.env
-                nameValue = maybe Null String taskCall.name
-                callParams = [mkObj taskCall.playAttrs, nameValue, String taskCall.task, taskCall.attrs, envObj]
+            let callParams = [mkObj taskCall.playAttrs, taskCall.taskObject, mkObj taskCall.env]
             say $ " ▶ Calling " <> Text.pack (show taskCall)
             hPutStrLn (getStdin p) (toStrict $ encode callParams)
             hFlush (getStdin p)
