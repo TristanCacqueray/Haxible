@@ -3,8 +3,10 @@ module Haxible.DataSource (AnsibleHaxl, initHaxibleState, dataFetch, TaskReq (..
 
 import Control.Concurrent.Async (async)
 import Control.Exception (Exception, SomeException, try)
+import Control.Lens
 import Control.Monad (void)
-import Data.Aeson (Value)
+import Data.Aeson (Value (Number))
+import Data.Aeson.Lens
 import Data.Foldable (traverse_)
 import Data.Hashable (Hashable (hashWithSalt))
 import Data.List qualified as List
@@ -13,6 +15,7 @@ import Data.Typeable (Typeable)
 import Haxible.Connection (Connections (..), TaskCall (..))
 import Haxl.Core
 import Say
+import System.Clock qualified as Clock
 
 type AnsibleHaxl a = GenHaxl () () a
 
@@ -45,20 +48,22 @@ fetchTask :: State TaskReq -> Flags -> u -> PerformFetch TaskReq
 fetchTask state _flags _user =
   BackgroundFetch $ \reqs -> do
     say $ "[+] Batching " <> Text.pack (show (List.length reqs)) <> " tasks"
-    traverse_ (fetchAsync state.connections) reqs
+    now <- Clock.toNanoSecs <$> Clock.getTime Clock.Monotonic
+    traverse_ (fetchAsync state.connections now) reqs
 
 data TaskError = TaskError Int Value
   deriving (Show)
 
 instance Exception TaskError
 
-fetchAsync :: Connections -> BlockedFetch TaskReq -> IO ()
-fetchAsync python (BlockedFetch (RunTask task) rvar) =
+fetchAsync :: Connections -> Integer -> BlockedFetch TaskReq -> IO ()
+fetchAsync python ts (BlockedFetch (RunTask task) rvar) =
   void $
     async $ do
-      -- TODO: spawn a wrapper per host
       resultsE <- Control.Exception.try $ python.run task
       case resultsE of
         Left ex -> putFailure rvar (ex :: SomeException)
-        Right (0, result) -> putSuccess rvar result
+        Right (0, result) -> putSuccess rvar (addTS result)
         Right (code, res) -> putFailure rvar (TaskError code res)
+  where
+    addTS = _Object . at "__haxible_ts" ?~ Number (fromInteger ts)

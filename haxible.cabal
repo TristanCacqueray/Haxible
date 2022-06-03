@@ -45,6 +45,7 @@ library
     , lens
     , async
     , bytestring
+    , clock
     , filepath
     , data-default
     , ginger

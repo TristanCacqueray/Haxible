@@ -78,7 +78,7 @@ def run_task(inputs):
     play["gather_facts"] = "no"
     result = runner.run(play.copy())
     loggy(f"-> {result}")
-    result[1]["__play"] = play
+    result[1]["__haxible_play"] = play
     return result
 
 # run_task([dict(hosts="zuul_scheduler"), dict(stat=dict(path="/etc/zuul")), {}])
