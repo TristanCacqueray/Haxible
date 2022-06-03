@@ -26,18 +26,19 @@ decodePlaybook :: FilePath -> IO Playbook
 decodePlaybook fp =
   Playbook <$> (traverse (resolveHostPlay fp) =<< decodeFile fp)
 
+-- | This function is the core of haxible. Given a list of task, it populates the task.requires attributes.
 annotateDependency :: [Task] -> [Task]
 annotateDependency = reverse . fst . foldl' go ([], [])
   where
-    go :: ([Task], [(Text, Text)]) -> Task -> ([Task], [(Text, Text)])
+    go :: ([Task], [Dependency]) -> Task -> ([Task], [Dependency])
     go (xs, available) task = (task {requires, register} : xs, newAvailable)
       where
         -- look in all string value to see if an available is used.
-        findRequirements :: Value -> [Text]
+        findRequirements :: Value -> [Dependency]
         findRequirements v = case v of
-          String x -> case filter (\(_, n) -> n `Text.isInfixOf` x) available of
+          String x -> case filter (\n -> dependencyName n `Text.isInfixOf` x) available of
             [] -> []
-            requirement -> map fst requirement
+            requirement -> requirement
           Object x -> concatMap findRequirements x
           Array x -> concatMap findRequirements x
           _ -> []
@@ -45,23 +46,19 @@ annotateDependency = reverse . fst . foldl' go ([], [])
         requires = concatMap findRequirements (task.loop : snd task.taskModule : map snd task.vars)
         register =
           -- If there is no register but a file destination, then add a fake register
-          task.register <|> case dest of
-            [(r, _)] -> Just r
-            _ -> Nothing
+          task.register <|> dependencyVar <$> dest
 
-        newAvailable = reg <> dest <> available
-        reg = case task.register of
-          Just n -> [(n, n)]
-          Nothing -> []
+        newAvailable = reg <> maybeToList dest <> available
+        reg = maybeToList $ Register <$> task.register
 
         getAttr n = preview (key n . _String) (snd task.taskModule)
         dest = case getAttr "path" <|> getAttr "dest" of
-          Just n -> case task.register of
+          Just n -> Just $ case task.register of
             -- re-use the register named
-            Just r -> [(r, n)]
+            Just r -> Path r (Text.unpack n)
             -- add a fake register value
-            Nothing -> [(Text.replace "/" "_" $ Text.replace "." "_" n, n)]
-          Nothing -> []
+            Nothing -> Path (Text.replace "/" "_" $ Text.replace "." "_" n) (Text.unpack n)
+          Nothing -> Nothing
 
 fixupArgs :: Task -> Task
 fixupArgs task = task {taskModule}
@@ -175,7 +172,7 @@ renderCode globalEnv (idx, task) = (bindVar, Text.unwords (registerBind : taskCa
       ]
 
     envArg = "[" <> Text.intercalate ", " env <> "]"
-    env = (mkJsonArg <$> (task.vars <> globalEnv)) <> (mkArg <$> (loopVar <> task.requires))
+    env = (mkJsonArg <$> (task.vars <> globalEnv)) <> (mkArg <$> (loopVar <> (dependencyVar <$> task.requires)))
 
     loopVar = case task.loop of
       Null -> []

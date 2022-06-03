@@ -11,6 +11,7 @@
     - file:
         path: /etc/zuul
         state: directory
+      register: zuuldir
     - command: "echo Starting executor -c /etc/zuul/zuul.conf"
 
 - hosts: zuul_scheduler

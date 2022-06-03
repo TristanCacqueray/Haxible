@@ -1,5 +1,5 @@
 -- | This module contains the main data types and json decoder
-module Haxible.Play (decodeFile, Variables (..), Playbook (..), HostPlay (..), Task (..)) where
+module Haxible.Play (decodeFile, Variables (..), Playbook (..), HostPlay (..), Task (..), Dependency (..), dependencyVar, dependencyName) where
 
 import Data.Aeson
 import Data.Aeson.Key qualified
@@ -7,7 +7,7 @@ import Data.Aeson.KeyMap qualified
 import Data.Bifunctor (first)
 import Data.ByteString (readFile)
 import Data.Maybe (fromMaybe)
-import Data.Text (Text)
+import Data.Text (Text, pack)
 import Data.Yaml qualified (decodeEither')
 
 newtype Playbook = Playbook [HostPlay] deriving (Eq, Show)
@@ -40,10 +40,24 @@ instance FromJSON HostPlay where
     where
       unknownPlayAttributes n = n /= "tasks"
 
+type VarName = Text
+
+data Dependency = Register VarName | Path VarName FilePath deriving (Eq, Show)
+
+dependencyVar :: Dependency -> VarName
+dependencyVar = \case
+  Register n -> n
+  Path n _ -> n
+
+dependencyName :: Dependency -> Text
+dependencyName = \case
+  Register n -> n
+  Path _ p -> pack p
+
 data Task = Task
   { name :: Maybe Text,
     taskModule :: (Text, Value),
-    requires :: [Text],
+    requires :: [Dependency],
     register :: Maybe Text,
     loop :: Value,
     vars :: [(Text, Value)],

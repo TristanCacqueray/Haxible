@@ -34,7 +34,8 @@
                             ]
                         )
                     )
-                , requires = [ "tmpstat" ]
+                , requires =
+                    [ Register "tmpstat" ]
                 , register = Nothing
                 , loop = Null
                 , vars = []
@@ -70,7 +71,7 @@
                         )
                     )
                 , requires = []
-                , register = Just "_etc_zuul"
+                , register = Just "zuuldir"
                 , loop = Null
                 , vars = []
                 , taskAttrs = []
@@ -88,7 +89,8 @@
                             ]
                         )
                     )
-                , requires = [ "_etc_zuul" ]
+                , requires =
+                    [ Path "zuuldir" "/etc/zuul" ]
                 , register = Nothing
                 , loop = Null
                 , vars = []
@@ -142,7 +144,8 @@
                             ]
                         )
                     )
-                , requires = [ "_etc_zuul" ]
+                , requires =
+                    [ Path "_etc_zuul" "/etc/zuul" ]
                 , register = Nothing
                 , loop = Null
                 , vars = []
@@ -187,9 +190,9 @@
   play_zuul_executor :: AnsibleHaxl [Value]
   play_zuul_executor = do
     let playAttr = [("hosts", [json| "zuul_executor" |])]
-    _etc_zuul <- runTask playAttr [json| {"file":{"path":"/etc/zuul","state":"directory"}} |] []
-    _var1 <- runTask playAttr [json| {"command":{"_raw_params":"echo Starting executor -c /etc/zuul/zuul.conf"}} |] [("_etc_zuul", _etc_zuul)]
-    pure [_etc_zuul, _var1]
+    zuuldir <- runTask playAttr [json| {"file":{"path":"/etc/zuul","state":"directory"}} |] []
+    _var1 <- runTask playAttr [json| {"command":{"_raw_params":"echo Starting executor -c /etc/zuul/zuul.conf"}} |] [("zuuldir", zuuldir)]
+    pure [zuuldir, _var1]
 
   play_zuul_scheduler :: AnsibleHaxl [Value]
   play_zuul_scheduler = do

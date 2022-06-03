@@ -23,6 +23,7 @@ common common-options
     DataKinds
     DeriveAnyClass
     DuplicateRecordFields
+    LambdaCase
     ImportQualifiedPost
     OverloadedStrings
     QuasiQuotes

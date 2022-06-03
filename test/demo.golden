@@ -43,7 +43,8 @@
                             ]
                         )
                     )
-                , requires = [ "network" ]
+                , requires =
+                    [ Register "network" ]
                 , register = Nothing
                 , loop = Array
                     [ String "backend"
@@ -104,8 +105,8 @@
                         )
                     )
                 , requires =
-                    [ "network"
-                    , "storage"
+                    [ Register "network"
+                    , Register "storage"
                     ]
                 , register = Nothing
                 , loop = Null
@@ -154,7 +155,8 @@
                             ]
                         )
                     )
-                , requires = [ "network" ]
+                , requires =
+                    [ Register "network" ]
                 , register = Nothing
                 , loop = Null
                 , vars = []
