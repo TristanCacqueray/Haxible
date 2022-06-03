@@ -4,9 +4,9 @@
         , tasks =
             [ Task
                 { name = Just "Create network"
-                , taskModule =
-                    ( "create_network"
-                    , Object
+                , tmodule = Module
+                    { name = "create_network"
+                    , params = Object
                         ( fromList
                             [
                                 ( "name"
@@ -14,7 +14,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires = []
                 , register = Just "network"
                 , loop = Null
@@ -28,9 +28,9 @@
                 }
             , Task
                 { name = Just "Create instances"
-                , taskModule =
-                    ( "create_instance"
-                    , Object
+                , tmodule = Module
+                    { name = "create_instance"
+                    , params = Object
                         ( fromList
                             [
                                 ( "name"
@@ -42,7 +42,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires =
                     [ Register "network" ]
                 , register = Nothing
@@ -61,9 +61,9 @@
                 }
             , Task
                 { name = Just "Create storage"
-                , taskModule =
-                    ( "create_storage"
-                    , Object
+                , tmodule = Module
+                    { name = "create_storage"
+                    , params = Object
                         ( fromList
                             [
                                 ( "name"
@@ -71,7 +71,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires = []
                 , register = Just "storage"
                 , loop = Null
@@ -85,9 +85,9 @@
                 }
             , Task
                 { name = Just "Create database"
-                , taskModule =
-                    ( "create_instance"
-                    , Object
+                , tmodule = Module
+                    { name = "create_instance"
+                    , params = Object
                         ( fromList
                             [
                                 ( "name"
@@ -103,7 +103,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires =
                     [ Register "network"
                     , Register "storage"
@@ -120,9 +120,9 @@
                 }
             , Task
                 { name = Just "Create object"
-                , taskModule =
-                    ( "create_object"
-                    , Object
+                , tmodule = Module
+                    { name = "create_object"
+                    , params = Object
                         ( fromList
                             [
                                 ( "name"
@@ -130,7 +130,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires = []
                 , register = Nothing
                 , loop = Null
@@ -144,9 +144,9 @@
                 }
             , Task
                 { name = Just "Create network object"
-                , taskModule =
-                    ( "create_object"
-                    , Object
+                , tmodule = Module
+                    { name = "create_object"
+                    , params = Object
                         ( fromList
                             [
                                 ( "name"
@@ -154,7 +154,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires =
                     [ Register "network" ]
                 , register = Nothing
@@ -169,9 +169,9 @@
                 }
             , Task
                 { name = Nothing
-                , taskModule =
-                    ( "debug"
-                    , Object
+                , tmodule = Module
+                    { name = "debug"
+                    , params = Object
                         ( fromList
                             [
                                 ( "msg"
@@ -179,7 +179,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires = []
                 , register = Nothing
                 , loop = Null

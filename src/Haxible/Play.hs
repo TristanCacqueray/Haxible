@@ -1,5 +1,16 @@
 -- | This module contains the main data types and json decoder
-module Haxible.Play (decodeFile, Variables (..), Playbook (..), HostPlay (..), Task (..), Dependency (..), dependencyVar, dependencyName) where
+module Haxible.Play
+  ( decodeFile,
+    Variables (..),
+    Playbook (..),
+    HostPlay (..),
+    Module (..),
+    Task (..),
+    Dependency (..),
+    dependencyVar,
+    dependencyName,
+  )
+where
 
 import Data.Aeson
 import Data.Aeson.Key qualified
@@ -54,9 +65,15 @@ dependencyName = \case
   Register n -> n
   Path _ p -> pack p
 
+data Module = Module
+  { name :: Text,
+    params :: Value
+  }
+  deriving (Eq, Show)
+
 data Task = Task
   { name :: Maybe Text,
-    taskModule :: (Text, Value),
+    tmodule :: Module,
     requires :: [Dependency],
     register :: Maybe Text,
     loop :: Value,
@@ -67,21 +84,21 @@ data Task = Task
 
 instance FromJSON Task where
   parseJSON = withObject "Task" $ \v -> do
-    (taskModule, attributes) <- case filter (\(n, _) -> taskAttribute n) (items v) of
-      [(n, attr)] -> pure (n, attr)
+    tmodule <- case filter (\(n, _) -> taskAttribute n) (items v) of
+      [(n, attr)] -> pure (Module n attr)
       [] -> error "Missing task"
       xs -> error $ "Unknown task: " <> show xs
     Task
       <$> v .:? "name"
-      <*> pure (taskModule, attributes)
+      <*> pure tmodule
       <*> pure []
       <*> v .:? "register"
       <*> (fromMaybe Null <$> v .:? "loop")
       <*> (maybe [] getVars <$> (v .:? "vars"))
-      <*> pure (filter (\(n, _) -> rest taskModule n) (items v))
+      <*> pure (filter (\(n, _) -> rest tmodule.name n) (items v))
     where
       taskAttribute n = n `notElem` ["name", "register", "loop", "vars"]
-      rest taskModule n = n `notElem` [taskModule, "register", "loop"]
+      rest moduleName n = n `notElem` [moduleName, "register", "loop"]
 
 decodeFile :: (Show a, FromJSON a) => FilePath -> IO a
 decodeFile fp = do

@@ -4,9 +4,9 @@
         , tasks =
             [ Task
                 { name = Nothing
-                , taskModule =
-                    ( "stat"
-                    , Object
+                , tmodule = Module
+                    { name = "stat"
+                    , params = Object
                         ( fromList
                             [
                                 ( "path"
@@ -14,7 +14,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires = []
                 , register = Just "tmpstat"
                 , loop = Null
@@ -23,9 +23,9 @@
                 }
             , Task
                 { name = Nothing
-                , taskModule =
-                    ( "command"
-                    , Object
+                , tmodule = Module
+                    { name = "command"
+                    , params = Object
                         ( fromList
                             [
                                 ( "_raw_params"
@@ -33,7 +33,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires =
                     [ Register "tmpstat" ]
                 , register = Nothing
@@ -55,9 +55,9 @@
         , tasks =
             [ Task
                 { name = Nothing
-                , taskModule =
-                    ( "file"
-                    , Object
+                , tmodule = Module
+                    { name = "file"
+                    , params = Object
                         ( fromList
                             [
                                 ( "path"
@@ -69,7 +69,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires = []
                 , register = Just "zuuldir"
                 , loop = Null
@@ -78,9 +78,9 @@
                 }
             , Task
                 { name = Nothing
-                , taskModule =
-                    ( "command"
-                    , Object
+                , tmodule = Module
+                    { name = "command"
+                    , params = Object
                         ( fromList
                             [
                                 ( "_raw_params"
@@ -88,7 +88,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires =
                     [ Path "zuuldir" "/etc/zuul" ]
                 , register = Nothing
@@ -110,9 +110,9 @@
         , tasks =
             [ Task
                 { name = Nothing
-                , taskModule =
-                    ( "file"
-                    , Object
+                , tmodule = Module
+                    { name = "file"
+                    , params = Object
                         ( fromList
                             [
                                 ( "path"
@@ -124,7 +124,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires = []
                 , register = Just "_etc_zuul"
                 , loop = Null
@@ -133,9 +133,9 @@
                 }
             , Task
                 { name = Nothing
-                , taskModule =
-                    ( "command"
-                    , Object
+                , tmodule = Module
+                    { name = "command"
+                    , params = Object
                         ( fromList
                             [
                                 ( "_raw_params"
@@ -143,7 +143,7 @@
                                 )
                             ]
                         )
-                    )
+                    }
                 , requires =
                     [ Path "_etc_zuul" "/etc/zuul" ]
                 , register = Nothing

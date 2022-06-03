@@ -43,7 +43,7 @@ annotateDependency = reverse . fst . foldl' go ([], [])
           Array x -> concatMap findRequirements x
           _ -> []
 
-        requires = concatMap findRequirements (task.loop : snd task.taskModule : map snd task.vars)
+        requires = concatMap findRequirements (task.loop : task.tmodule.params : map snd task.vars)
         register =
           -- If there is no register but a file destination, then add a fake register
           task.register <|> dependencyVar <$> dest
@@ -51,7 +51,7 @@ annotateDependency = reverse . fst . foldl' go ([], [])
         newAvailable = reg <> maybeToList dest <> available
         reg = maybeToList $ Register <$> task.register
 
-        getAttr n = preview (key n . _String) (snd task.taskModule)
+        getAttr n = preview (key n . _String) (task.tmodule.params)
         dest = case getAttr "path" <|> getAttr "dest" of
           Just n -> Just $ case task.register of
             -- re-use the register named
@@ -61,14 +61,12 @@ annotateDependency = reverse . fst . foldl' go ([], [])
           Nothing -> Nothing
 
 fixupArgs :: Task -> Task
-fixupArgs task = task {taskModule}
+fixupArgs task = task {tmodule}
   where
-    taskModule = (name, Object (Data.Aeson.KeyMap.fromList $ args <> params))
-    params = []
-    args :: [(Data.Aeson.Key.Key, Value)]
-    (name, args) = case task.taskModule of
-      (n, v@(String _)) -> (n, [("_raw_params", v)])
-      (n, Object obj) -> (n, Data.Aeson.KeyMap.toList obj)
+    tmodule = task.tmodule {params}
+    params = Object . Data.Aeson.KeyMap.fromList $ case task.tmodule.params of
+      v@(String _) -> [("_raw_params", v)]
+      (Object obj) -> Data.Aeson.KeyMap.toList obj
       v -> error $ "Unexpected attributes: " <> show v
 
 resolveHostPlay :: FilePath -> HostPlay -> IO HostPlay
@@ -78,9 +76,9 @@ resolveHostPlay source hostPlay = do
   pure $ hostPlay {tasks}
   where
     resolveImport :: [FilePath] -> Task -> IO [Task]
-    resolveImport history task = case fst task.taskModule of
+    resolveImport history task = case task.tmodule.name of
       "include_role" -> do
-        let role_name = unpack $ fromMaybe "missing name" $ preview (key "name" . _String) $ snd task.taskModule
+        let role_name = unpack $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.tmodule.params
             role_path = takeDirectory source </> "roles" </> role_name </> "tasks" </> "main.yaml"
             role_default = takeDirectory source </> "roles" </> role_name </> "defaults" </> "main.yaml"
             new_history = checkHistory role_path history
@@ -89,7 +87,7 @@ resolveHostPlay source hostPlay = do
         newTasks <- decodeFile @[Task] role_path
         map (addVars (task.vars <> roleDefaults)) . concat <$> traverse (resolveImport new_history) newTasks
       "include_tasks" -> do
-        let task_name = unpack $ fromMaybe "missing name" $ preview _String $ snd task.taskModule
+        let task_name = unpack $ fromMaybe "missing name" $ preview _String $ task.tmodule.params
             task_path = takeDirectory source </> task_name
             new_history = checkHistory task_path history
         when (task.loop /= Null) $ error "Loop include is not supported"
@@ -168,7 +166,7 @@ renderCode globalEnv (idx, task) = (bindVar, Text.unwords (registerBind : taskCa
 
     directCall =
       [ "runTask playAttr",
-        mkAttributes $ mkTaskObject $ [task.taskModule] <> task.taskAttrs,
+        mkAttributes $ mkTaskObject $ [(task.tmodule.name, task.tmodule.params)] <> task.taskAttrs,
         envArg
       ]
 
