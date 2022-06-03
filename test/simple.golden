@@ -36,6 +36,12 @@
                 }
             ]
         , hostVars = []
+        , playAttrs =
+            [
+                ( "hosts"
+                , String "localhost"
+                )
+            ]
         }
     , HostPlay
         { hosts = "zuul_executor"
@@ -78,6 +84,12 @@
                 }
             ]
         , hostVars = []
+        , playAttrs =
+            [
+                ( "hosts"
+                , String "zuul_executor"
+                )
+            ]
         }
     , HostPlay
         { hosts = "zuul_scheduler"
@@ -120,6 +132,12 @@
                 }
             ]
         , hostVars = []
+        , playAttrs =
+            [
+                ( "hosts"
+                , String "zuul_scheduler"
+                )
+            ]
         }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
@@ -143,20 +161,23 @@
 
   play_localhost :: AnsibleHaxl [Value]
   play_localhost = do
-    tmpstat <- runTask "localhost" (Nothing) "stat" [json| {"path":"/tmp"} |] []
-    _var1 <- runTask "localhost" (Nothing) "command" [json| {"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"} |] [("tmpstat", tmpstat)]
+    let playAttr = [("hosts", [json| "localhost" |])]
+    tmpstat <- runTask playAttr (Nothing) "stat" [json| {"path":"/tmp"} |] []
+    _var1 <- runTask playAttr (Nothing) "command" [json| {"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"} |] [("tmpstat", tmpstat)]
     pure [tmpstat, _var1]
 
   play_zuul_executor :: AnsibleHaxl [Value]
   play_zuul_executor = do
-    _etc_zuul <- runTask "zuul_executor" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
-    _var1 <- runTask "zuul_executor" (Nothing) "command" [json| {"_raw_params":"echo Starting executor -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
+    let playAttr = [("hosts", [json| "zuul_executor" |])]
+    _etc_zuul <- runTask playAttr (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
+    _var1 <- runTask playAttr (Nothing) "command" [json| {"_raw_params":"echo Starting executor -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
     pure [_etc_zuul, _var1]
 
   play_zuul_scheduler :: AnsibleHaxl [Value]
   play_zuul_scheduler = do
-    _etc_zuul <- runTask "zuul_scheduler" (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
-    _var1 <- runTask "zuul_scheduler" (Nothing) "command" [json| {"_raw_params":"echo Starting scheduler -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
+    let playAttr = [("hosts", [json| "zuul_scheduler" |])]
+    _etc_zuul <- runTask playAttr (Nothing) "file" [json| {"path":"/etc/zuul","state":"directory"} |] []
+    _var1 <- runTask playAttr (Nothing) "command" [json| {"_raw_params":"echo Starting scheduler -c /etc/zuul/zuul.conf"} |] [("_etc_zuul", _etc_zuul)]
     pure [_etc_zuul, _var1]
 
   "

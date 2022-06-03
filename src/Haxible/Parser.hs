@@ -132,19 +132,26 @@ renderScript (Playbook plays) =
       [ "play_" <> play.hosts <> " :: AnsibleHaxl [Value]",
         "play_" <> play.hosts <> " = do"
       ]
+        <> ["  let playAttr = " <> textList (mkJsonArg <$> play.playAttrs)]
         <> (mappend "  " <$> map snd tasks)
         <> ["  pure " <> textList (map fst tasks), ""]
       where
-        tasks = renderCode play.hostVars play.hosts <$> (zip [0 ..] play.tasks)
+        tasks = renderCode play.hostVars <$> (zip [0 ..] play.tasks)
 
 quote :: Text -> Text
 quote = Text.cons '"' . flip Text.snoc '"'
 
+mkAttributes :: Value -> Text
+mkAttributes v = "[json| " <> decodeUtf8 (Data.ByteString.toStrict $ Data.Aeson.encode v) <> " |]"
+
+mkJsonArg :: (Text, Value) -> Text
+mkJsonArg (n, v) = "(" <> quote n <> ", " <> mkAttributes v <> ")"
+
 textList :: [Text] -> Text
 textList xs = "[" <> Text.intercalate ", " xs <> "]"
 
-renderCode :: [(Text, Value)] -> Text -> (Int, Task) -> (Text, Text)
-renderCode globalEnv host (idx, task) = (bindVar, Text.unwords (registerBind : taskCall))
+renderCode :: [(Text, Value)] -> (Int, Task) -> (Text, Text)
+renderCode globalEnv (idx, task) = (bindVar, Text.unwords (registerBind : taskCall))
   where
     bindVar = case task.register of
       Just v -> v
@@ -153,29 +160,25 @@ renderCode globalEnv host (idx, task) = (bindVar, Text.unwords (registerBind : t
 
     taskCall = case task.loop of
       Null -> directCall
-      Array xs -> mkTraverse $ textList (attributes <$> toList xs)
+      Array xs -> mkTraverse $ textList (mkAttributes <$> toList xs)
       String v -> mkTraverse $ "envLoop " <> v <> " " <> envArg
       _ -> error $ "Invalid task.loop: " <> show task.loop
 
     mkTraverse arg = ["traverse", "(\\item -> "] <> directCall <> [") ", arg]
 
     directCall =
-      [ "runTask",
-        quote host,
+      [ "runTask playAttr",
         "(" <> Text.pack (show task.name) <> ")",
         quote task.action,
-        attributes task.attributes,
+        mkAttributes task.attributes,
         envArg
       ]
 
     envArg = "[" <> Text.intercalate ", " env <> "]"
     env = (mkJsonArg <$> (task.vars <> globalEnv)) <> (mkArg <$> (loopVar <> task.requires))
 
-    attributes v = "[json| " <> decodeUtf8 (Data.ByteString.toStrict $ Data.Aeson.encode v) <> " |]"
-
     loopVar = case task.loop of
       Null -> []
       _ -> ["item"]
 
     mkArg v = "(" <> quote v <> ", " <> v <> ")"
-    mkJsonArg (n, v) = "(" <> quote n <> ", " <> attributes v <> ")"

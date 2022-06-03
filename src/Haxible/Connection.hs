@@ -22,7 +22,7 @@ import System.IO (Handle, hClose)
 import System.Process.Typed
 
 data TaskCall = TaskCall
-  { host :: Text,
+  { playAttrs :: [(Text, Value)],
     name :: Maybe Text,
     -- task is a module or action name
     task :: Text,
@@ -34,6 +34,9 @@ data TaskCall = TaskCall
 -- | Python calls takes a list of action and attribute, and it produces a list of result.
 newtype Connections = Connections {run :: [TaskCall] -> IO [(Int, Value)]}
 
+mkObj :: [(Text, Value)] -> Value
+mkObj = Object . Data.Aeson.KeyMap.fromList . map (first Data.Aeson.Key.fromText)
+
 -- | Creates the Python interpreters.
 withConnections :: Int -> (Connections -> IO ()) -> IO ()
 withConnections count callback =
@@ -44,9 +47,9 @@ withConnections count callback =
 
       let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
-            let envObj = Object $ Data.Aeson.KeyMap.fromList $ map (first Data.Aeson.Key.fromText) taskCall.env
+            let envObj = mkObj taskCall.env
                 nameValue = maybe Null String taskCall.name
-                callParams = [String taskCall.host, nameValue, String taskCall.task, taskCall.attrs, envObj]
+                callParams = [mkObj taskCall.playAttrs, nameValue, String taskCall.task, taskCall.attrs, envObj]
             say $ " ▶ Calling " <> Text.pack (show taskCall)
             hPutStrLn (getStdin p) (toStrict $ encode callParams)
             hFlush (getStdin p)

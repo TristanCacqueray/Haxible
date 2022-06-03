@@ -9,69 +9,78 @@ from ansible.plugins.callback import CallbackBase
 def loggy(msg):
     print(f" {os.getpid()} [python] {msg}", file=sys.stderr)
 
-# A callback to record task results
-class CallbackModule(CallbackBase):
-    CALLBACK_VERSION = 2.0
-    CALLBACK_TYPE = 'notification'
-    CALLBACK_NAME = 'log_plays'
-    CALLBACK_NEEDS_WHITELIST = True
+# PlaybookRunner is an ansible wrapper.
+# The run function takes a playbook dictionary and it returns the task result.
+class PlaybookRunner:
+    def __init__(self, inventory):
+        # A fake cli to setup ansible global context
+        class Haxible(CLI):
+            def init_parser(self):
+                super().init_parser()
+                self.parser.add_argument("--inventory")
 
-    def __init__(self):
-        super(CallbackModule, self).__init__()
-        self.results = []
+            def post_process_args(self, opts):
+                opts.vault_ids = []
+                opts.vault_password_files = []
+                opts.ask_vault_pass = None
+                return super().post_process_args(opts)
 
-    def runner_on_ok(self, _host, result):
-        self.results.append(result)
+            def run():
+                ...
+        self.cli = Haxible(["haxible", "--inventory", inventory])
+        self.cli.parse()
+        self.loader, self.inventory, self.variable_manager = self.cli._play_prereqs()
 
-    def runner_on_failed(self, _host, result, ignore_errors=False):
-        self.results.append(result)
+    def run(self, playbook):
+        # A callback to record task results
+        class CallbackModule(CallbackBase):
+            CALLBACK_VERSION = 2.0
+            CALLBACK_TYPE = 'notification'
+            CALLBACK_NAME = 'log_plays'
+            CALLBACK_NEEDS_WHITELIST = True
 
-    def runner_on_skipped(self, _host, result):
-        self.results.append(result)
+            def __init__(self):
+                super(CallbackModule, self).__init__()
+                self.results = []
 
-# A fake cli to setup ansible global context
-class Haxible(CLI):
-    def init_parser(self):
-        super().init_parser()
-        self.parser.add_argument("--inventory")
+            def runner_on_ok(self, _host, result):
+                self.results.append(result)
 
-    def post_process_args(self, opts):
-        opts.vault_ids = []
-        opts.vault_password_files = []
-        opts.ask_vault_pass = None
-        return super().post_process_args(opts)
+            def runner_on_failed(self, _host, result, ignore_errors=False):
+                self.results.append(result)
 
-    def run():
-        ...
-# TODO: pass inventory path
-inventory = "test/inventory"
-cli = Haxible(["haxible", "--inventory", inventory])
-cli.parse()
-loader, inventory, variable_manager = cli._play_prereqs()
+            def runner_on_skipped(self, _host, result):
+                self.results.append(result)
 
-def run_task(inputs):
-    [host, name, task, attr, env] = inputs
-    loggy(f"{host}: Running task {name} ({task} with {attr}) env: {env}")
-    try:
         cb = CallbackModule()
         tqm = TaskQueueManager(
-            inventory=inventory, variable_manager=variable_manager,
-            loader=loader, passwords=None, forks=5, stdout_callback=cb)
-        play = Play().load(dict(
-            name="Haxible Play", hosts=host, gather_facts='no', tasks=[{task: attr}], vars=env))
-        run_res = tqm.run(play)
+            inventory=self.inventory, variable_manager=self.variable_manager,
+            loader=self.loader, passwords=None, forks=5, stdout_callback=cb)
+        play = Play().load(playbook)
+        run_result = tqm.run(play)
         if len(cb.results) != 1:
             loggy(f"The impossible has happen!: {cb.results}")
             exit(1)
-        res = cb.results[0]
+        task_result = cb.results[0]
         tqm.cleanup()
-    except Exception:
-        raise
-    loggy(f"-> {run_res} {json.dumps(res)}")
-    return [run_res, res]
+        return [run_result, task_result]
 
-# run_task(["zuul_scheduler", "test", "stat", dict(path="/etc/zuul"), {}])
-# run_task(["localhost", "test", "file", dict(path="/etc/zuul", state="directory"), {}])
+# TODO: pass inventory path
+runner = PlaybookRunner("test/inventory")
+
+def run_task(inputs):
+    [play, name, task, attr, env] = inputs
+    if env:
+        play.setdefault("vars", {})
+        play["vars"].update(env)
+    play["tasks"] = [{task: attr}]
+    loggy(f"{play}: Running task {name} ({task} with {attr})")
+    play["gather_facts"] = "no"
+    res = runner.run(play)
+    loggy(f"-> {res}")
+    return res
+
+run_task([dict(hosts="zuul_scheduler"), "test", "stat", dict(path="/etc/zuul"), {}])
 
 loggy("Runner ready")
 while True:

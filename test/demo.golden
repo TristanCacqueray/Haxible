@@ -148,6 +148,12 @@
                 }
             ]
         , hostVars = []
+        , playAttrs =
+            [
+                ( "hosts"
+                , String "localhost"
+                )
+            ]
         }
     ]
 , "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
@@ -169,13 +175,14 @@
 
   play_localhost :: AnsibleHaxl [Value]
   play_localhost = do
-    network <- runTask "localhost" (Just "Create network") "create_network" [json| {"name":"private"} |] []
-    _var1 <- traverse (\item ->  runTask "localhost" (Just "Create instances") "create_instance" [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |] [("item", item), ("network", network)] )  [[json| "backend" |], [json| "frontend" |], [json| "monitoring" |]]
-    storage <- runTask "localhost" (Just "Create storage") "create_storage" [json| {"name":"db"} |] []
-    _var3 <- runTask "localhost" (Just "Create database") "create_instance" [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |] [("network", network), ("storage", storage)]
-    _var4 <- runTask "localhost" (Just "Create object") "create_object" [json| {"name":"standalone-object"} |] []
-    _var5 <- runTask "localhost" (Just "Create network object") "create_object" [json| {"name":"network-{{ network.uid }}"} |] [("network", network)]
-    _var6 <- runTask "localhost" (Nothing) "debug" [json| {"msg":"Creating container service {{ image_name }}:{{ image_tag }}"} |] [("image_name", [json| "ubi8" |]), ("image_name", [json| "test" |]), ("image_tag", [json| "latest" |])]
+    let playAttr = [("hosts", [json| "localhost" |])]
+    network <- runTask playAttr (Just "Create network") "create_network" [json| {"name":"private"} |] []
+    _var1 <- traverse (\item ->  runTask playAttr (Just "Create instances") "create_instance" [json| {"name":"{{ item }}","network":"{{ network.uid }}"} |] [("item", item), ("network", network)] )  [[json| "backend" |], [json| "frontend" |], [json| "monitoring" |]]
+    storage <- runTask playAttr (Just "Create storage") "create_storage" [json| {"name":"db"} |] []
+    _var3 <- runTask playAttr (Just "Create database") "create_instance" [json| {"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"} |] [("network", network), ("storage", storage)]
+    _var4 <- runTask playAttr (Just "Create object") "create_object" [json| {"name":"standalone-object"} |] []
+    _var5 <- runTask playAttr (Just "Create network object") "create_object" [json| {"name":"network-{{ network.uid }}"} |] [("network", network)]
+    _var6 <- runTask playAttr (Nothing) "debug" [json| {"msg":"Creating container service {{ image_name }}:{{ image_tag }}"} |] [("image_name", [json| "ubi8" |]), ("image_name", [json| "test" |]), ("image_tag", [json| "latest" |])]
     pure [network, _var1, storage, _var3, _var4, _var5, _var6]
 
   "

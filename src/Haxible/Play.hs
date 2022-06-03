@@ -22,9 +22,13 @@ instance FromJSON Variables where
 data HostPlay = HostPlay
   { hosts :: Text,
     tasks :: [Task],
-    hostVars :: [(Text, Value)]
+    hostVars :: [(Text, Value)],
+    playAttrs :: [(Text, Value)]
   }
   deriving (Eq, Show)
+
+items :: Data.Aeson.KeyMap.KeyMap Value -> [(Text, Value)]
+items = map (first Data.Aeson.Key.toText) . Data.Aeson.KeyMap.toList
 
 instance FromJSON HostPlay where
   parseJSON = withObject "HostPlay" $ \v ->
@@ -32,6 +36,9 @@ instance FromJSON HostPlay where
       <$> v .: "hosts"
       <*> v .: "tasks"
       <*> (maybe [] getVars <$> (v .:? "vars"))
+      <*> pure (filter (\(n, _) -> unknownPlayAttributes n) (items v))
+    where
+      unknownPlayAttributes n = n /= "tasks"
 
 data Task = Task
   { name :: Maybe Text,

@@ -42,8 +42,8 @@ envLoop n env = runGinger context template
       Right tmpl -> tmpl
       Left e -> error $ "Template fail: " <> show e
 
-runTask :: Text -> Maybe Text -> Text -> Value -> [(Text, Value)] -> AnsibleHaxl Value
-runTask host name task attrs env = dataFetch (RunTask (TaskCall {host, name, task, attrs, env}))
+runTask :: [(Text, Value)] -> Maybe Text -> Text -> Value -> [(Text, Value)] -> AnsibleHaxl Value
+runTask playAttrs name task attrs env = dataFetch (RunTask (TaskCall {playAttrs, name, task, attrs, env}))
 
 runHaxible :: AnsibleHaxl [Value] -> IO ()
 runHaxible action = withConnections 5 $ \connections -> do
