@@ -1,0 +1,2 @@
+image_tag: latest
+runtime_arg: "--log-level debug"

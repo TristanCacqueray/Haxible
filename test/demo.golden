@@ -170,17 +170,37 @@
             , Task
                 { name = Nothing
                 , tmodule = Module
-                    { name = "debug"
+                    { name = "include_vars"
                     , params = Object
                         ( fromList
                             [
-                                ( "msg"
-                                , String "Creating container service {{ image_name }}:{{ image_tag }}"
+                                ( "runtime"
+                                , String "podman {{ runtime_arg }}"
                                 )
                             ]
                         )
                     }
                 , requires = []
+                , register = Nothing
+                , loop = Null
+                , vars = []
+                , taskAttrs = []
+                }
+            , Task
+                { name = Nothing
+                , tmodule = Module
+                    { name = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "{{ runtime }} Creating container service {{ image_name }}:{{ image_tag }}"
+                                )
+                            ]
+                        )
+                    }
+                , requires =
+                    [ Register "runtime" ]
                 , register = Nothing
                 , loop = Null
                 , vars =
@@ -195,6 +215,10 @@
                     ,
                         ( "image_tag"
                         , String "latest"
+                        )
+                    ,
+                        ( "runtime_arg"
+                        , String "--log-level debug"
                         )
                     ]
                 , taskAttrs =
@@ -248,8 +272,9 @@
     _var3 <- runTask playAttr [json| {"create_instance":{"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"},"name":"Create database"} |] [("network", network), ("storage", storage)]
     _var4 <- runTask playAttr [json| {"create_object":{"name":"standalone-object"},"name":"Create object"} |] []
     _var5 <- runTask playAttr [json| {"create_object":{"name":"network-{{ network.uid }}"},"name":"Create network object"} |] [("network", network)]
-    _var6 <- runTask playAttr [json| {"debug":{"msg":"Creating container service {{ image_name }}:{{ image_tag }}"},"vars":{"image_name":"ubi8"}} |] [("image_name", [json| "ubi8" |]), ("image_name", [json| "test" |]), ("image_tag", [json| "latest" |])]
-    pure [network, _var1, storage, _var3, _var4, _var5, _var6]
+    let (runtime) = ([json| "podman {{ runtime_arg }}" |])
+    _var7 <- runTask playAttr [json| {"debug":{"msg":"{{ runtime }} Creating container service {{ image_name }}:{{ image_tag }}"},"vars":{"image_name":"ubi8"}} |] [("image_name", [json| "ubi8" |]), ("image_name", [json| "test" |]), ("image_tag", [json| "latest" |]), ("runtime_arg", [json| "--log-level debug" |]), ("runtime", runtime)]
+    pure [network, _var1, storage, _var3, _var4, _var5, _var7]
 
   "
 )

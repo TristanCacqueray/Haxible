@@ -1,4 +1,6 @@
+- include_vars: "redhat.yaml"
+
 - debug:
-    msg: "Creating container service {{ image_name }}:{{ image_tag }}"
+    msg: "{{ runtime }} Creating container service {{ image_name }}:{{ image_tag }}"
   vars:
     image_name: "ubi8"

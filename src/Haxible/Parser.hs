@@ -31,7 +31,7 @@ annotateDependency :: [Task] -> [Task]
 annotateDependency = reverse . fst . foldl' go ([], [])
   where
     go :: ([Task], [Dependency]) -> Task -> ([Task], [Dependency])
-    go (xs, available) task = (task {requires, register} : xs, newAvailable)
+    go (xs, available) task = (task {requires, register, vars} : xs, newAvailable)
       where
         -- look in all string value to see if an available is used.
         findRequirements :: Value -> [Dependency]
@@ -44,11 +44,11 @@ annotateDependency = reverse . fst . foldl' go ([], [])
           _ -> []
 
         requires = concatMap findRequirements (task.loop : task.tmodule.params : map snd task.vars)
-        register =
+        taskRegister =
           -- If there is no register but a file destination, then add a fake register
           task.register <|> dependencyVar <$> dest
 
-        newAvailable = reg <> maybeToList dest <> available
+        newAvailable = reg <> maybeToList dest <> varModule <> available
         reg = maybeToList $ Register <$> task.register
 
         getAttr n = preview (key n . _String) (task.tmodule.params)
@@ -60,6 +60,14 @@ annotateDependency = reverse . fst . foldl' go ([], [])
             Nothing -> Path (Text.replace "/" "_" $ Text.replace "." "_" n) (Text.unpack n)
           Nothing -> Nothing
 
+        -- include_vars and set_facts provide ad-hoc variables
+        (varModule, vars, register)
+          | isVarsTask task = (Register <$> map fst (objToVar task.tmodule.params), [], Nothing)
+          | otherwise = ([], task.vars, taskRegister)
+
+isVarsTask :: Task -> Bool
+isVarsTask task = task.tmodule.name `elem` ["include_vars", "set_facts"]
+
 fixupArgs :: Task -> Task
 fixupArgs task = task {tmodule}
   where
@@ -70,13 +78,13 @@ fixupArgs task = task {tmodule}
       v -> error $ "Unexpected attributes: " <> show v
 
 resolveHostPlay :: FilePath -> HostPlay -> IO HostPlay
-resolveHostPlay source hostPlay = do
+resolveHostPlay playSource hostPlay = do
   tasks <-
-    annotateDependency . map fixupArgs . concat <$> traverse (resolveImport []) hostPlay.tasks
+    annotateDependency . map fixupArgs . concat <$> traverse (resolveImport playSource []) hostPlay.tasks
   pure $ hostPlay {tasks}
   where
-    resolveImport :: [FilePath] -> Task -> IO [Task]
-    resolveImport history task = case task.tmodule.name of
+    resolveImport :: FilePath -> [FilePath] -> Task -> IO [Task]
+    resolveImport source history task = case task.tmodule.name of
       "include_role" -> do
         let role_name = unpack $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.tmodule.params
             role_path = takeDirectory source </> "roles" </> role_name </> "tasks" </> "main.yaml"
@@ -85,14 +93,26 @@ resolveHostPlay source hostPlay = do
         when (task.loop /= Null) $ error "Loop import is not supported"
         roleDefaults <- objToVar <$> decodeFile role_default
         newTasks <- decodeFile @[Task] role_path
-        map (addVars (task.vars <> roleDefaults)) . concat <$> traverse (resolveImport new_history) newTasks
+        map (addVars (task.vars <> roleDefaults)) . concat <$> traverse (resolveImport role_path new_history) newTasks
       "include_tasks" -> do
         let task_name = unpack $ fromMaybe "missing name" $ preview _String $ task.tmodule.params
             task_path = takeDirectory source </> task_name
             new_history = checkHistory task_path history
         when (task.loop /= Null) $ error "Loop include is not supported"
         newTasks <- decodeFile @[Task] task_path
-        map (addVars task.vars) . concat <$> traverse (resolveImport new_history) newTasks
+        map (addVars task.vars) . concat <$> traverse (resolveImport task_path new_history) newTasks
+      "include_vars" -> do
+        let params = (fixupArgs task).tmodule.params
+            file_nameM = preview (key "file" . _String) params <|> preview (key "_raw_params" . _String) params
+            file_name = unpack $ fromMaybe "missing file" file_nameM
+            file_path = takeDirectory source </> ".." </> "vars" </> file_name
+        when (task.loop /= Null) $ error "Loop include_vars is not supported"
+        includedVars <- decodeFile file_path
+        -- include_vars is evaluated statically, here we replace the action params with the actual vars.
+        let tmodule = Module task.tmodule.name $ case preview (key "name" . _String) params of
+              Just n -> Object $ Data.Aeson.KeyMap.fromList [(Data.Aeson.Key.fromText n, includedVars)]
+              Nothing -> includedVars
+        pure [task {tmodule}]
       _ -> pure [task]
     checkHistory :: FilePath -> [FilePath] -> [FilePath]
     checkHistory fp history
@@ -130,7 +150,7 @@ renderScript inventory (Playbook plays) =
       ]
         <> ["  let playAttr = " <> textList (mkJsonArg <$> play.playAttrs)]
         <> (mappend "  " <$> map snd tasks)
-        <> ["  pure " <> textList (map fst tasks), ""]
+        <> ["  pure " <> textList (mapMaybe fst tasks), ""]
       where
         tasks = renderCode play.hostVars <$> (zip [0 ..] play.tasks)
 
@@ -146,9 +166,16 @@ mkJsonArg (n, v) = "(" <> quote n <> ", " <> mkAttributes v <> ")"
 textList :: [Text] -> Text
 textList xs = "[" <> Text.intercalate ", " xs <> "]"
 
-renderCode :: [(Text, Value)] -> (Int, Task) -> (Text, Text)
-renderCode globalEnv (idx, task) = (bindVar, Text.unwords (registerBind : taskCall))
+textTuple :: [Text] -> Text
+textTuple xs = "(" <> Text.intercalate ", " xs <> ")"
+
+renderCode :: [(Text, Value)] -> (Int, Task) -> (Maybe Text, Text)
+renderCode globalEnv (idx, task)
+  | isVarsTask task = (Nothing, letTask)
+  | otherwise = (Just bindVar, Text.unwords (registerBind : taskCall))
   where
+    (varNames, varValues) = unzip $ objToVar task.tmodule.params
+    letTask = "let " <> textTuple varNames <> " = " <> textTuple (mkAttributes <$> varValues)
     bindVar = case task.register of
       Just v -> v
       Nothing -> "_var" <> Text.pack (show idx)
