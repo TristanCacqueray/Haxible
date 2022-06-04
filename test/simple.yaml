@@ -1,22 +1,28 @@
 - hosts: localhost
   tasks:
     - stat:
-        path: /tmp
-      register: tmpstat
+        path: /etc
+      register: etc
 
-    - command: "echo tmp exist: {{ tmpstat.stat.exists }}"
+    - command: "echo etc exist: {{ etc.stat.exists }}"
 
 - hosts: zuul_executor
   tasks:
     - file:
-        path: /etc/zuul
+        path: /tmp/zuul
         state: directory
       register: zuuldir
-    - command: "echo Starting executor -c /etc/zuul/zuul.conf"
+    - command: "echo Starting executor -d /tmp/zuul"
 
-- hosts: zuul_scheduler
+- hosts: nodepool_launcher
   tasks:
     - file:
-        path: /etc/zuul
+        path: /tmp/nodepool
         state: directory
-    - command: "echo Starting scheduler -c /etc/zuul/zuul.conf"
+    - command: "echo Starting scheduler -d /tmp/nodepool"
+    - debug:
+
+- hosts: localhost
+  tasks:
+    - debug:
+        msg: "etc stats is {{ etc }}"

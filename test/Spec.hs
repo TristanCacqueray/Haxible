@@ -1,7 +1,10 @@
 module Main (main) where
 
 import Data.Text.Lazy.Encoding qualified as LText
-import Haxible.Parser qualified
+import Haxible.Codegen qualified
+import Haxible.Import
+import Haxible.Normalize
+import Haxible.Syntax
 import Test.Tasty
 import Test.Tasty.Golden (goldenVsString)
 import Text.Pretty.Simple
@@ -16,8 +19,11 @@ goldenTest name action = goldenVsString name ("test/" <> name <> ".golden") do
 
 tests :: [TestTree]
 tests =
-  [goldenParse "demo", goldenParse "simple"]
+  map goldenParse ["demo", "simple", "adder", "loop"]
   where
     goldenParse name = goldenTest name do
-      pb <- Haxible.Parser.decodePlaybook ("test/" <> name <> ".yaml")
-      pure (pb, Haxible.Parser.renderScript "inventory.yaml" pb)
+      let playPath = "test/" <> name <> ".yaml"
+      basePlays <- Haxible.Syntax.decodeFile playPath
+      plays <- traverse (Haxible.Import.resolveImport playPath) basePlays
+      let exprs = Haxible.Normalize.normalizePlaybook plays
+      pure (exprs, Haxible.Codegen.renderScript "inventory.yaml" exprs)

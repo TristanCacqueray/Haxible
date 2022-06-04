@@ -3,9 +3,8 @@ module Main (main) where
 
 import Control.Monad (unless)
 import Data.Text.IO qualified (writeFile)
-import Haxible.Parser (decodePlaybook, renderScript)
+import Haxible (compile, execute)
 import Options.Generic
-import System.Process.Typed (proc, runProcess_)
 
 data CLI w = CLI
   { playbook :: w ::: FilePath <?> "YAML file to interpret",
@@ -16,19 +15,11 @@ data CLI w = CLI
 
 main :: IO ()
 main = do
-  -- uasge
   cli <- parseArgs
-
-  -- parse
-  pb <- decodePlaybook cli.playbook
-
-  -- render
+  code <- compile cli.inventory cli.playbook
   let script = cli.playbook <> ".hs"
-  Data.Text.IO.writeFile script (renderScript cli.inventory pb)
-
-  -- execute
-  unless cli.dry do
-    runProcess_ (proc "cabal" ["run", script])
+  Data.Text.IO.writeFile script code
+  unless cli.dry $ execute script
 
 instance ParseRecord (CLI Wrapped)
 

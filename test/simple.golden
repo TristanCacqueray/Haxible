@@ -1,163 +1,458 @@
-( Playbook
-    [ HostPlay
-        { hosts = "localhost"
-        , tasks =
-            [ Task
-                { name = Nothing
-                , tmodule = Module
-                    { name = "stat"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "path"
-                                , String "/tmp"
-                                )
-                            ]
-                        )
-                    }
+(
+    [ Definition
+        { name = "playbook"
+        , requires = []
+        , provides = []
+        , outputs = []
+        , exprs =
+            [ Expr
+                { binder = Binder "resultsLocalhost0"
                 , requires = []
-                , register = Just "tmpstat"
-                , loop = Null
-                , vars = []
-                , taskAttrs = []
-                }
-            , Task
-                { name = Nothing
-                , tmodule = Module
-                    { name = "command"
-                    , params = Object
-                        ( fromList
+                , provides =
+                    [ Resource
+                        { name = Binder "stat0"
+                        , dep = Register "etc"
+                        }
+                    , Resource
+                        { name = Binder "stat0"
+                        , dep = Path "/etc"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = DefinitionCall
+                    ( CallDefinition
+                        { name = "playLocalhost0"
+                        , playAttrs =
                             [
-                                ( "_raw_params"
-                                , String "echo tmp exist: {{ tmpstat.stat.exists }}"
+                                ( "hosts"
+                                , String "localhost"
                                 )
                             ]
-                        )
-                    }
-                , requires =
-                    [ Register "tmpstat" ]
-                , register = Nothing
-                , loop = Null
-                , vars = []
-                , taskAttrs = []
+                        , baseEnv = []
+                        }
+                    )
                 }
-            ]
-        , hostVars = []
-        , playAttrs =
-            [
-                ( "hosts"
-                , String "localhost"
-                )
+            , Expr
+                { binder = Binder "resultsZuulExecutor0"
+                , requires = []
+                , provides =
+                    [ Resource
+                        { name = Binder "file0"
+                        , dep = Register "zuuldir"
+                        }
+                    , Resource
+                        { name = Binder "file0"
+                        , dep = Path "/tmp/zuul"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = DefinitionCall
+                    ( CallDefinition
+                        { name = "playZuulExecutor0"
+                        , playAttrs =
+                            [
+                                ( "hosts"
+                                , String "zuul_executor"
+                                )
+                            ]
+                        , baseEnv = []
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "resultsNodepoolLauncher0"
+                , requires = []
+                , provides =
+                    [ Resource
+                        { name = Binder "file1"
+                        , dep = Path "/tmp/nodepool"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = DefinitionCall
+                    ( CallDefinition
+                        { name = "playNodepoolLauncher0"
+                        , playAttrs =
+                            [
+                                ( "hosts"
+                                , String "nodepool_launcher"
+                                )
+                            ]
+                        , baseEnv = []
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "resultsLocalhost1"
+                , requires =
+                    [ Resource
+                        { name = Binder "stat0"
+                        , dep = Register "etc"
+                        }
+                    ]
+                , provides = []
+                , requirements =
+                    [ Requirement
+                        { name = "etc"
+                        , origin = Nested
+                            ( Binder "resultsLocalhost0" ) 0
+                        }
+                    ]
+                , loop = Nothing
+                , term = DefinitionCall
+                    ( CallDefinition
+                        { name = "playLocalhost1"
+                        , playAttrs =
+                            [
+                                ( "hosts"
+                                , String "localhost"
+                                )
+                            ]
+                        , baseEnv = []
+                        }
+                    )
+                }
             ]
         }
-    , HostPlay
-        { hosts = "zuul_executor"
-        , tasks =
-            [ Task
-                { name = Nothing
-                , tmodule = Module
-                    { name = "file"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "path"
-                                , String "/etc/zuul"
-                                )
-                            ,
-                                ( "state"
-                                , String "directory"
-                                )
-                            ]
-                        )
-                    }
-                , requires = []
-                , register = Just "zuuldir"
-                , loop = Null
-                , vars = []
-                , taskAttrs = []
+    , Definition
+        { name = "playLocalhost0"
+        , requires = []
+        , provides =
+            [ Resource
+                { name = Binder "stat0"
+                , dep = Register "etc"
                 }
-            , Task
-                { name = Nothing
-                , tmodule = Module
-                    { name = "command"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "_raw_params"
-                                , String "echo Starting executor -c /etc/zuul/zuul.conf"
-                                )
-                            ]
-                        )
-                    }
-                , requires =
-                    [ Path "zuuldir" "/etc/zuul" ]
-                , register = Nothing
-                , loop = Null
-                , vars = []
-                , taskAttrs = []
+            , Resource
+                { name = Binder "stat0"
+                , dep = Path "/etc"
                 }
             ]
-        , hostVars = []
-        , playAttrs =
+        , outputs =
             [
-                ( "hosts"
-                , String "zuul_executor"
+                ( Binder "stat0"
+                ,
+                    [ Resource
+                        { name = Binder "stat0"
+                        , dep = Register "etc"
+                        }
+                    , Resource
+                        { name = Binder "stat0"
+                        , dep = Path "/etc"
+                        }
+                    ]
                 )
+            ,
+                ( Binder "command0"
+                , []
+                )
+            ]
+        , exprs =
+            [ Expr
+                { binder = Binder "stat0"
+                , requires = []
+                , provides =
+                    [ Resource
+                        { name = Binder "stat0"
+                        , dep = Register "etc"
+                        }
+                    , Resource
+                        { name = Binder "stat0"
+                        , dep = Path "/etc"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "stat"
+                        , params = Object
+                            ( fromList
+                                [
+                                    ( "path"
+                                    , String "/etc"
+                                    )
+                                ]
+                            )
+                        , taskAttrs = []
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "command0"
+                , requires =
+                    [ Resource
+                        { name = Binder "stat0"
+                        , dep = Register "etc"
+                        }
+                    ]
+                , provides = []
+                , requirements =
+                    [ Requirement
+                        { name = "etc"
+                        , origin = Direct
+                            ( Binder "stat0" )
+                        }
+                    , Requirement
+                        { name = "_etc"
+                        , origin = Direct
+                            ( Binder "stat0" )
+                        }
+                    ]
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "command"
+                        , params = String "echo etc exist: {{ etc.stat.exists }}"
+                        , taskAttrs = []
+                        }
+                    )
+                }
             ]
         }
-    , HostPlay
-        { hosts = "zuul_scheduler"
-        , tasks =
-            [ Task
-                { name = Nothing
-                , tmodule = Module
-                    { name = "file"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "path"
-                                , String "/etc/zuul"
-                                )
-                            ,
-                                ( "state"
-                                , String "directory"
-                                )
-                            ]
-                        )
-                    }
-                , requires = []
-                , register = Just "_etc_zuul"
-                , loop = Null
-                , vars = []
-                , taskAttrs = []
+    , Definition
+        { name = "playZuulExecutor0"
+        , requires = []
+        , provides =
+            [ Resource
+                { name = Binder "file0"
+                , dep = Register "zuuldir"
                 }
-            , Task
-                { name = Nothing
-                , tmodule = Module
-                    { name = "command"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "_raw_params"
-                                , String "echo Starting scheduler -c /etc/zuul/zuul.conf"
-                                )
-                            ]
-                        )
-                    }
-                , requires =
-                    [ Path "_etc_zuul" "/etc/zuul" ]
-                , register = Nothing
-                , loop = Null
-                , vars = []
-                , taskAttrs = []
+            , Resource
+                { name = Binder "file0"
+                , dep = Path "/tmp/zuul"
                 }
             ]
-        , hostVars = []
-        , playAttrs =
+        , outputs =
             [
-                ( "hosts"
-                , String "zuul_scheduler"
+                ( Binder "file0"
+                ,
+                    [ Resource
+                        { name = Binder "file0"
+                        , dep = Register "zuuldir"
+                        }
+                    , Resource
+                        { name = Binder "file0"
+                        , dep = Path "/tmp/zuul"
+                        }
+                    ]
                 )
+            ,
+                ( Binder "command1"
+                , []
+                )
+            ]
+        , exprs =
+            [ Expr
+                { binder = Binder "file0"
+                , requires = []
+                , provides =
+                    [ Resource
+                        { name = Binder "file0"
+                        , dep = Register "zuuldir"
+                        }
+                    , Resource
+                        { name = Binder "file0"
+                        , dep = Path "/tmp/zuul"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "file"
+                        , params = Object
+                            ( fromList
+                                [
+                                    ( "path"
+                                    , String "/tmp/zuul"
+                                    )
+                                ,
+                                    ( "state"
+                                    , String "directory"
+                                    )
+                                ]
+                            )
+                        , taskAttrs = []
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "command1"
+                , requires =
+                    [ Resource
+                        { name = Binder "file0"
+                        , dep = Path "/tmp/zuul"
+                        }
+                    ]
+                , provides = []
+                , requirements =
+                    [ Requirement
+                        { name = "zuuldir"
+                        , origin = Direct
+                            ( Binder "file0" )
+                        }
+                    , Requirement
+                        { name = "_tmp_zuul"
+                        , origin = Direct
+                            ( Binder "file0" )
+                        }
+                    ]
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "command"
+                        , params = String "echo Starting executor -d /tmp/zuul"
+                        , taskAttrs = []
+                        }
+                    )
+                }
+            ]
+        }
+    , Definition
+        { name = "playNodepoolLauncher0"
+        , requires = []
+        , provides =
+            [ Resource
+                { name = Binder "file1"
+                , dep = Path "/tmp/nodepool"
+                }
+            ]
+        , outputs =
+            [
+                ( Binder "file1"
+                ,
+                    [ Resource
+                        { name = Binder "file1"
+                        , dep = Path "/tmp/nodepool"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "command2"
+                , []
+                )
+            ,
+                ( Binder "debug0"
+                , []
+                )
+            ]
+        , exprs =
+            [ Expr
+                { binder = Binder "file1"
+                , requires = []
+                , provides =
+                    [ Resource
+                        { name = Binder "file1"
+                        , dep = Path "/tmp/nodepool"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "file"
+                        , params = Object
+                            ( fromList
+                                [
+                                    ( "path"
+                                    , String "/tmp/nodepool"
+                                    )
+                                ,
+                                    ( "state"
+                                    , String "directory"
+                                    )
+                                ]
+                            )
+                        , taskAttrs = []
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "command2"
+                , requires =
+                    [ Resource
+                        { name = Binder "file1"
+                        , dep = Path "/tmp/nodepool"
+                        }
+                    ]
+                , provides = []
+                , requirements =
+                    [ Requirement
+                        { name = "_tmp_nodepool"
+                        , origin = Direct
+                            ( Binder "file1" )
+                        }
+                    ]
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "command"
+                        , params = String "echo Starting scheduler -d /tmp/nodepool"
+                        , taskAttrs = []
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "debug0"
+                , requires = []
+                , provides = []
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "debug"
+                        , params = Null
+                        , taskAttrs = []
+                        }
+                    )
+                }
+            ]
+        }
+    , Definition
+        { name = "playLocalhost1"
+        , requires =
+            [ Resource
+                { name = Binder "stat0"
+                , dep = Register "etc"
+                }
+            ]
+        , provides = []
+        , outputs =
+            [
+                ( Binder "debug1"
+                , []
+                )
+            ]
+        , exprs =
+            [ Expr
+                { binder = Binder "debug1"
+                , requires =
+                    [ Resource
+                        { name = Binder "stat0"
+                        , dep = Register "etc"
+                        }
+                    ]
+                , provides = []
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "debug"
+                        , params = Object
+                            ( fromList
+                                [
+                                    ( "msg"
+                                    , String "etc stats is {{ etc }}"
+                                    )
+                                ]
+                            )
+                        , taskAttrs = []
+                        }
+                    )
+                }
             ]
         }
     ]
@@ -172,35 +467,39 @@
   import Haxible.Eval
 
   main :: IO ()
-  main = runHaxible "inventory.yaml" playbook
+  main = runHaxible "inventory.yaml" (playbook [] [])
 
-  playbook :: AnsibleHaxl [Value]
-  playbook = do
-    _play0 <- play_localhost
-    _play1 <- play_zuul_executor
-    _play2 <- play_zuul_scheduler
-    pure $ _play0 <> _play1 <> _play2
+  playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+  playbook playAttrs baseEnv = do
+    resultsLocalhost0 <- playLocalhost0 ([("hosts", [json|"localhost"|])] <> playAttrs) ([] <> [] <> baseEnv)
+    resultsZuulExecutor0 <- playZuulExecutor0 ([("hosts", [json|"zuul_executor"|])] <> playAttrs) ([] <> [] <> baseEnv)
+    resultsNodepoolLauncher0 <- playNodepoolLauncher0 ([("hosts", [json|"nodepool_launcher"|])] <> playAttrs) ([] <> [] <> baseEnv)
+    resultsLocalhost1 <- playLocalhost1 ([("hosts", [json|"localhost"|])] <> playAttrs) ([("etc", resultsLocalhost0 !! 0)] <> [] <> baseEnv)
+    pure $ resultsLocalhost0 <> resultsZuulExecutor0 <> resultsNodepoolLauncher0 <> resultsLocalhost1
 
-  play_localhost :: AnsibleHaxl [Value]
-  play_localhost = do
-    let playAttr = [("hosts", [json| "localhost" |])]
-    tmpstat <- runTask playAttr [json| {"stat":{"path":"/tmp"}} |] []
-    _var1 <- runTask playAttr [json| {"command":{"_raw_params":"echo tmp exist: {{ tmpstat.stat.exists }}"}} |] [("tmpstat", tmpstat)]
-    pure [tmpstat, _var1]
+  playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+  playLocalhost0 playAttrs baseEnv = do
+    stat0 <- runTask playAttrs [json|{"stat":{"path":"/etc"}}|] ([] <> baseEnv)
+    command0 <- runTask playAttrs [json|{"command":"echo etc exist: {{ etc.stat.exists }}"}|] ([("etc", stat0), ("_etc", stat0)] <> baseEnv)
+    pure $ [stat0] <> [command0]
 
-  play_zuul_executor :: AnsibleHaxl [Value]
-  play_zuul_executor = do
-    let playAttr = [("hosts", [json| "zuul_executor" |])]
-    zuuldir <- runTask playAttr [json| {"file":{"path":"/etc/zuul","state":"directory"}} |] []
-    _var1 <- runTask playAttr [json| {"command":{"_raw_params":"echo Starting executor -c /etc/zuul/zuul.conf"}} |] [("zuuldir", zuuldir)]
-    pure [zuuldir, _var1]
+  playZuulExecutor0 :: Vars -> Vars -> AnsibleHaxl [Value]
+  playZuulExecutor0 playAttrs baseEnv = do
+    file0 <- runTask playAttrs [json|{"file":{"path":"/tmp/zuul","state":"directory"}}|] ([] <> baseEnv)
+    command1 <- runTask playAttrs [json|{"command":"echo Starting executor -d /tmp/zuul"}|] ([("zuuldir", file0), ("_tmp_zuul", file0)] <> baseEnv)
+    pure $ [file0] <> [command1]
 
-  play_zuul_scheduler :: AnsibleHaxl [Value]
-  play_zuul_scheduler = do
-    let playAttr = [("hosts", [json| "zuul_scheduler" |])]
-    _etc_zuul <- runTask playAttr [json| {"file":{"path":"/etc/zuul","state":"directory"}} |] []
-    _var1 <- runTask playAttr [json| {"command":{"_raw_params":"echo Starting scheduler -c /etc/zuul/zuul.conf"}} |] [("_etc_zuul", _etc_zuul)]
-    pure [_etc_zuul, _var1]
+  playNodepoolLauncher0 :: Vars -> Vars -> AnsibleHaxl [Value]
+  playNodepoolLauncher0 playAttrs baseEnv = do
+    file1 <- runTask playAttrs [json|{"file":{"path":"/tmp/nodepool","state":"directory"}}|] ([] <> baseEnv)
+    command2 <- runTask playAttrs [json|{"command":"echo Starting scheduler -d /tmp/nodepool"}|] ([("_tmp_nodepool", file1)] <> baseEnv)
+    debug0 <- runTask playAttrs [json|{"debug":null}|] ([] <> baseEnv)
+    pure $ [file1] <> [command2] <> [debug0]
+
+  playLocalhost1 :: Vars -> Vars -> AnsibleHaxl [Value]
+  playLocalhost1 playAttrs baseEnv = do
+    debug1 <- runTask playAttrs [json|{"debug":{"msg":"etc stats is {{ etc }}"}}|] ([] <> baseEnv)
+    pure $ [debug1]
 
   "
 )

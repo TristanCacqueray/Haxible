@@ -1,0 +1,8 @@
+- debug:
+    msg:
+      "Adding {{ x }} + {{ y }}"
+  register: add_result
+- assert:
+    that:
+      - "x == '42' and y == '21'"
+      - "add_result['msg'] == 'Adding 42 + 21'"

@@ -43,7 +43,7 @@ withConnections count inventory callback =
       let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
             let callParams = [mkObj taskCall.playAttrs, taskCall.taskObject, mkObj taskCall.env]
-            say $ " ▶ Calling " <> Text.pack (show taskCall)
+            say $ " ▶ Calling " <> Text.pack (take 160 $ show taskCall)
             hPutStrLn (getStdin p) (toStrict $ encode callParams)
             hFlush (getStdin p)
             output <- hGetLine (getStdout p)

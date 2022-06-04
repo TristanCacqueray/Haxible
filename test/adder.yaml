@@ -1,0 +1,20 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - debug:
+        msg: "42"
+      register: answer
+
+    - assert:
+        that:
+          - "answer['msg'] == '42'"
+
+- hosts: backend
+  gather_facts: no
+  tasks:
+    - name: Calling adder
+      include_role:
+        name: adder
+      vars:
+        x: "{{ answer['msg'] }}"
+        y: "21"

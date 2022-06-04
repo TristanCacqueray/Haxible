@@ -41,16 +41,17 @@ class PlaybookRunner:
 
             def __init__(self):
                 super(CallbackModule, self).__init__()
-                self.results = []
+                self.results = dict()
 
-            def runner_on_ok(self, _host, result):
-                self.results.append(result)
+            def add_result(self, host, result, ignore_errors=False):
+                if host in self.results:
+                    loggy(f"Multiple result for {host} {result}: {self.results}")
+                    exit(1)
+                self.results[host] = result
 
-            def runner_on_failed(self, _host, result, ignore_errors=False):
-                self.results.append(result)
-
-            def runner_on_skipped(self, _host, result):
-                self.results.append(result)
+            runner_on_ok = add_result
+            runner_on_failed = add_result
+            runner_on_skipped = add_result
 
         cb = CallbackModule()
         tqm = TaskQueueManager(
@@ -58,10 +59,10 @@ class PlaybookRunner:
             loader=self.loader, passwords=None, forks=5, stdout_callback=cb)
         play = Play().load(playbook)
         run_result = tqm.run(play)
-        if len(cb.results) != 1:
-            loggy(f"The impossible has happen!: {cb.results}")
-            exit(1)
-        task_result = cb.results[0]
+        if len(cb.results) == 1:
+            task_result = list(cb.results.values())[0]
+        else:
+            task_result = {**cb.results, **{"__haxible_many_hosts": True}}
         tqm.cleanup()
         return [run_result, task_result]
 
@@ -86,7 +87,7 @@ def run_task(inputs):
     result[1]["__haxible_play"] = play
     return result
 
-# run_task([dict(hosts="zuul_scheduler"), dict(stat=dict(path="/etc/zuul")), {}])
+# run_task([dict(hosts="all"), dict(command="echo {{ ansible_host }}"), []])
 
 loggy("Runner ready")
 while True:

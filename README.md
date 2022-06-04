@@ -18,19 +18,27 @@ Cons:
 
 > Learn more about Haxl in this short video: https://www.youtube.com/watch?v=sT6VJkkhy0o
 
+Why Haskell?
+
+- Suitable for large scale system.
+- Statically typed with type inference.
+- Fearless concurrency, without async/await, but with managed effects (IO and STM).
+
 
 ## Overview
 
 Haxible does the following:
 
-- Parse playbook and annotate task dependencies, e.g. when a task attribute contains a registered variable name.
-- Generate a Haxl computation.
-- Execute the tasks concurrently.
+- Parse the playbook into a syntax tree.
+- Annotate the tasks dependencies.
+- Generate a Haxl program.
+- Compile the generated code with the Glasgow Haskell Compiler.
+- Perform the tasks through the `ansible-playbook` command.
 
 The implementation is presently missing:
 
 - Dynamic vars such as `add_hosts` or `include_vars`.
-- Control flow such as `when` or `block`.
+- Control flow such as `block` or `include_tasks`.
 
 
 ## Demo
