@@ -3,7 +3,8 @@
         { name = "playbook"
         , requires = []
         , provides = []
-        , outputs = []
+        , outputs = Environment
+            { getEnv = [] }
         , exprs =
             [ Expr
                 { binder = Binder "resultsLocalhost0"
@@ -18,6 +19,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -48,21 +50,106 @@
                 }
             ]
         , provides = []
-        , outputs =
-            [
-                ( Binder "tasksTaskstasksyaml0"
-                , []
-                )
-            ,
-                ( Binder "debug0"
-                , []
-                )
-            ]
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "tasksTaskstasksyaml0"
+                    , Left
+                        ( Environment
+                            { getEnv =
+                                [
+                                    ( Binder "debugIncludedTask0"
+                                    , Right
+                                        [ Resource
+                                            { name = Binder "debugIncludedTask0"
+                                            , dep = Register "included_result"
+                                            }
+                                        ]
+                                    )
+                                ,
+                                    ( Binder "tasksTasksothertasksyaml0"
+                                    , Left
+                                        ( Environment
+                                            { getEnv =
+                                                [
+                                                    ( Binder "debugUnusedInclude0"
+                                                    , Right
+                                                        [ Resource
+                                                            { name = Binder "debugUnusedInclude0"
+                                                            , dep = Register "_unused"
+                                                            }
+                                                        ]
+                                                    )
+                                                ,
+                                                    ( Binder "debugNestedIncludedTask0"
+                                                    , Right
+                                                        [ Resource
+                                                            { name = Binder "debugNestedIncludedTask0"
+                                                            , dep = Register "nested_included_result"
+                                                            }
+                                                        ]
+                                                    )
+                                                ]
+                                            }
+                                        )
+                                    )
+                                ]
+                            }
+                        )
+                    )
+                ,
+                    ( Binder "debug0"
+                    , Right []
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "tasksTaskstasksyaml0"
                 , requires = []
                 , provides = []
+                , outputs = Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debugIncludedTask0"
+                                , Right
+                                    [ Resource
+                                        { name = Binder "debugIncludedTask0"
+                                        , dep = Register "included_result"
+                                        }
+                                    ]
+                                )
+                            ,
+                                ( Binder "tasksTasksothertasksyaml0"
+                                , Left
+                                    ( Environment
+                                        { getEnv =
+                                            [
+                                                ( Binder "debugUnusedInclude0"
+                                                , Right
+                                                    [ Resource
+                                                        { name = Binder "debugUnusedInclude0"
+                                                        , dep = Register "_unused"
+                                                        }
+                                                    ]
+                                                )
+                                            ,
+                                                ( Binder "debugNestedIncludedTask0"
+                                                , Right
+                                                    [ Resource
+                                                        { name = Binder "debugNestedIncludedTask0"
+                                                        , dep = Register "nested_included_result"
+                                                        }
+                                                    ]
+                                                )
+                                            ]
+                                        }
+                                    )
+                                )
+                            ]
+                        }
+                    )
                 , requirements =
                     [ Requirement
                         { name = "item"
@@ -101,11 +188,17 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "included_result"
                         , origin = Nested
                             ( Binder "tasksTaskstasksyaml0" ) 0
+                        }
+                    , Requirement
+                        { name = "nested_included_result"
+                        , origin = Nested
+                            ( Binder "tasksTaskstasksyaml0" ) 2
                         }
                     ]
                 , loop = Nothing
@@ -137,26 +230,57 @@
                 , dep = Register "included_result"
                 }
             ]
-        , outputs =
-            [
-                ( Binder "debugIncludedTask0"
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "debugIncludedTask0"
+                    , Right
+                        [ Resource
+                            { name = Binder "debugIncludedTask0"
+                            , dep = Register "included_result"
+                            }
+                        ]
+                    )
                 ,
-                    [ Resource
-                        { name = Binder "debugIncludedTask0"
-                        , dep = Register "included_result"
-                        }
-                    ]
-                )
-            ,
-                ( Binder "tasksTasksothertasksyaml0"
-                , []
-                )
-            ]
+                    ( Binder "tasksTasksothertasksyaml0"
+                    , Left
+                        ( Environment
+                            { getEnv =
+                                [
+                                    ( Binder "debugUnusedInclude0"
+                                    , Right
+                                        [ Resource
+                                            { name = Binder "debugUnusedInclude0"
+                                            , dep = Register "_unused"
+                                            }
+                                        ]
+                                    )
+                                ,
+                                    ( Binder "debugNestedIncludedTask0"
+                                    , Right
+                                        [ Resource
+                                            { name = Binder "debugNestedIncludedTask0"
+                                            , dep = Register "nested_included_result"
+                                            }
+                                        ]
+                                    )
+                                ]
+                            }
+                        )
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "debugIncludedTask0"
                 , requires = []
                 , provides =
+                    [ Resource
+                        { name = Binder "debugIncludedTask0"
+                        , dep = Register "included_result"
+                        }
+                    ]
+                , outputs = Right
                     [ Resource
                         { name = Binder "debugIncludedTask0"
                         , dep = Register "included_result"
@@ -188,6 +312,30 @@
                 { binder = Binder "tasksTasksothertasksyaml0"
                 , requires = []
                 , provides = []
+                , outputs = Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debugUnusedInclude0"
+                                , Right
+                                    [ Resource
+                                        { name = Binder "debugUnusedInclude0"
+                                        , dep = Register "_unused"
+                                        }
+                                    ]
+                                )
+                            ,
+                                ( Binder "debugNestedIncludedTask0"
+                                , Right
+                                    [ Resource
+                                        { name = Binder "debugNestedIncludedTask0"
+                                        , dep = Register "nested_included_result"
+                                        }
+                                    ]
+                                )
+                            ]
+                        }
+                    )
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -205,26 +353,77 @@
         , requires = []
         , provides =
             [ Resource
+                { name = Binder "debugUnusedInclude0"
+                , dep = Register "_unused"
+                }
+            , Resource
                 { name = Binder "debugNestedIncludedTask0"
                 , dep = Register "nested_included_result"
                 }
             ]
-        , outputs =
-            [
-                ( Binder "debugNestedIncludedTask0"
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "debugUnusedInclude0"
+                    , Right
+                        [ Resource
+                            { name = Binder "debugUnusedInclude0"
+                            , dep = Register "_unused"
+                            }
+                        ]
+                    )
                 ,
+                    ( Binder "debugNestedIncludedTask0"
+                    , Right
+                        [ Resource
+                            { name = Binder "debugNestedIncludedTask0"
+                            , dep = Register "nested_included_result"
+                            }
+                        ]
+                    )
+                ]
+            }
+        , exprs =
+            [ Expr
+                { binder = Binder "debugUnusedInclude0"
+                , requires = []
+                , provides =
+                    [ Resource
+                        { name = Binder "debugUnusedInclude0"
+                        , dep = Register "_unused"
+                        }
+                    ]
+                , outputs = Right
+                    [ Resource
+                        { name = Binder "debugUnusedInclude0"
+                        , dep = Register "_unused"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "debug"
+                        , params = Null
+                        , taskAttrs =
+                            [
+                                ( "name"
+                                , String "Unused include"
+                                )
+                            ]
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "debugNestedIncludedTask0"
+                , requires = []
+                , provides =
                     [ Resource
                         { name = Binder "debugNestedIncludedTask0"
                         , dep = Register "nested_included_result"
                         }
                     ]
-                )
-            ]
-        , exprs =
-            [ Expr
-                { binder = Binder "debugNestedIncludedTask0"
-                , requires = []
-                , provides =
+                , outputs = Right
                     [ Resource
                         { name = Binder "debugNestedIncludedTask0"
                         , dep = Register "nested_included_result"
@@ -276,7 +475,7 @@
   playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
   playLocalhost0 playAttrs baseEnv = do
     tasksTaskstasksyaml0 <- traverseInclude (\__haxible_loop_item ->  tasksTasksYaml ([] <> playAttrs) ([("item", __haxible_loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> baseEnv) )  [[json|"Haxible"|], [json|"World"|]]
-    debug0 <- runTask playAttrs [json|{"debug":{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}}|] ([("included_result", tasksTaskstasksyaml0 !! 0)] <> baseEnv)
+    debug0 <- runTask playAttrs [json|{"debug":{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}}|] ([("included_result", tasksTaskstasksyaml0 !! 0), ("nested_included_result", tasksTaskstasksyaml0 !! 2)] <> baseEnv)
     pure $ tasksTaskstasksyaml0 <> [debug0]
 
   tasksTasksYaml :: Vars -> Vars -> AnsibleHaxl [Value]
@@ -287,8 +486,9 @@
 
   tasksOtherTasksYaml :: Vars -> Vars -> AnsibleHaxl [Value]
   tasksOtherTasksYaml playAttrs baseEnv = do
+    debugUnusedInclude0 <- runTask playAttrs [json|{"debug":null,"name":"Unused include"}|] ([] <> baseEnv)
     debugNestedIncludedTask0 <- runTask playAttrs [json|{"debug":{"msg":"Nested {{ include_param }}"},"name":"Nested included task"}|] ([] <> baseEnv)
-    pure $ [debugNestedIncludedTask0]
+    pure $ [debugUnusedInclude0] <> [debugNestedIncludedTask0]
 
   "
 )

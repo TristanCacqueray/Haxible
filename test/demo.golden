@@ -3,7 +3,8 @@
         { name = "playbook"
         , requires = []
         , provides = []
-        , outputs = []
+        , outputs = Environment
+            { getEnv = [] }
         , exprs =
             [ Expr
                 { binder = Binder "resultsLocalhost0"
@@ -18,6 +19,7 @@
                         , dep = Register "storage"
                         }
                     ]
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -48,51 +50,59 @@
                 , dep = Register "storage"
                 }
             ]
-        , outputs =
-            [
-                ( Binder "create_networkCreateNetwork0"
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "create_networkCreateNetwork0"
+                    , Right
+                        [ Resource
+                            { name = Binder "create_networkCreateNetwork0"
+                            , dep = Register "network"
+                            }
+                        ]
+                    )
                 ,
-                    [ Resource
-                        { name = Binder "create_networkCreateNetwork0"
-                        , dep = Register "network"
-                        }
-                    ]
-                )
-            ,
-                ( Binder "create_instanceCreateInstances0"
-                , []
-                )
-            ,
-                ( Binder "create_storageCreateStorage0"
+                    ( Binder "create_instanceCreateInstances0"
+                    , Right []
+                    )
                 ,
-                    [ Resource
-                        { name = Binder "create_storageCreateStorage0"
-                        , dep = Register "storage"
-                        }
-                    ]
-                )
-            ,
-                ( Binder "create_instanceCreateDatabase0"
-                , []
-                )
-            ,
-                ( Binder "create_objectCreateObject0"
-                , []
-                )
-            ,
-                ( Binder "create_objectCreateNetworkObject0"
-                , []
-                )
-            ,
-                ( Binder "roleContainerService0"
-                , []
-                )
-            ]
+                    ( Binder "create_storageCreateStorage0"
+                    , Right
+                        [ Resource
+                            { name = Binder "create_storageCreateStorage0"
+                            , dep = Register "storage"
+                            }
+                        ]
+                    )
+                ,
+                    ( Binder "create_instanceCreateDatabase0"
+                    , Right []
+                    )
+                ,
+                    ( Binder "create_objectCreateObject0"
+                    , Right []
+                    )
+                ,
+                    ( Binder "create_objectCreateNetworkObject0"
+                    , Right []
+                    )
+                ,
+                    ( Binder "roleContainerService0"
+                    , Right []
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "create_networkCreateNetwork0"
                 , requires = []
                 , provides =
+                    [ Resource
+                        { name = Binder "create_networkCreateNetwork0"
+                        , dep = Register "network"
+                        }
+                    ]
+                , outputs = Right
                     [ Resource
                         { name = Binder "create_networkCreateNetwork0"
                         , dep = Register "network"
@@ -129,6 +139,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "item"
@@ -180,6 +191,12 @@
                         , dep = Register "storage"
                         }
                     ]
+                , outputs = Right
+                    [ Resource
+                        { name = Binder "create_storageCreateStorage0"
+                        , dep = Register "storage"
+                        }
+                    ]
                 , requirements = []
                 , loop = Nothing
                 , term = ModuleCall
@@ -215,6 +232,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "storage"
@@ -260,6 +278,7 @@
                 { binder = Binder "create_objectCreateObject0"
                 , requires = []
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = ModuleCall
@@ -291,6 +310,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "network"
@@ -323,6 +343,7 @@
                 { binder = Binder "roleContainerService0"
                 , requires = []
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -334,6 +355,14 @@
                                 ( "image_name"
                                 , String "test"
                                 )
+                            ,
+                                ( "image_tag"
+                                , String "latest"
+                                )
+                            ,
+                                ( "runtime_arg"
+                                , String "--log-level debug"
+                                )
                             ]
                         }
                     )
@@ -344,25 +373,28 @@
         { name = "roleContainerService"
         , requires = []
         , provides = []
-        , outputs =
-            [
-                ( Binder "include_vars0"
-                , []
-                )
-            ,
-                ( Binder "set_fact0"
-                , []
-                )
-            ,
-                ( Binder "debug0"
-                , []
-                )
-            ]
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "include_vars0"
+                    , Right []
+                    )
+                ,
+                    ( Binder "set_fact0"
+                    , Right []
+                    )
+                ,
+                    ( Binder "debug0"
+                    , Right []
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "include_vars0"
                 , requires = []
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = ModuleCall
@@ -377,6 +409,7 @@
                 { binder = Binder "set_fact0"
                 , requires = []
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = ModuleCall
@@ -410,6 +443,7 @@
                 { binder = Binder "debug0"
                 , requires = []
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = ModuleCall
@@ -456,7 +490,7 @@
     create_instanceCreateDatabase0 <- runTask playAttrs [json|{"create_instance":{"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"},"name":"Create database"}|] ([("storage", create_storageCreateStorage0), ("network", create_networkCreateNetwork0)] <> baseEnv)
     create_objectCreateObject0 <- runTask playAttrs [json|{"create_object":{"name":"standalone-object"},"name":"Create object"}|] ([] <> baseEnv)
     create_objectCreateNetworkObject0 <- runTask playAttrs [json|{"create_object":{"name":"network-{{ network.uid }}"},"name":"Create network object"}|] ([("network", create_networkCreateNetwork0)] <> baseEnv)
-    roleContainerService0 <- roleContainerService ([] <> playAttrs) ([] <> [("image_name", [json|"test"|])] <> baseEnv)
+    roleContainerService0 <- roleContainerService ([] <> playAttrs) ([] <> [("image_name", [json|"test"|]), ("image_tag", [json|"latest"|]), ("runtime_arg", [json|"--log-level debug"|])] <> baseEnv)
     pure $ [create_networkCreateNetwork0] <> [create_instanceCreateInstances0] <> [create_storageCreateStorage0] <> [create_instanceCreateDatabase0] <> [create_objectCreateObject0] <> [create_objectCreateNetworkObject0] <> roleContainerService0
 
   roleContainerService :: Vars -> Vars -> AnsibleHaxl [Value]

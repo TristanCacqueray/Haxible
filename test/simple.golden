@@ -3,7 +3,8 @@
         { name = "playbook"
         , requires = []
         , provides = []
-        , outputs = []
+        , outputs = Environment
+            { getEnv = [] }
         , exprs =
             [ Expr
                 { binder = Binder "resultsLocalhost0"
@@ -18,6 +19,7 @@
                         , dep = Path "/etc"
                         }
                     ]
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -46,6 +48,7 @@
                         , dep = Path "/tmp/zuul"
                         }
                     ]
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -70,6 +73,7 @@
                         , dep = Path "/tmp/nodepool"
                         }
                     ]
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -94,6 +98,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "etc"
@@ -130,10 +135,32 @@
                 , dep = Path "/etc"
                 }
             ]
-        , outputs =
-            [
-                ( Binder "stat0"
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "stat0"
+                    , Right
+                        [ Resource
+                            { name = Binder "stat0"
+                            , dep = Register "etc"
+                            }
+                        , Resource
+                            { name = Binder "stat0"
+                            , dep = Path "/etc"
+                            }
+                        ]
+                    )
                 ,
+                    ( Binder "command0"
+                    , Right []
+                    )
+                ]
+            }
+        , exprs =
+            [ Expr
+                { binder = Binder "stat0"
+                , requires = []
+                , provides =
                     [ Resource
                         { name = Binder "stat0"
                         , dep = Register "etc"
@@ -143,17 +170,7 @@
                         , dep = Path "/etc"
                         }
                     ]
-                )
-            ,
-                ( Binder "command0"
-                , []
-                )
-            ]
-        , exprs =
-            [ Expr
-                { binder = Binder "stat0"
-                , requires = []
-                , provides =
+                , outputs = Right
                     [ Resource
                         { name = Binder "stat0"
                         , dep = Register "etc"
@@ -189,6 +206,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "etc"
@@ -225,10 +243,32 @@
                 , dep = Path "/tmp/zuul"
                 }
             ]
-        , outputs =
-            [
-                ( Binder "file0"
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "file0"
+                    , Right
+                        [ Resource
+                            { name = Binder "file0"
+                            , dep = Register "zuuldir"
+                            }
+                        , Resource
+                            { name = Binder "file0"
+                            , dep = Path "/tmp/zuul"
+                            }
+                        ]
+                    )
                 ,
+                    ( Binder "command1"
+                    , Right []
+                    )
+                ]
+            }
+        , exprs =
+            [ Expr
+                { binder = Binder "file0"
+                , requires = []
+                , provides =
                     [ Resource
                         { name = Binder "file0"
                         , dep = Register "zuuldir"
@@ -238,17 +278,7 @@
                         , dep = Path "/tmp/zuul"
                         }
                     ]
-                )
-            ,
-                ( Binder "command1"
-                , []
-                )
-            ]
-        , exprs =
-            [ Expr
-                { binder = Binder "file0"
-                , requires = []
-                , provides =
+                , outputs = Right
                     [ Resource
                         { name = Binder "file0"
                         , dep = Register "zuuldir"
@@ -288,6 +318,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "zuuldir"
@@ -320,30 +351,38 @@
                 , dep = Path "/tmp/nodepool"
                 }
             ]
-        , outputs =
-            [
-                ( Binder "file1"
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "file1"
+                    , Right
+                        [ Resource
+                            { name = Binder "file1"
+                            , dep = Path "/tmp/nodepool"
+                            }
+                        ]
+                    )
                 ,
-                    [ Resource
-                        { name = Binder "file1"
-                        , dep = Path "/tmp/nodepool"
-                        }
-                    ]
-                )
-            ,
-                ( Binder "command2"
-                , []
-                )
-            ,
-                ( Binder "debug0"
-                , []
-                )
-            ]
+                    ( Binder "command2"
+                    , Right []
+                    )
+                ,
+                    ( Binder "debug0"
+                    , Right []
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "file1"
                 , requires = []
                 , provides =
+                    [ Resource
+                        { name = Binder "file1"
+                        , dep = Path "/tmp/nodepool"
+                        }
+                    ]
+                , outputs = Right
                     [ Resource
                         { name = Binder "file1"
                         , dep = Path "/tmp/nodepool"
@@ -379,6 +418,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "_tmp_nodepool"
@@ -399,6 +439,7 @@
                 { binder = Binder "debug0"
                 , requires = []
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = ModuleCall
@@ -420,12 +461,14 @@
                 }
             ]
         , provides = []
-        , outputs =
-            [
-                ( Binder "debug1"
-                , []
-                )
-            ]
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "debug1"
+                    , Right []
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "debug1"
@@ -436,6 +479,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = ModuleCall

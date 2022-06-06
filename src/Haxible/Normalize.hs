@@ -33,6 +33,7 @@ data Expr = Expr
   { binder :: Binder,
     requires :: [Resource],
     provides :: [Resource],
+    outputs :: Either Environment [Resource],
     requirements :: [Requirement],
     loop :: Maybe Value,
     term :: Term
@@ -82,7 +83,8 @@ instance From Binder Text where from (Binder b) = b
 --       name: adder
 --
 --   -> the binder matches each task
-type Environment = [(Binder, [Resource])]
+newtype Environment = Environment {getEnv :: [(Binder, Either Environment [Resource])]}
+  deriving (Show, Eq)
 
 dependencyValue, dependencyName :: Dependency -> Text
 dependencyName = \case
@@ -109,7 +111,7 @@ data Env = Env
 emptyEnv :: Env
 emptyEnv = Env [] [] []
 
-type ReqAcc = (Environment, [(Binder, Environment)])
+type ReqAcc = ([(Binder, [Resource])], [(Binder, Environment)])
 
 -- | propagate binders to sub expression to set the requirements
 solveRequirements :: [Definition] -> [Definition]
@@ -141,18 +143,24 @@ solveRequirements defs = map updateCallEnv defs
 
         -- Look for available rqeuirement in nested binders (e.g. from other play)
         nestedRequirement :: [Requirement]
-        nestedRequirement = concatMap (uncurry go) nested
+        nestedRequirement = concatMap (uncurry (go 0)) nested
           where
-            go :: Binder -> Environment -> [Requirement]
-            go binder = concatMap (toReq binder . snd)
-            toReq :: Binder -> [Resource] -> [Requirement]
-            toReq binder resources
-              | reMatch resources = concatMap (toNestedReq binder) (zip [0 ..] resources)
-              | otherwise = []
-            toNestedReq :: Binder -> (Int, Resource) -> [Requirement]
-            toNestedReq binder (pos, res)
+            go :: Int -> Binder -> Environment -> [Requirement]
+            go binderPos binder =
+              concatMap (\(envPos, binderResources) -> toReq (binderPos + envPos) binder binderResources)
+                . zip [0 ..]
+                . map snd
+                . getEnv
+            toReq :: Int -> Binder -> Either Environment [Resource] -> [Requirement]
+            toReq resourcePos binder = \case
+              Right resources
+                | reMatch resources -> concatMap (toNestedReq resourcePos binder) (zip [0 ..] resources)
+                | otherwise -> []
+              Left env -> go resourcePos binder env
+            toNestedReq :: Int -> Binder -> (Int, Resource) -> [Requirement]
+            toNestedReq resourcePos binder (pos, res)
               | res `elem` expr.requires =
-                  [Requirement {name = dependencyName res.dep, origin = Nested binder pos}]
+                  [Requirement {name = dependencyName res.dep, origin = Nested binder (resourcePos + pos)}]
               | otherwise = []
 
 -- | Create a unique name:
@@ -193,7 +201,8 @@ moduleExpr task value = do
   -- Create the expr
   let term = ModuleCall CallModule {module_ = task.module_, params = value, taskAttrs}
       requirements = []
-  pure $ Expr {binder, requires, provides, requirements, loop = Nothing, term}
+      outputs = Right provides
+  pure $ Expr {binder, requires, provides, outputs, requirements, loop = Nothing, term}
   where
     destPath = Path <$> (getAttr "path" <|> getAttr "dest")
     register = Register <$> (preview _String =<< lookup "register" task.attrs)
@@ -225,7 +234,8 @@ tasksExpr task includeName tasks = do
 
   expr <- moduleExpr task Null
   binder <- freshName "tasks" name
-  pure $ expr {binder, term = DefinitionCall CallDefinition {name, baseEnv = taskVars task, playAttrs = []}}
+  let outputs = Left tasksDef.outputs
+  pure $ expr {binder, outputs, term = DefinitionCall CallDefinition {name, baseEnv = taskVars task, playAttrs = []}}
   where
     name = "tasks" <> cleanName includeName
 
@@ -247,7 +257,7 @@ normalizeDefinition name tasks = do
   exprs <- traverse normalizeTask tasks
   let provides = nub $ concatMap (.provides) exprs
       requires = nub $ filter (`notElem` provides) $ concatMap (.requires) exprs
-      outputs = (\e -> (e.binder, e.provides)) <$> exprs
+      outputs = Environment $ (\e -> (e.binder, e.outputs)) <$> exprs
   pure $ Definition {name, exprs, requires, provides, outputs}
 
 normalizePlay :: Play -> State Env Definition
@@ -273,13 +283,14 @@ normalizePlaybook plays =
     topLevelCall (play, def) = do
       binder <- freshName "results" (playName play)
       let term = DefinitionCall CallDefinition {name = def.name, playAttrs = play.attrs, baseEnv = []}
-      pure $ Expr {binder, requires = def.requires, provides = def.provides, requirements = [], loop = Nothing, term}
+          outputs = Right []
+      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, requirements = [], loop = Nothing, term}
     topLevel :: [Expr] -> Definition
     topLevel xs =
       Definition
         { name = "playbook",
           requires = [],
           provides = [],
-          outputs = [],
+          outputs = Environment [],
           exprs = xs
         }

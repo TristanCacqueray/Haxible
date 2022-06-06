@@ -3,7 +3,8 @@
         { name = "playbook"
         , requires = []
         , provides = []
-        , outputs = []
+        , outputs = Environment
+            { getEnv = [] }
         , exprs =
             [ Expr
                 { binder = Binder "resultsLocalhost0"
@@ -14,6 +15,7 @@
                         , dep = Register "answer"
                         }
                     ]
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -42,6 +44,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "answer"
@@ -78,26 +81,34 @@
                 , dep = Register "answer"
                 }
             ]
-        , outputs =
-            [
-                ( Binder "debug0"
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "debug0"
+                    , Right
+                        [ Resource
+                            { name = Binder "debug0"
+                            , dep = Register "answer"
+                            }
+                        ]
+                    )
                 ,
-                    [ Resource
-                        { name = Binder "debug0"
-                        , dep = Register "answer"
-                        }
-                    ]
-                )
-            ,
-                ( Binder "assert0"
-                , []
-                )
-            ]
+                    ( Binder "assert0"
+                    , Right []
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "debug0"
                 , requires = []
                 , provides =
+                    [ Resource
+                        { name = Binder "debug0"
+                        , dep = Register "answer"
+                        }
+                    ]
+                , outputs = Right
                     [ Resource
                         { name = Binder "debug0"
                         , dep = Register "answer"
@@ -129,6 +140,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "answer"
@@ -164,12 +176,14 @@
                 }
             ]
         , provides = []
-        , outputs =
-            [
-                ( Binder "roleAdder0"
-                , []
-                )
-            ]
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "roleAdder0"
+                    , Right []
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "roleAdder0"
@@ -180,6 +194,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements = []
                 , loop = Nothing
                 , term = DefinitionCall
@@ -210,26 +225,34 @@
                 , dep = Register "add_result"
                 }
             ]
-        , outputs =
-            [
-                ( Binder "debug1"
+        , outputs = Environment
+            { getEnv =
+                [
+                    ( Binder "debug1"
+                    , Right
+                        [ Resource
+                            { name = Binder "debug1"
+                            , dep = Register "add_result"
+                            }
+                        ]
+                    )
                 ,
-                    [ Resource
-                        { name = Binder "debug1"
-                        , dep = Register "add_result"
-                        }
-                    ]
-                )
-            ,
-                ( Binder "assert1"
-                , []
-                )
-            ]
+                    ( Binder "assert1"
+                    , Right []
+                    )
+                ]
+            }
         , exprs =
             [ Expr
                 { binder = Binder "debug1"
                 , requires = []
                 , provides =
+                    [ Resource
+                        { name = Binder "debug1"
+                        , dep = Register "add_result"
+                        }
+                    ]
+                , outputs = Right
                     [ Resource
                         { name = Binder "debug1"
                         , dep = Register "add_result"
@@ -261,6 +284,7 @@
                         }
                     ]
                 , provides = []
+                , outputs = Right []
                 , requirements =
                     [ Requirement
                         { name = "add_result"
