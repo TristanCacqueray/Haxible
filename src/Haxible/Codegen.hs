@@ -53,7 +53,10 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
       Just _ -> error $ "Invalid loop expression: " <> show e.loop
       Nothing -> callExpr
       where
-        mkTraverse arg = ["traverseLoop", "(\\__haxible_loop_item -> "] <> callExpr <> [") ", arg]
+        traverser = case e.term of
+          ModuleCall _ -> "traverseLoop"
+          DefinitionCall _ -> "traverseInclude"
+        mkTraverse arg = [traverser, "(\\__haxible_loop_item -> "] <> callExpr <> [") ", arg]
 
     callExpr = case e.term of
       ModuleCall CallModule {module_, params, taskAttrs} ->

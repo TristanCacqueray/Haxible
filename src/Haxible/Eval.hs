@@ -6,6 +6,7 @@ module Haxible.Eval
     json,
     envLoop,
     traverseLoop,
+    traverseInclude,
     Value,
     Vars,
   )
@@ -48,20 +49,26 @@ envLoop n env = runGinger context template
 traverseLoop :: Applicative f => (a -> f Value) -> [a] -> f Value
 traverseLoop f xs = loopResult <$> traverse f xs
 
+traverseInclude :: Applicative f => (a -> f [Value]) -> [a] -> f [Value]
+traverseInclude f xs = concat <$> traverse f xs
+
 loopResult :: [Value] -> Value
 loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
   where
-    -- TODO: keep in sync with the wrapper and the data source
-    addedKey = ["__haxible_play", "__haxible_ts"]
-    removeNestedPlay = \case
-      Object obj -> Object $ Data.Aeson.KeyMap.filterWithKey (\k _ -> k `notElem` addedKey) obj
-      x -> x
     attrs =
-      [ ("results", Array (Data.Vector.fromList $ removeNestedPlay <$> xs)),
+      [ ("results", Array (Data.Vector.fromList $ cleanVar <$> xs)),
         ("msg", "All items completed"),
         ("skipped", Bool $ all (fromMaybe False . preview (key "skipped" . _Bool)) xs),
         ("changed", Bool $ any (fromMaybe False . preview (key "changed" . _Bool)) xs)
       ]
+
+cleanVar :: Value -> Value
+cleanVar = \case
+  Object obj -> Object $ Data.Aeson.KeyMap.filterWithKey (\k _ -> k `notElem` addedKey) obj
+  x -> x
+  where
+    -- TODO: keep in sync with the wrapper and the data source
+    addedKey = ["__haxible_play", "__haxible_ts"]
 
 runTask :: [(Text, Value)] -> Value -> [(Text, Value)] -> AnsibleHaxl Value
 runTask playAttrs taskObject baseEnv = dataFetch (RunTask (TaskCall {playAttrs, taskObject, env}))
@@ -73,9 +80,9 @@ runTask playAttrs taskObject baseEnv = dataFetch (RunTask (TaskCall {playAttrs, 
       | preview (key "__haxible_many_hosts" . _Bool) v == Just True =
           let many_k = k <> "__haxible"
            in [ (k, String $ "{{ " <> many_k <> "[ansible_host] }}"),
-                (many_k, v)
+                (many_k, cleanVar v)
               ]
-      | otherwise = [(k, v)]
+      | otherwise = [(k, cleanVar v)]
 
 runHaxible :: FilePath -> AnsibleHaxl [Value] -> IO ()
 runHaxible inventory action = withConnections 5 inventory $ \connections -> do

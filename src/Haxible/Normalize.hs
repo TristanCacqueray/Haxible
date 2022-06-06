@@ -206,20 +206,35 @@ moduleExpr task value = do
 
 roleExpr :: Task -> RoleValue -> State Env Expr
 roleExpr task role = do
+  when (isJust $ lookup "register" task.attrs) (error "Register include_role is not supported")
   roleDef <- normalizeDefinition name role.tasks
   modify (#definitions %~ (roleDef :))
 
   expr <- moduleExpr task Null
   binder <- freshName "role" role.name
+  pure $ expr {binder, term = DefinitionCall CallDefinition {name, baseEnv, playAttrs = []}}
+  where
+    baseEnv = taskVars task <> role.defaults
+    name = "role" <> cleanName role.name
+
+tasksExpr :: Task -> Text -> [Task] -> State Env Expr
+tasksExpr task includeName tasks = do
+  when (isJust $ lookup "register" task.attrs) (error "Register include_tasks is not supported")
+  tasksDef <- normalizeDefinition name tasks
+  modify (#definitions %~ (tasksDef :))
+
+  expr <- moduleExpr task Null
+  binder <- freshName "tasks" name
   pure $ expr {binder, term = DefinitionCall CallDefinition {name, baseEnv = taskVars task, playAttrs = []}}
   where
-    name = "role" <> cleanName role.name
+    name = "tasks" <> cleanName includeName
 
 normalizeTask :: Task -> State Env Expr
 normalizeTask task = do
   expr <- case task.params of
     Module v -> moduleExpr task v
     Role r -> roleExpr task r
+    Tasks name xs -> tasksExpr task name xs
     _ -> error "not implemented"
   pure $ expr {loop, requirements = extraReq <> expr.requirements}
   where

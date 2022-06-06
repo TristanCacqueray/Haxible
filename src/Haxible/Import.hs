@@ -28,7 +28,7 @@ type Task = BaseTask TaskValue
 data TaskValue
   = Module Value
   | Role RoleValue
-  | Tasks [Task]
+  | Tasks Text [Task]
   | Block BlockValue
   deriving (Eq, Show)
 
@@ -79,7 +79,7 @@ resolveTask task = do
       let task_name = from $ fromMaybe "missing name" $ preview _String $ task.params
           task_path = takeDirectory source </> task_name
       withFile task_path $ \baseTasks -> do
-        Tasks <$> traverse resolveTask baseTasks
+        Tasks (from task_name) <$> traverse resolveTask baseTasks
 
     block = do
       tasks <- resolveBlock task.params

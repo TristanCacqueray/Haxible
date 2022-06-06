@@ -1,0 +1,10 @@
+- hosts: localhost
+  tasks:
+    - name: Call task in a loop
+      debug:
+        msg: "loop {{ item }}"
+      loop: ["A", "B", "C"]
+      register: loop_res
+
+    - debug:
+        msg: "loop result is {{ loop_res }}"

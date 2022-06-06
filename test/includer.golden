@@ -1,0 +1,294 @@
+(
+    [ Definition
+        { name = "playbook"
+        , requires = []
+        , provides = []
+        , outputs = []
+        , exprs =
+            [ Expr
+                { binder = Binder "resultsLocalhost0"
+                , requires =
+                    [ Resource
+                        { name = Binder "debugNestedIncludedTask0"
+                        , dep = Register "nested_included_result"
+                        }
+                    , Resource
+                        { name = Binder "debugIncludedTask0"
+                        , dep = Register "included_result"
+                        }
+                    ]
+                , provides = []
+                , requirements = []
+                , loop = Nothing
+                , term = DefinitionCall
+                    ( CallDefinition
+                        { name = "playLocalhost0"
+                        , playAttrs =
+                            [
+                                ( "hosts"
+                                , String "localhost"
+                                )
+                            ]
+                        , baseEnv = []
+                        }
+                    )
+                }
+            ]
+        }
+    , Definition
+        { name = "playLocalhost0"
+        , requires =
+            [ Resource
+                { name = Binder "debugNestedIncludedTask0"
+                , dep = Register "nested_included_result"
+                }
+            , Resource
+                { name = Binder "debugIncludedTask0"
+                , dep = Register "included_result"
+                }
+            ]
+        , provides = []
+        , outputs =
+            [
+                ( Binder "tasksTaskstasksyaml0"
+                , []
+                )
+            ,
+                ( Binder "debug0"
+                , []
+                )
+            ]
+        , exprs =
+            [ Expr
+                { binder = Binder "tasksTaskstasksyaml0"
+                , requires = []
+                , provides = []
+                , requirements =
+                    [ Requirement
+                        { name = "item"
+                        , origin = LoopVar
+                        }
+                    ]
+                , loop = Just
+                    ( Array
+                        [ String "Haxible"
+                        , String "World"
+                        ]
+                    )
+                , term = DefinitionCall
+                    ( CallDefinition
+                        { name = "tasksTasksYaml"
+                        , playAttrs = []
+                        , baseEnv =
+                            [
+                                ( "include_param"
+                                , String "{{ item }}"
+                                )
+                            ]
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "debug0"
+                , requires =
+                    [ Resource
+                        { name = Binder "debugNestedIncludedTask0"
+                        , dep = Register "nested_included_result"
+                        }
+                    , Resource
+                        { name = Binder "debugIncludedTask0"
+                        , dep = Register "included_result"
+                        }
+                    ]
+                , provides = []
+                , requirements =
+                    [ Requirement
+                        { name = "included_result"
+                        , origin = Nested
+                            ( Binder "tasksTaskstasksyaml0" ) 0
+                        }
+                    ]
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "debug"
+                        , params = Object
+                            ( fromList
+                                [
+                                    ( "msg"
+                                    , String "Result is {{ included_result }},
+                                      nested {{ nested_included_result}}
+                                      "
+                                    )
+                                ]
+                            )
+                        , taskAttrs = []
+                        }
+                    )
+                }
+            ]
+        }
+    , Definition
+        { name = "tasksTasksYaml"
+        , requires = []
+        , provides =
+            [ Resource
+                { name = Binder "debugIncludedTask0"
+                , dep = Register "included_result"
+                }
+            ]
+        , outputs =
+            [
+                ( Binder "debugIncludedTask0"
+                ,
+                    [ Resource
+                        { name = Binder "debugIncludedTask0"
+                        , dep = Register "included_result"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "tasksTasksothertasksyaml0"
+                , []
+                )
+            ]
+        , exprs =
+            [ Expr
+                { binder = Binder "debugIncludedTask0"
+                , requires = []
+                , provides =
+                    [ Resource
+                        { name = Binder "debugIncludedTask0"
+                        , dep = Register "included_result"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "debug"
+                        , params = Object
+                            ( fromList
+                                [
+                                    ( "msg"
+                                    , String "Hello {{ include_param }}"
+                                    )
+                                ]
+                            )
+                        , taskAttrs =
+                            [
+                                ( "name"
+                                , String "Included task"
+                                )
+                            ]
+                        }
+                    )
+                }
+            , Expr
+                { binder = Binder "tasksTasksothertasksyaml0"
+                , requires = []
+                , provides = []
+                , requirements = []
+                , loop = Nothing
+                , term = DefinitionCall
+                    ( CallDefinition
+                        { name = "tasksOtherTasksYaml"
+                        , playAttrs = []
+                        , baseEnv = []
+                        }
+                    )
+                }
+            ]
+        }
+    , Definition
+        { name = "tasksOtherTasksYaml"
+        , requires = []
+        , provides =
+            [ Resource
+                { name = Binder "debugNestedIncludedTask0"
+                , dep = Register "nested_included_result"
+                }
+            ]
+        , outputs =
+            [
+                ( Binder "debugNestedIncludedTask0"
+                ,
+                    [ Resource
+                        { name = Binder "debugNestedIncludedTask0"
+                        , dep = Register "nested_included_result"
+                        }
+                    ]
+                )
+            ]
+        , exprs =
+            [ Expr
+                { binder = Binder "debugNestedIncludedTask0"
+                , requires = []
+                , provides =
+                    [ Resource
+                        { name = Binder "debugNestedIncludedTask0"
+                        , dep = Register "nested_included_result"
+                        }
+                    ]
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "debug"
+                        , params = Object
+                            ( fromList
+                                [
+                                    ( "msg"
+                                    , String "Nested {{ include_param }}"
+                                    )
+                                ]
+                            )
+                        , taskAttrs =
+                            [
+                                ( "name"
+                                , String "Nested included task"
+                                )
+                            ]
+                        }
+                    )
+                }
+            ]
+        }
+    ]
+, "-- Generated with haxible
+  {-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
+  {- cabal:
+  build-depends: base, haxible
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-T
+  -}
+  module Main (main) where
+
+  import Haxible.Eval
+
+  main :: IO ()
+  main = runHaxible "inventory.yaml" (playbook [] [])
+
+  playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+  playbook playAttrs baseEnv = do
+    resultsLocalhost0 <- playLocalhost0 ([("hosts", [json|"localhost"|])] <> playAttrs) ([] <> [] <> baseEnv)
+    pure $ resultsLocalhost0
+
+  playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+  playLocalhost0 playAttrs baseEnv = do
+    tasksTaskstasksyaml0 <- traverseInclude (\__haxible_loop_item ->  tasksTasksYaml ([] <> playAttrs) ([("item", __haxible_loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> baseEnv) )  [[json|"Haxible"|], [json|"World"|]]
+    debug0 <- runTask playAttrs [json|{"debug":{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}}|] ([("included_result", tasksTaskstasksyaml0 !! 0)] <> baseEnv)
+    pure $ tasksTaskstasksyaml0 <> [debug0]
+
+  tasksTasksYaml :: Vars -> Vars -> AnsibleHaxl [Value]
+  tasksTasksYaml playAttrs baseEnv = do
+    debugIncludedTask0 <- runTask playAttrs [json|{"debug":{"msg":"Hello {{ include_param }}"},"name":"Included task"}|] ([] <> baseEnv)
+    tasksTasksothertasksyaml0 <- tasksOtherTasksYaml ([] <> playAttrs) ([] <> [] <> baseEnv)
+    pure $ [debugIncludedTask0] <> tasksTasksothertasksyaml0
+
+  tasksOtherTasksYaml :: Vars -> Vars -> AnsibleHaxl [Value]
+  tasksOtherTasksYaml playAttrs baseEnv = do
+    debugNestedIncludedTask0 <- runTask playAttrs [json|{"debug":{"msg":"Nested {{ include_param }}"},"name":"Nested included task"}|] ([] <> baseEnv)
+    pure $ [debugNestedIncludedTask0]
+
+  "
+)

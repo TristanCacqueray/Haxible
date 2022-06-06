@@ -19,7 +19,7 @@ goldenTest name action = goldenVsString name ("test/" <> name <> ".golden") do
 
 tests :: [TestTree]
 tests =
-  map goldenParse ["demo", "simple", "adder", "loop"]
+  map goldenParse ["demo", "simple", "adder", "loop", "includer"]
   where
     goldenParse name = goldenTest name do
       let playPath = "test/" <> name <> ".yaml"

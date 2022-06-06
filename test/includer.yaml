@@ -1,0 +1,11 @@
+- hosts: localhost
+  tasks:
+    - include_tasks: "./tasks.yaml"
+      vars:
+        include_param: "{{ item }}"
+      loop: ["Haxible", "World"]
+
+    - debug:
+        msg: |
+          Result is {{ included_result }},
+          nested {{ nested_included_result}}
