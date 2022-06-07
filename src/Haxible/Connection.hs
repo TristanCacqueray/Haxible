@@ -70,7 +70,7 @@ cleanVar = \case
   x -> x
   where
     -- TODO: keep in sync with the wrapper and the data source
-    addedKey = ["__haxible_play", "__haxible_ts"]
+    addedKey = ["__haxible_play", "__haxible_ts", "_ansible_no_log", "_ansible_verbose_always"]
 
 -- | Creates the Python interpreters.
 withConnections :: Int -> FilePath -> (Connections -> IO ()) -> IO ()
