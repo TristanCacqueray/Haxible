@@ -14,14 +14,14 @@ import Text.Pretty.Simple
 
 main :: IO ()
 main = do
-  cases <- filter (isSuffixOf ".yaml") <$> listDirectory "test/"
+  cases <- filter (isSuffixOf ".yaml") <$> listDirectory "test/playbooks"
   unitsTree <- traverse test cases
   let units = testGroup "Unit" unitsTree
       integrations = testGroup "Integration" []
   defaultMain (testGroup "Tests" [units, integrations])
 
 goldenTest :: Show a => TestName -> a -> TestTree
-goldenTest name res = goldenVsString name ("test/" <> name) do
+goldenTest name res = goldenVsString name ("test/playbooks/" <> name) do
   pure . from . Text.encodeUtf8 . Text.dropAround (== '"') . from . pShowNoColor $ res
 
 test :: FilePath -> IO TestTree
@@ -37,5 +37,5 @@ test fp = do
         goldenTest (name <> ".hs") script
       ]
   where
-    playPath = "test" </> fp
+    playPath = "test" </> "playbooks" </> fp
     (name, _) = splitExtension fp
