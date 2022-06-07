@@ -52,10 +52,23 @@ instance FromJSON JsonVars where
   parseJSON = withObject "Vars" $ pure . JsonVars . items []
 
 instance FromJSON PlaySyntax where
-  parseJSON = withObject "BasePlay" $ \v ->
-    BasePlay
-      <$> v .: "tasks"
-      <*> pure (items ["tasks"] v)
+  parseJSON = withObject "BasePlay" $ \v -> do
+    pre_tasks <- v `getList` "pre_tasks"
+    tasks <- v `getList` "tasks"
+    roles <- map mkRoleTask <$> (v `getList` "roles")
+    post_tasks <- v `getList` "post_tasks"
+    pure $
+      BasePlay (pre_tasks <> roles <> tasks <> post_tasks) (items nonPlayAttributes v)
+    where
+      getList v k = fromMaybe [] <$> v .:? k
+      mkRoleTask name =
+        BaseTask
+          { name = Nothing,
+            module_ = "include_role",
+            params = mkObj [("name", String name)],
+            attrs = []
+          }
+      nonPlayAttributes = ["pre_tasks", "tasks", "post_tasks", "roles"]
 
 instance FromJSON TaskSyntax where
   parseJSON = withObject "BaseTask" $ \v -> do

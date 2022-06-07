@@ -1,0 +1,260 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , playAttrs =
+                        [
+                            ( "hosts"
+                            , String "localhost"
+                            )
+                        ,
+                            ( "vars"
+                            , Object
+                                ( fromList
+                                    [
+                                        ( "x"
+                                        , String "42"
+                                        )
+                                    ,
+                                        ( "y"
+                                        , String "21"
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    , baseEnv = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug0"
+                , Right []
+                )
+            ,
+                ( Binder "roleAdder0"
+                , Right []
+                )
+            ,
+                ( Binder "debug1"
+                , Right []
+                )
+            ,
+                ( Binder "debug2"
+                , Right []
+                )
+            ]
+        }
+    , exprs =
+        [ Expr
+            { binder = Binder "debug0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "a pre task"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "roleAdder0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "roleAdder"
+                    , playAttrs = []
+                    , baseEnv = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug1"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "a task"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug2"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "a post task"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "roleAdder"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "debugAddingNumbers0"
+            , dep = Register "add_result"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debugAddingNumbers0"
+                , Right
+                    [ Resource
+                        { name = Binder "debugAddingNumbers0"
+                        , dep = Register "add_result"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "assertCheckingResults0"
+                , Right []
+                )
+            ]
+        }
+    , exprs =
+        [ Expr
+            { binder = Binder "debugAddingNumbers0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "debugAddingNumbers0"
+                    , dep = Register "add_result"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "debugAddingNumbers0"
+                    , dep = Register "add_result"
+                    }
+                ]
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "Adding {{ x }} + {{ y }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Adding numbers"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "assertCheckingResults0"
+            , requires =
+                [ Resource
+                    { name = Binder "debugAddingNumbers0"
+                    , dep = Register "add_result"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "add_result"
+                    , origin = Direct
+                        ( Binder "debugAddingNumbers0" )
+                    }
+                ]
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "assert"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "that"
+                                , Array
+                                    [ String "x == '42' and y == '21'"
+                                    , String "add_result['msg'] == 'Adding 42 + 21'"
+                                    ]
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Checking results"
+                            )
+                        ]
+                    }
+                )
+            }
+        ]
+    }
+]

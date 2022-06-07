@@ -1,0 +1,15 @@
+- hosts: localhost
+  vars:
+    x: "42"
+    y: "21"
+  roles:
+    - adder
+  tasks:
+    - debug:
+        msg: a task
+  pre_tasks:
+    - debug:
+        msg: a pre task
+  post_tasks:
+    - debug:
+        msg: a post task
