@@ -10,7 +10,8 @@ import Haxible.Prelude
 renderScript :: FilePath -> [Definition] -> Text
 renderScript inventory defs =
   Text.unlines $
-    [ "-- Generated with haxible",
+    [ "#!/usr/bin/env cabal",
+      "-- Generated with haxible",
       "{-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}",
       "{- cabal:",
       "build-depends: base, haxible",

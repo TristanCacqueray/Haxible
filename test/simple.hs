@@ -1,3 +1,4 @@
+#!/usr/bin/env cabal
 -- Generated with haxible
 {-# LANGUAGE QuasiQuotes, ApplicativeDo, OverloadedStrings #-}
 {- cabal:
