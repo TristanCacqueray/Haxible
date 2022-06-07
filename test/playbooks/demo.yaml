@@ -15,7 +15,7 @@
         - monitoring
 
     - name: Create storage
-      create_storage:
+      create_volume:
         name: "db"
       register: storage
 
@@ -32,9 +32,3 @@
     - name: Create network object
       create_object:
         name: "network-{{ network.uid }}"
-
-    - name: Start local service
-      include_role:
-        name: "container-service"
-      vars:
-        image_name: "test"

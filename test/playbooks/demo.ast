@@ -14,7 +14,7 @@
                     , dep = Register "network"
                     }
                 , Resource
-                    { name = Binder "create_storageCreateStorage0"
+                    { name = Binder "create_volumeCreateStorage0"
                     , dep = Register "storage"
                     }
                 ]
@@ -45,7 +45,7 @@
             , dep = Register "network"
             }
         , Resource
-            { name = Binder "create_storageCreateStorage0"
+            { name = Binder "create_volumeCreateStorage0"
             , dep = Register "storage"
             }
         ]
@@ -65,10 +65,10 @@
                 , Right []
                 )
             ,
-                ( Binder "create_storageCreateStorage0"
+                ( Binder "create_volumeCreateStorage0"
                 , Right
                     [ Resource
-                        { name = Binder "create_storageCreateStorage0"
+                        { name = Binder "create_volumeCreateStorage0"
                         , dep = Register "storage"
                         }
                     ]
@@ -83,10 +83,6 @@
                 )
             ,
                 ( Binder "create_objectCreateNetworkObject0"
-                , Right []
-                )
-            ,
-                ( Binder "roleContainerService0"
                 , Right []
                 )
             ]
@@ -182,17 +178,17 @@
                 )
             }
         , Expr
-            { binder = Binder "create_storageCreateStorage0"
+            { binder = Binder "create_volumeCreateStorage0"
             , requires = []
             , provides =
                 [ Resource
-                    { name = Binder "create_storageCreateStorage0"
+                    { name = Binder "create_volumeCreateStorage0"
                     , dep = Register "storage"
                     }
                 ]
             , outputs = Right
                 [ Resource
-                    { name = Binder "create_storageCreateStorage0"
+                    { name = Binder "create_volumeCreateStorage0"
                     , dep = Register "storage"
                     }
                 ]
@@ -200,7 +196,7 @@
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
-                    { module_ = "create_storage"
+                    { module_ = "create_volume"
                     , params = Object
                         ( fromList
                             [
@@ -226,7 +222,7 @@
                     , dep = Register "network"
                     }
                 , Resource
-                    { name = Binder "create_storageCreateStorage0"
+                    { name = Binder "create_volumeCreateStorage0"
                     , dep = Register "storage"
                     }
                 ]
@@ -236,7 +232,7 @@
                 [ Requirement
                     { name = "storage"
                     , origin = Direct
-                        ( Binder "create_storageCreateStorage0" )
+                        ( Binder "create_volumeCreateStorage0" )
                     }
                 , Requirement
                     { name = "network"
@@ -335,147 +331,6 @@
                             , String "Create network object"
                             )
                         ]
-                    }
-                )
-            }
-        , Expr
-            { binder = Binder "roleContainerService0"
-            , requires = []
-            , provides = []
-            , outputs = Right []
-            , requirements = []
-            , loop = Nothing
-            , term = DefinitionCall
-                ( CallDefinition
-                    { name = "roleContainerService"
-                    , playAttrs = []
-                    , baseEnv =
-                        [
-                            ( "image_name"
-                            , String "test"
-                            )
-                        ,
-                            ( "image_tag"
-                            , String "latest"
-                            )
-                        ,
-                            ( "runtime_arg"
-                            , String "--log-level debug"
-                            )
-                        ]
-                    }
-                )
-            }
-        ]
-    }
-, Definition
-    { name = "roleContainerService"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "facts0"
-            , dep = Register "command"
-            }
-        ]
-    , outputs = Environment
-        { getEnv =
-            [
-                ( Binder "include_vars0"
-                , Right []
-                )
-            ,
-                ( Binder "facts0"
-                , Right
-                    [ Resource
-                        { name = Binder "facts0"
-                        , dep = Register "command"
-                        }
-                    ]
-                )
-            ,
-                ( Binder "debug0"
-                , Right []
-                )
-            ]
-        }
-    , exprs =
-        [ Expr
-            { binder = Binder "include_vars0"
-            , requires = []
-            , provides = []
-            , outputs = Right []
-            , requirements = []
-            , loop = Nothing
-            , term = ModuleCall
-                ( CallModule
-                    { module_ = "include_vars"
-                    , params = String "redhat.yaml"
-                    , taskAttrs = []
-                    }
-                )
-            }
-        , Expr
-            { binder = Binder "facts0"
-            , requires = []
-            , provides =
-                [ Resource
-                    { name = Binder "facts0"
-                    , dep = Register "command"
-                    }
-                ]
-            , outputs = Right
-                [ Resource
-                    { name = Binder "facts0"
-                    , dep = Register "command"
-                    }
-                ]
-            , requirements = []
-            , loop = Nothing
-            , term = ModuleCall
-                ( CallModule
-                    { module_ = "set_fact"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "command"
-                                , String "{{ runtime }} run {{ image_name }}:{{ image_tag }}"
-                                )
-                            ]
-                        )
-                    , taskAttrs = []
-                    }
-                )
-            }
-        , Expr
-            { binder = Binder "debug0"
-            , requires =
-                [ Resource
-                    { name = Binder "facts0"
-                    , dep = Register "command"
-                    }
-                ]
-            , provides = []
-            , outputs = Right []
-            , requirements =
-                [ Requirement
-                    { name = "command"
-                    , origin = Direct
-                        ( Binder "facts0" )
-                    }
-                ]
-            , loop = Nothing
-            , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Running {{ command }}"
-                                )
-                            ]
-                        )
-                    , taskAttrs = []
                     }
                 )
             }

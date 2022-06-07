@@ -62,9 +62,12 @@ fetchAsync python ts (BlockedFetch (RunTask task) rvar) =
   void $
     async $ do
       resultsE <- Control.Exception.try $ python.run task
+      now <- Clock.toNanoSecs <$> Clock.getTime Clock.Monotonic
       case resultsE of
         Left ex -> putFailure rvar (ex :: SomeException)
-        Right (0, result) -> putSuccess rvar (addTS result)
-        Right (code, res) -> putFailure rvar (TaskError code res)
+        Right (0, result) -> putSuccess rvar (addTS now result)
+        Right (code, res) -> putFailure rvar (TaskError code (addTS now res))
   where
-    addTS = _Object . at "__haxible_ts" ?~ Number (fromInteger ts)
+    addTS now =
+      (_Object . at "__haxible_start" ?~ Number (fromInteger ts))
+        . (_Object . at "__haxible_end" ?~ Number (fromInteger now))

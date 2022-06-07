@@ -5,6 +5,7 @@ from ansible.cli import CLI
 from ansible.playbook.play import Play
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
+from ansible.plugins.loader import module_loader
 
 def loggy(msg):
     if os.environ.get("HAXIBLE_DEBUG"):
@@ -65,6 +66,7 @@ class PlaybookRunner:
         else:
             task_result = {**cb.results, **{"__haxible_many_hosts": True}}
         tqm.cleanup()
+        self.loader.cleanup_all_tmp_files()
         return [run_result, task_result]
 
 # TODO: pass inventory path
@@ -74,6 +76,7 @@ except IndexError:
     print("usage: wrapper.py inventory")
     exit(1)
 runner = PlaybookRunner(inventory)
+module_loader.add_directory(os.path.dirname(inventory) + "/library")
 
 def run_task(inputs):
     [play, task, env] = inputs

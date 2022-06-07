@@ -63,7 +63,7 @@ Given this playbook:
         - monitoring
 
     - name: Create storage
-      create_storage:
+      create_volume:
         name: "db"
       register: storage
 
@@ -96,7 +96,7 @@ Haxible runs three batches:
 [+] Batching 6 tasks
   ▶ Running create_object with {'name': 'network-create_network_private_uuid'}
   ▶ Running create_object with {'name': standalone-object'}
-  ▶ Running create_storage with {'name': 'db'}
+  ▶ Running create_volume with {'name': 'db'}
   ▶ Running create_instance {'name': 'monitoring', 'network': 'create_network_private_uuid'}
   ▶ Running create_instance {'name': 'frontend', 'network': 'create_network_private_uuid'}
   ▶ Running create_instance {'name': 'backend', 'network': 'create_network_private_uuid'}
