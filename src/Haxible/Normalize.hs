@@ -268,7 +268,7 @@ blockExpr task block = do
 
   (outs, dc) <- case block.rescues of
     [] -> do
-      blockDef <- normalizeDefinition (name) block.tasks
+      blockDef <- normalizeDefinition name block.tasks
       modify (#definitions %~ (blockDef :))
       pure (blockDef.outputs, DefinitionCall)
     _ -> do
