@@ -43,6 +43,7 @@ data Expr = Expr
 data Term
   = ModuleCall CallModule
   | DefinitionCall CallDefinition
+  | BlockRescueCall CallDefinition
   deriving (Show, Eq)
 
 data CallModule = CallModule {module_ :: Text, params :: Value, taskAttrs :: Vars}
@@ -128,6 +129,7 @@ solveRequirements defs = map updateCallEnv defs
         (newAvail, newNested) = case expr.term of
           ModuleCall _ -> ((expr.binder, expr.provides) : avail, nested)
           DefinitionCall dc -> (avail, (expr.binder, getOutputs dc.name) : nested)
+          BlockRescueCall rc -> (avail, (expr.binder, getOutputs (rc.name <> "Rescue")) : nested)
         newExpr = expr {requirements = expr.requirements <> directRequirement <> nestedRequirement}
 
         reMatch :: [Resource] -> Bool
@@ -263,14 +265,21 @@ blockExpr :: Task -> BlockValue -> State Env Expr
 blockExpr task block = do
   binder <- freshName "block" (fromMaybe "" task.name)
   let name = from binder
-  blockDef <- normalizeDefinition name block.tasks
-  modify (#definitions %~ (blockDef :))
 
-  unless (null block.rescues) $ error "block rescue is not yet implemented"
+  (outs, dc) <- case block.rescues of
+    [] -> do
+      blockDef <- normalizeDefinition (name) block.tasks
+      modify (#definitions %~ (blockDef :))
+      pure (blockDef.outputs, DefinitionCall)
+    _ -> do
+      blockDef <- normalizeDefinition (name <> "Main") block.tasks
+      rescueDef <- normalizeDefinition (name <> "Rescue") block.rescues
+      modify (#definitions %~ ([rescueDef, blockDef] <>))
+      pure (rescueDef.outputs, BlockRescueCall)
 
   expr <- moduleExpr task Null
-  let outputs = Left blockDef.outputs
-  pure $ expr {binder, outputs, term = DefinitionCall CallDefinition {name, baseEnv = taskVars task, playAttrs = []}}
+  let outputs = Left outs
+  pure $ expr {binder, outputs, term = dc CallDefinition {name, baseEnv = taskVars task, playAttrs = []}}
 
 normalizeTask :: Task -> State Env [Expr]
 normalizeTask task = do

@@ -57,6 +57,7 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
         traverser = case e.term of
           ModuleCall _ -> "traverseLoop"
           DefinitionCall _ -> "traverseInclude"
+          BlockRescueCall _ -> "traverseInclude"
         mkTraverse arg = [traverser, "(\\__haxible_loop_item -> "] <> callExpr <> [") ", arg]
 
     (extractFact, callExpr) = case e.term of
@@ -70,12 +71,14 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
           ]
         )
       DefinitionCall CallDefinition {name, playAttrs, baseEnv} ->
-        ( False,
-          [ name,
-            paren (textList (mkJsonArg <$> playAttrs) <> " <> playAttrs"),
-            paren (requirements <> " <> " <> textList (mkJsonArg <$> baseEnv) <> " <> baseEnv")
-          ]
-        )
+        (False, [name] <> cdExpr playAttrs baseEnv)
+      BlockRescueCall CallDefinition {name, playAttrs, baseEnv} ->
+        (False, ["tryRescue", name <> "Main", name <> "Rescue"] <> cdExpr playAttrs baseEnv)
+
+    cdExpr playAttrs baseEnv =
+      [ paren (textList (mkJsonArg <$> playAttrs) <> " <> playAttrs"),
+        paren (requirements <> " <> " <> textList (mkJsonArg <$> baseEnv) <> " <> baseEnv")
+      ]
 
 paren :: Text -> Text
 paren = Text.cons '(' . flip Text.snoc ')'

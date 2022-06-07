@@ -82,7 +82,7 @@ instance FromJSON TaskSyntax where
       <*> pure params
       <*> pure (items [module_] v)
     where
-      nonModuleAttributes = ["name", "register", "loop", "vars"]
+      nonModuleAttributes = ["name", "register", "loop", "vars", "rescue"]
 
 decodeFile :: (Show a, FromJSON a, MonadIO m) => FilePath -> m a
 decodeFile fp = do

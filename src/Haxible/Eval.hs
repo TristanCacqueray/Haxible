@@ -9,6 +9,7 @@ module Haxible.Eval
     traverseLoop,
     traverseInclude,
     cleanVar,
+    tryRescue,
     Value,
     Vars,
   )
@@ -26,6 +27,15 @@ import Haxible.Prelude
 import Haxl.Core hiding (env)
 import Language.Haskell.TH.Quote qualified
 import Text.Ginger
+
+type HaxiFun = Vars -> Vars -> AnsibleHaxl [Value]
+
+tryRescue :: HaxiFun -> HaxiFun -> HaxiFun
+tryRescue main rescue a b = do
+  res <- tryToHaxlException (main a b)
+  case res of
+    Left _ -> rescue a b
+    Right x -> pure x
 
 json :: Language.Haskell.TH.Quote.QuasiQuoter
 json = aesonQQ

@@ -1,0 +1,14 @@
+- hosts: localhost
+  tasks:
+    - block:
+        - name: block task
+          command: exit 1
+          register: block_result
+      rescue:
+        - name: rescue task
+          debug:
+            msg: "rescue task"
+          register: block_result
+
+    - debug:
+        var: block_result
