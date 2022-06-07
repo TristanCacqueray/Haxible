@@ -3,7 +3,6 @@ module Haxible.Connection (Connections (..), TaskCall (..), withConnections, cle
 
 import Control.Exception (bracket)
 import Data.Aeson (eitherDecodeStrict, encode)
-import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
 import Data.ByteString (hGetLine, toStrict)
 import Data.ByteString.Char8 (hPutStrLn)
@@ -98,8 +97,6 @@ withConnections count inventory callback =
               Left err -> error $ show output <> ": " <> err
 
       callback (Connections $ Data.Pool.withResource pool . runTask)
-
-    mkObj = Object . Data.Aeson.KeyMap.fromList . map (first Data.Aeson.Key.fromText)
 
     poolConfig :: Data.Pool.PoolConfig (Process Handle Handle ())
     poolConfig =

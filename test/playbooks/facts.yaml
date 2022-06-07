@@ -1,0 +1,15 @@
+- hosts: localhost
+  vars:
+    play_var: "play-var"
+  tasks:
+    - name: Simple fact
+      set_fact:
+        fact_var: "{{ play_var }}"
+
+    - name: Extra fact
+      set_fact:
+        extra_var: "extra-{{ fact_var }}"
+        cacheable: true
+
+    - debug:
+        var: extra_var

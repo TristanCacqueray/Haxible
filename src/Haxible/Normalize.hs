@@ -14,7 +14,6 @@ where
 import Data.Char qualified
 import Data.Map qualified as Map
 import Data.Text qualified as Text
-import Haxible.Eval (Vars)
 import Haxible.Import
 import Haxible.Prelude
 
@@ -178,24 +177,27 @@ freshName base identifier = do
 cleanName :: Text -> Text
 cleanName = mconcat . map Text.toTitle . Text.split (not . Data.Char.isAlphaNum)
 
+getRequirements :: [Resource] -> [Value] -> [Resource]
+getRequirements availables = concatMap findRequirements
+  where
+    findRequirements :: Value -> [Resource]
+    findRequirements v = case v of
+      String x -> case filter (\n -> dependencyValue (n.dep) `Text.isInfixOf` x) availables of
+        [] -> []
+        requirement -> requirement
+      Object x -> concatMap findRequirements x
+      Array x -> concatMap findRequirements x
+      _ -> []
+
 moduleExpr :: Task -> Value -> State Env Expr
 moduleExpr task value = do
   binder <- freshName task.module_ (fromMaybe "" task.name)
 
-  -- Look for requirements
   availables <- gets availables
-  let findRequirements :: Value -> [Resource]
-      findRequirements v = case v of
-        String x -> case filter (\n -> dependencyValue (n.dep) `Text.isInfixOf` x) availables of
-          [] -> []
-          requirement -> requirement
-        Object x -> concatMap findRequirements x
-        Array x -> concatMap findRequirements x
-        _ -> []
-      requires = concatMap findRequirements [loop, value, vars]
 
-  -- Look for provides
-  let provides = Resource binder <$> maybeToList register <> maybeToList destPath
+  -- Look for requirements and provides
+  let requires = getRequirements availables [loop, value, vars]
+      provides = Resource binder <$> maybeToList register <> maybeToList destPath
   modify (\env -> env {availables = provides <> availables})
 
   -- Create the expr
@@ -239,22 +241,43 @@ tasksExpr task includeName tasks = do
   where
     name = "tasks" <> cleanName includeName
 
-normalizeTask :: Task -> State Env Expr
+factsExpr :: Task -> Maybe Value -> Text -> Value -> State Env Expr
+factsExpr task cacheable name value = do
+  -- exprs
+  binder <- freshName "facts" (fromMaybe "" task.name)
+  availables <- gets availables
+  let requires = getRequirements availables [value]
+      resource = Resource {name = binder, dep = Register name}
+      provides = [resource]
+      outputs = Right provides
+      params = mkObj $ [(name, value)] <> maybe [] (\v -> [("cacheable", v)]) cacheable
+      term = ModuleCall CallModule {module_ = "set_fact", params, taskAttrs = []}
+      loop = Nothing
+      requirements = []
+  modify (\env -> env {availables = resource : availables})
+  -- expr <- moduleExpr task value
+  when (isJust (lookup "loop" task.attrs)) $ error "set_fact loop is not supported"
+  pure $ Expr {binder, requires, provides, outputs, requirements, loop, term}
+
+normalizeTask :: Task -> State Env [Expr]
 normalizeTask task = do
-  expr <- case task.params of
-    Module v -> moduleExpr task v
-    Role r -> roleExpr task r
-    Tasks name xs -> tasksExpr task name xs
+  exprs <- case task.params of
+    Module v -> (: []) <$> moduleExpr task v
+    Role r -> (: []) <$> roleExpr task r
+    Tasks name xs -> (: []) <$> tasksExpr task name xs
+    Facts vars -> traverse (uncurry (factsExpr task Nothing)) vars
+    CacheableFacts cacheable vars -> traverse (uncurry (factsExpr task (Just cacheable))) vars
     _ -> error "not implemented"
-  pure $ expr {loop, requirements = extraReq <> expr.requirements}
+  pure $ map addLoopReq exprs
   where
+    addLoopReq expr = expr {loop, requirements = extraReq <> expr.requirements}
     (loop, extraReq) = case lookup "loop" task.attrs of
       Just v -> (Just v, [Requirement "item" LoopVar])
       Nothing -> (Nothing, [])
 
 normalizeDefinition :: Text -> [Task] -> State Env Definition
 normalizeDefinition name tasks = do
-  exprs <- traverse normalizeTask tasks
+  exprs <- concat <$> traverse normalizeTask tasks
   let provides = nub $ concatMap (.provides) exprs
       requires = nub $ filter (`notElem` provides) $ concatMap (.requires) exprs
       outputs = Environment $ (\e -> (e.binder, e.outputs)) <$> exprs

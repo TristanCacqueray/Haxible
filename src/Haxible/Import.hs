@@ -29,6 +29,8 @@ data TaskValue
   = Module Value
   | Role RoleValue
   | Tasks Text [Task]
+  | Facts Vars
+  | CacheableFacts Value Vars
   | Block BlockValue
   deriving (Eq, Show)
 
@@ -50,6 +52,7 @@ resolveTask task = do
   taskValue <- case task.module_ of
     "include_role" -> includeRole
     "include_tasks" -> includeTasks
+    "set_fact" -> setFact
     "block" -> block
     _ -> pure $ Module task.params
   pure $ task {params = taskValue}
@@ -69,7 +72,7 @@ resolveTask task = do
           name = from role_name
       role_path <- getRolePath role_name $ "tasks" </> "main.yaml"
       role_defaults <- getRolePath role_name $ "defaults" </> "main.yaml"
-      Vars defaults <- decodeFile role_defaults
+      JsonVars defaults <- decodeFile role_defaults
       withFile role_path $ \baseTasks -> do
         tasks <- traverse resolveTask baseTasks
         pure $ Role RoleValue {name, tasks, defaults}
@@ -90,6 +93,12 @@ resolveTask task = do
     unwrapJSON = \case
       Error e -> error $ "Unexpected json: " <> e
       Success a -> a
+
+    setFact = do
+      let JsonVars vars = unwrapJSON . fromJSON $ task.params
+      pure $ case lookup "cacheable" vars of
+        Just v -> CacheableFacts v (filter (\var -> fst var /= "cacheable") vars)
+        Nothing -> Facts vars
 
 -- | Transform a 'PlaySyntax' into a resolved 'Play'
 resolveImport :: FilePath -> PlaySyntax -> IO Play

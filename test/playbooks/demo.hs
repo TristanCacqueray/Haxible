@@ -31,7 +31,7 @@ playLocalhost0 playAttrs baseEnv = do
 roleContainerService :: Vars -> Vars -> AnsibleHaxl [Value]
 roleContainerService playAttrs baseEnv = do
   include_vars0 <- runTask playAttrs "include_vars" [json|{"include_vars":"redhat.yaml"}|] ([] <> baseEnv)
-  set_fact0 <- runTask playAttrs "set_fact" [json|{"set_fact":{"command":"{{ runtime }} run {{ image_name }}:{{ image_tag }}"},"vars":{"image_name":"ubi8"}}|] ([] <> baseEnv)
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Running {{ command }}"}}|] ([] <> baseEnv)
-  pure $ [include_vars0] <> [set_fact0] <> [debug0]
+  facts0 <- extractFact <$> runTask playAttrs "set_fact" [json|{"set_fact":{"command":"{{ runtime }} run {{ image_name }}:{{ image_tag }}"}}|] ([] <> baseEnv)
+  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Running {{ command }}"}}|] ([("command", facts0)] <> baseEnv)
+  pure $ [include_vars0] <> [facts0] <> [debug0]
 

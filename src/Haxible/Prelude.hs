@@ -2,6 +2,8 @@
 module Haxible.Prelude
   ( module Witch,
     module Data.Maybe,
+    Vars,
+    mkObj,
     Text,
     LByteString,
     Data.Aeson.Value (..),
@@ -34,6 +36,8 @@ import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.Aeson qualified
+import Data.Aeson.Key qualified
+import Data.Aeson.KeyMap qualified
 import Data.Aeson.Lens
 import Data.Bifunctor qualified
 import Data.ByteString.Lazy qualified
@@ -50,3 +54,8 @@ import System.FilePath
 import Witch
 
 type LByteString = Data.ByteString.Lazy.ByteString
+
+type Vars = [(Text, Data.Aeson.Value)]
+
+mkObj :: [(Text, Data.Aeson.Value)] -> Data.Aeson.Value
+mkObj = Data.Aeson.Object . Data.Aeson.KeyMap.fromList . map (Data.Bifunctor.first Data.Aeson.Key.fromText)

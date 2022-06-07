@@ -1,8 +1,6 @@
 module Haxible.Codegen (renderScript) where
 
 import Data.Aeson (encode)
-import Data.Aeson.Key qualified
-import Data.Aeson.KeyMap qualified
 import Data.Text qualified as Text
 import Haxible.Normalize
 import Haxible.Prelude
@@ -52,26 +50,32 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
       Just (Array xs) -> mkTraverse $ textList (embedJSON <$> toList xs)
       Just (String v) -> mkTraverse $ "(envLoop " <> quote v <> " " <> paren (requirements <> " <> baseEnv") <> ")"
       Just _ -> error $ "Invalid loop expression: " <> show e.loop
-      Nothing -> callExpr
+      Nothing
+        | extractFact -> ["extractFact", "<$>"] <> callExpr
+        | otherwise -> callExpr
       where
         traverser = case e.term of
           ModuleCall _ -> "traverseLoop"
           DefinitionCall _ -> "traverseInclude"
         mkTraverse arg = [traverser, "(\\__haxible_loop_item -> "] <> callExpr <> [") ", arg]
 
-    callExpr = case e.term of
+    (extractFact, callExpr) = case e.term of
       ModuleCall CallModule {module_, params, taskAttrs} ->
-        [ "runTask",
-          "playAttrs",
-          quote module_,
-          embedJSON (obj $ [(module_, params)] <> taskAttrs),
-          paren (requirements <> " <> baseEnv")
-        ]
+        ( module_ == "set_fact",
+          [ "runTask",
+            "playAttrs",
+            quote module_,
+            embedJSON (mkObj $ [(module_, params)] <> taskAttrs),
+            paren (requirements <> " <> baseEnv")
+          ]
+        )
       DefinitionCall CallDefinition {name, playAttrs, baseEnv} ->
-        [ name,
-          paren (textList (mkJsonArg <$> playAttrs) <> " <> playAttrs"),
-          paren (requirements <> " <> " <> textList (mkJsonArg <$> baseEnv) <> " <> baseEnv")
-        ]
+        ( False,
+          [ name,
+            paren (textList (mkJsonArg <$> playAttrs) <> " <> playAttrs"),
+            paren (requirements <> " <> " <> textList (mkJsonArg <$> baseEnv) <> " <> baseEnv")
+          ]
+        )
 
 paren :: Text -> Text
 paren = Text.cons '(' . flip Text.snoc ')'
@@ -87,6 +91,3 @@ mkJsonArg (n, v) = "(" <> quote n <> ", " <> embedJSON v <> ")"
 
 textList :: [Text] -> Text
 textList xs = "[" <> Text.intercalate ", " xs <> "]"
-
-obj :: [(Text, Value)] -> Value
-obj = Object . Data.Aeson.KeyMap.fromList . map (first Data.Aeson.Key.fromText)

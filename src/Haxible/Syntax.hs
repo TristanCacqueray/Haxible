@@ -1,7 +1,7 @@
 -- | This module contains JSON decoder for the raw syntax.
 module Haxible.Syntax
   ( decodeFile,
-    Vars (..),
+    JsonVars (..),
     BasePlay (..),
     BaseTask (..),
     TaskSyntax,
@@ -36,7 +36,7 @@ newtype Playbook = Playbook [PlaySyntax]
   deriving (Generic, Eq, Show)
   deriving newtype (FromJSON)
 
-newtype Vars = Vars [(Text, Value)]
+newtype JsonVars = JsonVars [(Text, Value)]
   deriving (Eq, Show)
 
 type TaskSyntax = BaseTask Value
@@ -48,8 +48,8 @@ items xs = filter (isUnknown . fst) . map (first Data.Aeson.Key.toText) . Data.A
   where
     isUnknown x = x `notElem` xs
 
-instance FromJSON Vars where
-  parseJSON = withObject "Vars" $ pure . Vars . items []
+instance FromJSON JsonVars where
+  parseJSON = withObject "Vars" $ pure . JsonVars . items []
 
 instance FromJSON PlaySyntax where
   parseJSON = withObject "BasePlay" $ \v ->

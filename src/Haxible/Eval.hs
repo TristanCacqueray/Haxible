@@ -5,6 +5,7 @@ module Haxible.Eval
     runTask,
     json,
     envLoop,
+    extractFact,
     traverseLoop,
     traverseInclude,
     cleanVar,
@@ -25,8 +26,6 @@ import Haxible.Prelude
 import Haxl.Core hiding (env)
 import Language.Haskell.TH.Quote qualified
 import Text.Ginger
-
-type Vars = [(Text, Value)]
 
 json :: Language.Haskell.TH.Quote.QuasiQuoter
 json = aesonQQ
@@ -52,6 +51,13 @@ traverseLoop f xs = loopResult <$> traverse f xs
 
 traverseInclude :: Applicative f => (a -> f [Value]) -> [a] -> f [Value]
 traverseInclude f xs = concat <$> traverse f xs
+
+extractFact :: Value -> Value
+extractFact v = case preview (key "ansible_facts") v of
+  Just (Object obj) -> case Data.Aeson.KeyMap.toList obj of
+    [(_, value)] -> value
+    xs -> error $ "Multiple facts found: " <> show xs
+  _ -> error $ "Can't find ansible_facts in " <> show v
 
 loopResult :: [Value] -> Value
 loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs

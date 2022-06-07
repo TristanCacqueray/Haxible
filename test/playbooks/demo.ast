@@ -371,7 +371,12 @@
 , Definition
     { name = "roleContainerService"
     , requires = []
-    , provides = []
+    , provides =
+        [ Resource
+            { name = Binder "facts0"
+            , dep = Register "command"
+            }
+        ]
     , outputs = Environment
         { getEnv =
             [
@@ -379,8 +384,13 @@
                 , Right []
                 )
             ,
-                ( Binder "set_fact0"
-                , Right []
+                ( Binder "facts0"
+                , Right
+                    [ Resource
+                        { name = Binder "facts0"
+                        , dep = Register "command"
+                        }
+                    ]
                 )
             ,
                 ( Binder "debug0"
@@ -405,10 +415,20 @@
                 )
             }
         , Expr
-            { binder = Binder "set_fact0"
+            { binder = Binder "facts0"
             , requires = []
-            , provides = []
-            , outputs = Right []
+            , provides =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "command"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "command"
+                    }
+                ]
             , requirements = []
             , loop = Nothing
             , term = ModuleCall
@@ -422,28 +442,27 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "vars"
-                            , Object
-                                ( fromList
-                                    [
-                                        ( "image_name"
-                                        , String "ubi8"
-                                        )
-                                    ]
-                                )
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
         , Expr
             { binder = Binder "debug0"
-            , requires = []
+            , requires =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "command"
+                    }
+                ]
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , requirements =
+                [ Requirement
+                    { name = "command"
+                    , origin = Direct
+                        ( Binder "facts0" )
+                    }
+                ]
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule

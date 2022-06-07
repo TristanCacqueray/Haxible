@@ -1,0 +1,204 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "factsSimpleFact0"
+                    , dep = Register "fact_var"
+                    }
+                , Resource
+                    { name = Binder "factsExtraFact0"
+                    , dep = Register "extra_var"
+                    }
+                ]
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , playAttrs =
+                        [
+                            ( "hosts"
+                            , String "localhost"
+                            )
+                        ,
+                            ( "vars"
+                            , Object
+                                ( fromList
+                                    [
+                                        ( "play_var"
+                                        , String "play-var"
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    , baseEnv = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "factsSimpleFact0"
+            , dep = Register "fact_var"
+            }
+        , Resource
+            { name = Binder "factsExtraFact0"
+            , dep = Register "extra_var"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "factsSimpleFact0"
+                , Right
+                    [ Resource
+                        { name = Binder "factsSimpleFact0"
+                        , dep = Register "fact_var"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "factsExtraFact0"
+                , Right
+                    [ Resource
+                        { name = Binder "factsExtraFact0"
+                        , dep = Register "extra_var"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , exprs =
+        [ Expr
+            { binder = Binder "factsSimpleFact0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "factsSimpleFact0"
+                    , dep = Register "fact_var"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "factsSimpleFact0"
+                    , dep = Register "fact_var"
+                    }
+                ]
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "set_fact"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "fact_var"
+                                , String "{{ play_var }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "factsExtraFact0"
+            , requires =
+                [ Resource
+                    { name = Binder "factsSimpleFact0"
+                    , dep = Register "fact_var"
+                    }
+                ]
+            , provides =
+                [ Resource
+                    { name = Binder "factsExtraFact0"
+                    , dep = Register "extra_var"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "factsExtraFact0"
+                    , dep = Register "extra_var"
+                    }
+                ]
+            , requirements =
+                [ Requirement
+                    { name = "fact_var"
+                    , origin = Direct
+                        ( Binder "factsSimpleFact0" )
+                    }
+                ]
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "set_fact"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "cacheable"
+                                , Bool True
+                                )
+                            ,
+                                ( "extra_var"
+                                , String "extra-{{ fact_var }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug0"
+            , requires =
+                [ Resource
+                    { name = Binder "factsExtraFact0"
+                    , dep = Register "extra_var"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "extra_var"
+                    , origin = Direct
+                        ( Binder "factsExtraFact0" )
+                    }
+                ]
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "var"
+                                , String "extra_var"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        ]
+    }
+]
