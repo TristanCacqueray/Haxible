@@ -45,6 +45,7 @@ library
     , aeson-qq
     , ansi-terminal
     , containers
+    , directory
     , lens-aeson
     , lens
     , generic-lens

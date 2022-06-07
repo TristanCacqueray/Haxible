@@ -1,0 +1,10 @@
+- hosts: localhost
+  tasks:
+    - stat:
+        path: /
+      register: r1
+
+- hosts: localhost
+  tasks:
+    - debug:
+        msg: "r1 is {{ r1 }}"

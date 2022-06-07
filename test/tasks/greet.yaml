@@ -1,0 +1,6 @@
+- name: Included task
+  debug:
+    msg: Hello {{ include_param }}
+  register: included_result
+
+- include_tasks: "./other-tasks.yaml"

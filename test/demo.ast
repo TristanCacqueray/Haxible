@@ -1,0 +1,465 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "create_networkCreateNetwork0"
+                    , dep = Register "network"
+                    }
+                , Resource
+                    { name = Binder "create_storageCreateStorage0"
+                    , dep = Register "storage"
+                    }
+                ]
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , playAttrs =
+                        [
+                            ( "hosts"
+                            , String "localhost"
+                            )
+                        ]
+                    , baseEnv = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "create_networkCreateNetwork0"
+            , dep = Register "network"
+            }
+        , Resource
+            { name = Binder "create_storageCreateStorage0"
+            , dep = Register "storage"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "create_networkCreateNetwork0"
+                , Right
+                    [ Resource
+                        { name = Binder "create_networkCreateNetwork0"
+                        , dep = Register "network"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "create_instanceCreateInstances0"
+                , Right []
+                )
+            ,
+                ( Binder "create_storageCreateStorage0"
+                , Right
+                    [ Resource
+                        { name = Binder "create_storageCreateStorage0"
+                        , dep = Register "storage"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "create_instanceCreateDatabase0"
+                , Right []
+                )
+            ,
+                ( Binder "create_objectCreateObject0"
+                , Right []
+                )
+            ,
+                ( Binder "create_objectCreateNetworkObject0"
+                , Right []
+                )
+            ,
+                ( Binder "roleContainerService0"
+                , Right []
+                )
+            ]
+        }
+    , exprs =
+        [ Expr
+            { binder = Binder "create_networkCreateNetwork0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "create_networkCreateNetwork0"
+                    , dep = Register "network"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "create_networkCreateNetwork0"
+                    , dep = Register "network"
+                    }
+                ]
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "create_network"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "name"
+                                , String "private"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create network"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "create_instanceCreateInstances0"
+            , requires =
+                [ Resource
+                    { name = Binder "create_networkCreateNetwork0"
+                    , dep = Register "network"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "item"
+                    , origin = LoopVar
+                    }
+                , Requirement
+                    { name = "network"
+                    , origin = Direct
+                        ( Binder "create_networkCreateNetwork0" )
+                    }
+                ]
+            , loop = Just
+                ( Array
+                    [ String "backend"
+                    , String "frontend"
+                    , String "monitoring"
+                    ]
+                )
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "create_instance"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "name"
+                                , String "{{ item }}"
+                                )
+                            ,
+                                ( "network"
+                                , String "{{ network.uid }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create instances"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "create_storageCreateStorage0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "create_storageCreateStorage0"
+                    , dep = Register "storage"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "create_storageCreateStorage0"
+                    , dep = Register "storage"
+                    }
+                ]
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "create_storage"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "name"
+                                , String "db"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create storage"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "create_instanceCreateDatabase0"
+            , requires =
+                [ Resource
+                    { name = Binder "create_networkCreateNetwork0"
+                    , dep = Register "network"
+                    }
+                , Resource
+                    { name = Binder "create_storageCreateStorage0"
+                    , dep = Register "storage"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "storage"
+                    , origin = Direct
+                        ( Binder "create_storageCreateStorage0" )
+                    }
+                , Requirement
+                    { name = "network"
+                    , origin = Direct
+                        ( Binder "create_networkCreateNetwork0" )
+                    }
+                ]
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "create_instance"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "name"
+                                , String "database"
+                                )
+                            ,
+                                ( "network"
+                                , String "{{ network.uid }}"
+                                )
+                            ,
+                                ( "volume"
+                                , String "{{ storage.uid }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create database"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "create_objectCreateObject0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "create_object"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "name"
+                                , String "standalone-object"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create object"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "create_objectCreateNetworkObject0"
+            , requires =
+                [ Resource
+                    { name = Binder "create_networkCreateNetwork0"
+                    , dep = Register "network"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "network"
+                    , origin = Direct
+                        ( Binder "create_networkCreateNetwork0" )
+                    }
+                ]
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "create_object"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "name"
+                                , String "network-{{ network.uid }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create network object"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "roleContainerService0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "roleContainerService"
+                    , playAttrs = []
+                    , baseEnv =
+                        [
+                            ( "image_name"
+                            , String "test"
+                            )
+                        ,
+                            ( "image_tag"
+                            , String "latest"
+                            )
+                        ,
+                            ( "runtime_arg"
+                            , String "--log-level debug"
+                            )
+                        ]
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "roleContainerService"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "include_vars0"
+                , Right []
+                )
+            ,
+                ( Binder "set_fact0"
+                , Right []
+                )
+            ,
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , exprs =
+        [ Expr
+            { binder = Binder "include_vars0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "include_vars"
+                    , params = String "redhat.yaml"
+                    , taskAttrs = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "set_fact0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "set_fact"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "command"
+                                , String "{{ runtime }} run {{ image_name }}:{{ image_tag }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "vars"
+                            , Object
+                                ( fromList
+                                    [
+                                        ( "image_name"
+                                        , String "ubi8"
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "Running {{ command }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        ]
+    }
+]

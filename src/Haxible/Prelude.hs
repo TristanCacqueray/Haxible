@@ -24,6 +24,7 @@ module Haxible.Prelude
     module Control.Monad,
     module Control.Applicative,
     module Data.Foldable,
+    module System.Directory,
   )
 where
 
@@ -43,6 +44,7 @@ import Data.Maybe
 import Data.Text (Text)
 import Debug.Trace qualified
 import GHC.Generics qualified
+import System.Directory
 import System.Environment qualified
 import System.FilePath
 import Witch

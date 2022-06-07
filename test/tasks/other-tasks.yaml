@@ -1,0 +1,7 @@
+- name: Unused include
+  debug:
+  register: _unused
+- name: Nested included task
+  debug:
+    msg: Nested {{ include_param }}
+  register: nested_included_result

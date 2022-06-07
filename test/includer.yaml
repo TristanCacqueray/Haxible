@@ -1,6 +1,6 @@
 - hosts: localhost
   tasks:
-    - include_tasks: "./tasks.yaml"
+    - include_tasks: "./tasks/greet.yaml"
       vars:
         include_param: "{{ item }}"
       loop: ["Haxible", "World"]

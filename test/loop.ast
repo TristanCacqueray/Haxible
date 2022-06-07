@@ -1,0 +1,145 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "debugCallTaskInALoop0"
+                    , dep = Register "loop_res"
+                    }
+                ]
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , playAttrs =
+                        [
+                            ( "hosts"
+                            , String "localhost"
+                            )
+                        ]
+                    , baseEnv = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "debugCallTaskInALoop0"
+            , dep = Register "loop_res"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debugCallTaskInALoop0"
+                , Right
+                    [ Resource
+                        { name = Binder "debugCallTaskInALoop0"
+                        , dep = Register "loop_res"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , exprs =
+        [ Expr
+            { binder = Binder "debugCallTaskInALoop0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "debugCallTaskInALoop0"
+                    , dep = Register "loop_res"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "debugCallTaskInALoop0"
+                    , dep = Register "loop_res"
+                    }
+                ]
+            , requirements =
+                [ Requirement
+                    { name = "item"
+                    , origin = LoopVar
+                    }
+                ]
+            , loop = Just
+                ( Array
+                    [ String "A"
+                    , String "B"
+                    , String "C"
+                    ]
+                )
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "loop {{ item }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Call task in a loop"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug0"
+            , requires =
+                [ Resource
+                    { name = Binder "debugCallTaskInALoop0"
+                    , dep = Register "loop_res"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "loop_res"
+                    , origin = Direct
+                        ( Binder "debugCallTaskInALoop0" )
+                    }
+                ]
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "loop result is {{ loop_res }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        ]
+    }
+]
