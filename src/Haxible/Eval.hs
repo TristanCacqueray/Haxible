@@ -16,6 +16,7 @@ module Haxible.Eval
 where
 
 import Data.Aeson hiding (json)
+import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
 import Data.Aeson.QQ
 import Data.Default (def)
@@ -72,16 +73,25 @@ extractFact v = case preview (key "ansible_facts") v of
 loopResult :: [Value] -> Value
 loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
   where
+    play = case xs of
+      (x : _) -> copyKey "__haxible_play" x <> copyKey "__haxible_module" x
+      _ -> []
+    copyKey k x = maybe [] (\p -> [(Data.Aeson.Key.fromText k, p)]) (preview (key k) x)
     attrs =
       [ ("results", Array (Data.Vector.fromList $ cleanVar <$> xs)),
         ("msg", "All items completed"),
         ("skipped", Bool $ all (fromMaybe False . preview (key "skipped" . _Bool)) xs),
         ("changed", Bool $ any (fromMaybe False . preview (key "changed" . _Bool)) xs)
       ]
+        <> play
 
 runTask :: [(Text, Value)] -> Text -> Value -> [(Text, Value)] -> AnsibleHaxl Value
-runTask playAttrs module_ taskObject baseEnv = dataFetch (RunTask (TaskCall {playAttrs, taskObject, env, module_}))
+runTask playAttrs module_ taskObject baseEnv =
+  addModule <$> dataFetch (RunTask (TaskCall {playAttrs, taskObject, env, module_}))
   where
+    addModule = \case
+      Object obj -> Object $ Data.Aeson.KeyMap.insert "__haxible_module" (String module_) obj
+      x -> x
     env = concatMap checkManyHost baseEnv
     -- When a task run on many host, we register a single variable with all the results,
     -- thus when accessing the variable, we need to lookup the current host result.
