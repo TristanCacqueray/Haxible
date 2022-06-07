@@ -21,25 +21,31 @@ import System.Process (Pid, getPid)
 import System.Process.Typed
 
 data TaskCall = TaskCall
-  { -- | The playbook attributes, such as `hosts` or `become`
+  { -- | The playbook attributes, such as `hosts` or `become`.
     playAttrs :: [(Text, Value)],
-    -- | The module name
+    -- | The module name for debug purpose, it is more convenient to access than reading it from the task object.
     module_ :: Text,
-    -- | The task object, e.g `{"file": {"path": "/etc/zuul"}}`
+    -- | The task object, e.g `{"file": {"path": "/etc/zuul"}}`.
     taskObject :: Value,
-    -- | A list of variables, such as `register` names or `include_vars`
-    env :: [(Text, Value)]
+    -- | A list of variables to be added to play vars, e.g. for the attribute template values.
+    playVars :: [(Text, Value)]
   }
   deriving (Eq, Show, Typeable, Generic, Hashable)
 
 -- | A connection run converts a TaskCall into a (result code, result value)
 newtype Connections = Connections {run :: TaskCall -> IO (Int, Value)}
 
+-- | Add horizontal line separator
+-- >>> addSep 10 "TASK"
+-- "TASK ****"
 addSep :: Int -> Text -> Text
 addSep width x = x <> " " <> sep
   where
     sep = Text.replicate (width - Text.length x - 2) "*"
 
+-- | Format process id.
+-- >>> formatPid 42
+-- "<42>"
 formatPid :: Pid -> Text
 formatPid pid = "<" <> from (show pid) <> ">"
 
@@ -86,7 +92,7 @@ withConnections count inventory callback =
 
       let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
-            let callParams = [mkObj taskCall.playAttrs, taskCall.taskObject, mkObj taskCall.env]
+            let callParams = [mkObj taskCall.playAttrs, taskCall.taskObject, mkObj taskCall.playVars]
             pid <- fromMaybe (error "no pid?!") <$> getPid (unsafeProcessHandle p)
             say (addSep termWidth (formatTask pid taskCall))
             hPutStrLn (getStdin p) (toStrict $ encode callParams)

@@ -2,6 +2,7 @@
 module Haxible.Prelude
   ( module Witch,
     module Data.Maybe,
+    json,
     Vars,
     mkObj,
     quote,
@@ -42,6 +43,7 @@ import Data.Aeson qualified
 import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
 import Data.Aeson.Lens
+import Data.Aeson.QQ
 import Data.Bifunctor qualified
 import Data.ByteString.Lazy qualified
 import Data.Foldable
@@ -53,6 +55,7 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Debug.Trace qualified
 import GHC.Generics qualified
+import Language.Haskell.TH.Quote qualified
 import System.Directory
 import System.Environment qualified
 import System.FilePath
@@ -67,3 +70,6 @@ mkObj = Data.Aeson.Object . Data.Aeson.KeyMap.fromList . map (Data.Bifunctor.fir
 
 quote :: Text -> Text
 quote = Text.cons '"' . flip Text.snoc '"'
+
+json :: Language.Haskell.TH.Quote.QuasiQuoter
+json = aesonQQ

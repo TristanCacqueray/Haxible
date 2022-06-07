@@ -17,6 +17,10 @@ import Data.Text qualified as Text
 import Haxible.Import
 import Haxible.Prelude
 
+-- $setup
+-- >>> let mkTask attrs = BaseTask {name = Nothing, module_ = "", params = Module "", attrs}
+-- >>> let mkRes name = Resource (Binder name) (Register name)
+
 -- | A definition is like a function, to represent a play, a role, or a list of tasks.
 data Definition = Definition
   { name :: Text,
@@ -165,8 +169,8 @@ solveRequirements defs = map updateCallEnv defs
               | otherwise = []
 
 -- | Create a unique name:
--- >>> runState emptyEnv (freshName "role" "my-role")
--- "roleMyRole0"
+-- >>> evalState (traverse (freshName "play") ["host", "host"]) emptyEnv
+-- [Binder "playHost0",Binder "playHost1"]
 freshName :: Text -> Text -> State Env Binder
 freshName base identifier = do
   names <- gets names
@@ -176,9 +180,15 @@ freshName base identifier = do
   modify (\env -> env {names = newName : names})
   pure $ Binder newName
 
+-- | Convert to ascii title
+-- >>> cleanName <$> ["create host", "start:network"]
+-- ["CreateHost","StartNetwork"]
 cleanName :: Text -> Text
 cleanName = mconcat . map Text.toTitle . Text.split (not . Data.Char.isAlphaNum)
 
+-- | Extract requirements from a task value
+-- >>> getRequirements (mkRes <$> ["hostname", "file_stat"]) [[json|{"ping": "{{ hostname }}"}|]]
+-- [Resource {name = Binder "hostname", dep = Register "hostname"}]
 getRequirements :: [Resource] -> [Value] -> [Resource]
 getRequirements availables = concatMap findRequirements
   where
@@ -310,9 +320,15 @@ normalizePlay play = do
   Binder name <- freshName "play" (playName play)
   normalizeDefinition name play.tasks
 
+-- | Extract the hosts from a play attributes:
+-- >>> playName BasePlay {tasks = [], attrs = [("hosts", [json|"localhost"|])]}
+-- "localhost"
 playName :: Play -> Text
 playName play = fromMaybe "" (preview _String =<< lookup "hosts" play.attrs)
 
+-- | Extract the vars from a task object:
+-- >>> taskVars (mkTask [("vars", [json|{"test": null}|])])
+-- [("test",Null)]
 taskVars :: Task -> Vars
 taskVars task = itoListOf members (fromMaybe Null $ lookup "vars" task.attrs)
 

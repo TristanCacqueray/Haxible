@@ -1,5 +1,10 @@
 #!/bin/python
-# The ansible python module execution wrapper
+# The ansible python module execution wrapper.
+# This code provides a performance boost by keeping the ansible
+# modules code in memory. Though using the python library is not
+# a requirements for Haxible, and the execution could be done
+# using the ansible-playbook command line with a custom callback
+# to record the task results.
 import sys, json, os
 from ansible.cli import CLI
 from ansible.playbook.play import Play
@@ -11,7 +16,7 @@ def loggy(msg):
     if os.environ.get("HAXIBLE_DEBUG"):
         print(f" {os.getpid()} [python] {msg}", file=sys.stderr)
 
-# PlaybookRunner is an ansible wrapper.
+# PlaybookRunner is the ansible abstraction.
 # The run function takes a playbook dictionary and it returns the task result.
 class PlaybookRunner:
     def __init__(self, inventory):
@@ -34,7 +39,7 @@ class PlaybookRunner:
         self.loader, self.inventory, self.variable_manager = self.cli._play_prereqs()
 
     def run(self, playbook):
-        # A callback to record task results
+        # A callback to record task results per hosts.
         class CallbackModule(CallbackBase):
             CALLBACK_VERSION = 2.0
             CALLBACK_TYPE = 'notification'
@@ -46,6 +51,7 @@ class PlaybookRunner:
                 self.results = dict()
 
             def add_result(self, host, result, ignore_errors=False):
+                # The play only has a single task.
                 if host in self.results:
                     print(f"Multiple result for {host} {result}: {self.results}", file=sys.stderr)
                     exit(1)
@@ -64,30 +70,40 @@ class PlaybookRunner:
         if len(cb.results) == 1:
             task_result = list(cb.results.values())[0]
         else:
-            task_result = {**cb.results, **{"__haxible_many_hosts": True}}
+            # For multi host results, the output is a Map Host Result with a special key to indicate
+            # the result is for multiple host. Later, the registered value will be substituted back
+            # by the `Haxible.Eval.runTask` function.
+            task_result = {**cb.results, **{"__haxible_multi_hosts": True}}
         tqm.cleanup()
         self.loader.cleanup_all_tmp_files()
+        # Returns the code (0 for success, ...) and the result.
         return [run_result, task_result]
 
-# TODO: pass inventory path
 try:
     inventory = sys.argv[1]
 except IndexError:
     print("usage: wrapper.py inventory")
     exit(1)
 runner = PlaybookRunner(inventory)
+# TODO: check if ansible.cfg needs to be supplied.
+# TODO: use the playPath (instead of the inventory) for the library location.
 module_loader.add_directory(os.path.dirname(inventory) + "/library")
 
 def run_task(inputs):
-    [play, task, env] = inputs
-    if env:
+    # The Haxl DataSource provides the play without tasks, the task to run
+    # and extra environment vars for the play.
+    [play, task, playVars] = inputs
+    # Prepare the final play structure.
+    if playVars:
         play.setdefault("vars", {})
-        play["vars"].update(env)
+        play["vars"].update(playVars)
     loggy(f"{json.dumps(play)}: Running task {json.dumps(task)}")
     play["tasks"] = [task]
     play["gather_facts"] = "no"
+    # Call ansible-playbook
     result = runner.run(play.copy())
     loggy(f"-> {result}")
+    # Record the full play structure in the task for debug purpose.
     result[1]["__haxible_play"] = play
     return result
 

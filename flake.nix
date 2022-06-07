@@ -75,6 +75,8 @@
             hlint
             pkgs.haskell-language-server
             pkgs.plantuml
+            # for `cabal repl --with-ghc=doctest`
+            doctest_0_20_0
           ];
         };
 

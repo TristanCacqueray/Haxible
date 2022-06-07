@@ -80,14 +80,26 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
         paren (requirements <> " <> " <> textList (mkJsonArg <$> baseEnv) <> " <> baseEnv")
       ]
 
+-- | Add parenthesis
+-- >>> paren "toto"
+-- "(toto)"
 paren :: Text -> Text
 paren = Text.cons '(' . flip Text.snoc ')'
 
+-- | Create json quasi quote
+-- >>> embedJSON Null
+-- "[json|null|]"
 embedJSON :: Value -> Text
 embedJSON v = "[json|" <> unsafeFrom (Data.Aeson.encode v) <> "|]"
 
+-- | Create task arguments
+-- >>> mkJsonArg (("test", Null))
+-- "(\"test\", [json|null|])"
 mkJsonArg :: (Text, Value) -> Text
 mkJsonArg (n, v) = "(" <> quote n <> ", " <> embedJSON v <> ")"
 
+-- | Format a text list
+-- >>> textList ["a", "b"]
+-- "[a, b]"
 textList :: [Text] -> Text
 textList xs = "[" <> Text.intercalate ", " xs <> "]"
