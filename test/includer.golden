@@ -475,19 +475,19 @@
   playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
   playLocalhost0 playAttrs baseEnv = do
     tasksTaskstasksyaml0 <- traverseInclude (\__haxible_loop_item ->  tasksTasksYaml ([] <> playAttrs) ([("item", __haxible_loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> baseEnv) )  [[json|"Haxible"|], [json|"World"|]]
-    debug0 <- runTask playAttrs [json|{"debug":{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}}|] ([("included_result", tasksTaskstasksyaml0 !! 0), ("nested_included_result", tasksTaskstasksyaml0 !! 2)] <> baseEnv)
+    debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}}|] ([("included_result", tasksTaskstasksyaml0 !! 0), ("nested_included_result", tasksTaskstasksyaml0 !! 2)] <> baseEnv)
     pure $ tasksTaskstasksyaml0 <> [debug0]
 
   tasksTasksYaml :: Vars -> Vars -> AnsibleHaxl [Value]
   tasksTasksYaml playAttrs baseEnv = do
-    debugIncludedTask0 <- runTask playAttrs [json|{"debug":{"msg":"Hello {{ include_param }}"},"name":"Included task"}|] ([] <> baseEnv)
+    debugIncludedTask0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Hello {{ include_param }}"},"name":"Included task"}|] ([] <> baseEnv)
     tasksTasksothertasksyaml0 <- tasksOtherTasksYaml ([] <> playAttrs) ([] <> [] <> baseEnv)
     pure $ [debugIncludedTask0] <> tasksTasksothertasksyaml0
 
   tasksOtherTasksYaml :: Vars -> Vars -> AnsibleHaxl [Value]
   tasksOtherTasksYaml playAttrs baseEnv = do
-    debugUnusedInclude0 <- runTask playAttrs [json|{"debug":null,"name":"Unused include"}|] ([] <> baseEnv)
-    debugNestedIncludedTask0 <- runTask playAttrs [json|{"debug":{"msg":"Nested {{ include_param }}"},"name":"Nested included task"}|] ([] <> baseEnv)
+    debugUnusedInclude0 <- runTask playAttrs "debug" [json|{"debug":null,"name":"Unused include"}|] ([] <> baseEnv)
+    debugNestedIncludedTask0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Nested {{ include_param }}"},"name":"Nested included task"}|] ([] <> baseEnv)
     pure $ [debugUnusedInclude0] <> [debugNestedIncludedTask0]
 
   "

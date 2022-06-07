@@ -164,8 +164,8 @@
 
   playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
   playLocalhost0 playAttrs baseEnv = do
-    debugCallTaskInALoop0 <- traverseLoop (\__haxible_loop_item ->  runTask playAttrs [json|{"debug":{"msg":"loop {{ item }}"},"name":"Call task in a loop"}|] ([("item", __haxible_loop_item)] <> baseEnv) )  [[json|"A"|], [json|"B"|], [json|"C"|]]
-    debug0 <- runTask playAttrs [json|{"debug":{"msg":"loop result is {{ loop_res }}"}}|] ([("loop_res", debugCallTaskInALoop0)] <> baseEnv)
+    debugCallTaskInALoop0 <- traverseLoop (\__haxible_loop_item ->  runTask playAttrs "debug" [json|{"debug":{"msg":"loop {{ item }}"},"name":"Call task in a loop"}|] ([("item", __haxible_loop_item)] <> baseEnv) )  [[json|"A"|], [json|"B"|], [json|"C"|]]
+    debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"loop result is {{ loop_res }}"}}|] ([("loop_res", debugCallTaskInALoop0)] <> baseEnv)
     pure $ [debugCallTaskInALoop0] <> [debug0]
 
   "

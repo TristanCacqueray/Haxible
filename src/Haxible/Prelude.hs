@@ -18,6 +18,7 @@ module Haxible.Prelude
     Control.Lens.preview,
     Control.Lens.itoListOf,
     Debug.Trace.trace,
+    System.Environment.lookupEnv,
     module Data.Aeson.Lens,
     module System.FilePath,
     module Control.Monad,
@@ -42,6 +43,7 @@ import Data.Maybe
 import Data.Text (Text)
 import Debug.Trace qualified
 import GHC.Generics qualified
+import System.Environment qualified
 import System.FilePath
 import Witch
 

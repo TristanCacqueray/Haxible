@@ -43,6 +43,7 @@ library
   build-depends:
     , aeson
     , aeson-qq
+    , ansi-terminal
     , containers
     , lens-aeson
     , lens
@@ -55,6 +56,7 @@ library
     , ginger
     , hashable
     , mtl
+    , process
     , haxl
     , say
     , resource-pool >= 0.3

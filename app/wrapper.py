@@ -7,7 +7,8 @@ from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
 
 def loggy(msg):
-    print(f" {os.getpid()} [python] {msg}", file=sys.stderr)
+    if os.environ.get("HAXIBLE_DEBUG"):
+        print(f" {os.getpid()} [python] {msg}", file=sys.stderr)
 
 # PlaybookRunner is an ansible wrapper.
 # The run function takes a playbook dictionary and it returns the task result.
@@ -45,7 +46,7 @@ class PlaybookRunner:
 
             def add_result(self, host, result, ignore_errors=False):
                 if host in self.results:
-                    loggy(f"Multiple result for {host} {result}: {self.results}")
+                    print(f"Multiple result for {host} {result}: {self.results}", file=sys.stderr)
                     exit(1)
                 self.results[host] = result
 

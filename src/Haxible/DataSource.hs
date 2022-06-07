@@ -4,15 +4,13 @@ module Haxible.DataSource (AnsibleHaxl, initHaxibleState, dataFetch, TaskReq (..
 import Control.Concurrent.Async (async)
 import Control.Exception (Exception, SomeException, try)
 import Control.Lens
-import Control.Monad (void)
-import Data.Aeson (Value (Number))
 import Data.Aeson.Lens
-import Data.Foldable (traverse_)
 import Data.Hashable (Hashable (hashWithSalt))
 import Data.List qualified as List
 import Data.Text qualified as Text
 import Data.Typeable (Typeable)
 import Haxible.Connection (Connections (..), TaskCall (..))
+import Haxible.Prelude hiding (State, state)
 import Haxl.Core
 import Say
 import System.Clock qualified as Clock
@@ -47,7 +45,10 @@ initHaxibleState connections = pure $ AnsibleState {connections}
 fetchTask :: State TaskReq -> Flags -> u -> PerformFetch TaskReq
 fetchTask state _flags _user =
   BackgroundFetch $ \reqs -> do
-    say $ "[+] Batching " <> Text.pack (show (List.length reqs)) <> " tasks"
+    debug <- lookupEnv "HAXIBLE_DEBUG"
+    case debug of
+      Just _ -> say $ "▶ Batching " <> Text.pack (show (List.length reqs)) <> " tasks"
+      Nothing -> pure ()
     now <- Clock.toNanoSecs <$> Clock.getTime Clock.Monotonic
     traverse_ (fetchAsync state.connections now) reqs
 

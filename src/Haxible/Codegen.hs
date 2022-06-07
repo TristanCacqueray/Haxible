@@ -62,6 +62,7 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
       ModuleCall CallModule {module_, params, taskAttrs} ->
         [ "runTask",
           "playAttrs",
+          quote module_,
           embedJSON (obj $ [(module_, params)] <> taskAttrs),
           paren (requirements <> " <> baseEnv")
         ]

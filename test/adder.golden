@@ -182,6 +182,10 @@
                     ( Binder "roleAdder0"
                     , Right []
                     )
+                ,
+                    ( Binder "debug1"
+                    , Right []
+                    )
                 ]
             }
         , exprs =
@@ -214,6 +218,28 @@
                         }
                     )
                 }
+            , Expr
+                { binder = Binder "debug1"
+                , requires = []
+                , provides = []
+                , outputs = Right []
+                , requirements = []
+                , loop = Nothing
+                , term = ModuleCall
+                    ( CallModule
+                        { module_ = "debug"
+                        , params = Object
+                            ( fromList
+                                [
+                                    ( "msg"
+                                    , String "Over!"
+                                    )
+                                ]
+                            )
+                        , taskAttrs = []
+                        }
+                    )
+                }
             ]
         }
     , Definition
@@ -221,40 +247,40 @@
         , requires = []
         , provides =
             [ Resource
-                { name = Binder "debug1"
+                { name = Binder "debugAddingNumbers0"
                 , dep = Register "add_result"
                 }
             ]
         , outputs = Environment
             { getEnv =
                 [
-                    ( Binder "debug1"
+                    ( Binder "debugAddingNumbers0"
                     , Right
                         [ Resource
-                            { name = Binder "debug1"
+                            { name = Binder "debugAddingNumbers0"
                             , dep = Register "add_result"
                             }
                         ]
                     )
                 ,
-                    ( Binder "assert1"
+                    ( Binder "assertCheckingResults0"
                     , Right []
                     )
                 ]
             }
         , exprs =
             [ Expr
-                { binder = Binder "debug1"
+                { binder = Binder "debugAddingNumbers0"
                 , requires = []
                 , provides =
                     [ Resource
-                        { name = Binder "debug1"
+                        { name = Binder "debugAddingNumbers0"
                         , dep = Register "add_result"
                         }
                     ]
                 , outputs = Right
                     [ Resource
-                        { name = Binder "debug1"
+                        { name = Binder "debugAddingNumbers0"
                         , dep = Register "add_result"
                         }
                     ]
@@ -271,15 +297,20 @@
                                     )
                                 ]
                             )
-                        , taskAttrs = []
+                        , taskAttrs =
+                            [
+                                ( "name"
+                                , String "Adding numbers"
+                                )
+                            ]
                         }
                     )
                 }
             , Expr
-                { binder = Binder "assert1"
+                { binder = Binder "assertCheckingResults0"
                 , requires =
                     [ Resource
-                        { name = Binder "debug1"
+                        { name = Binder "debugAddingNumbers0"
                         , dep = Register "add_result"
                         }
                     ]
@@ -289,7 +320,7 @@
                     [ Requirement
                         { name = "add_result"
                         , origin = Direct
-                            ( Binder "debug1" )
+                            ( Binder "debugAddingNumbers0" )
                         }
                     ]
                 , loop = Nothing
@@ -307,7 +338,12 @@
                                     )
                                 ]
                             )
-                        , taskAttrs = []
+                        , taskAttrs =
+                            [
+                                ( "name"
+                                , String "Checking results"
+                                )
+                            ]
                         }
                     )
                 }
@@ -335,20 +371,21 @@
 
   playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
   playLocalhost0 playAttrs baseEnv = do
-    debug0 <- runTask playAttrs [json|{"debug":{"msg":"42"}}|] ([] <> baseEnv)
-    assert0 <- runTask playAttrs [json|{"assert":{"that":["answer['msg'] == '42'"]}}|] ([("answer", debug0)] <> baseEnv)
+    debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"42"}}|] ([] <> baseEnv)
+    assert0 <- runTask playAttrs "assert" [json|{"assert":{"that":["answer['msg'] == '42'"]}}|] ([("answer", debug0)] <> baseEnv)
     pure $ [debug0] <> [assert0]
 
   playBackend0 :: Vars -> Vars -> AnsibleHaxl [Value]
   playBackend0 playAttrs baseEnv = do
     roleAdder0 <- roleAdder ([] <> playAttrs) ([] <> [("x", [json|"{{ answer['msg'] }}"|]), ("y", [json|"21"|])] <> baseEnv)
-    pure $ roleAdder0
+    debug1 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Over!"}}|] ([] <> baseEnv)
+    pure $ roleAdder0 <> [debug1]
 
   roleAdder :: Vars -> Vars -> AnsibleHaxl [Value]
   roleAdder playAttrs baseEnv = do
-    debug1 <- runTask playAttrs [json|{"debug":{"msg":"Adding {{ x }} + {{ y }}"}}|] ([] <> baseEnv)
-    assert1 <- runTask playAttrs [json|{"assert":{"that":["x == '42' and y == '21'","add_result['msg'] == 'Adding 42 + 21'"]}}|] ([("add_result", debug1)] <> baseEnv)
-    pure $ [debug1] <> [assert1]
+    debugAddingNumbers0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Adding {{ x }} + {{ y }}"},"name":"Adding numbers"}|] ([] <> baseEnv)
+    assertCheckingResults0 <- runTask playAttrs "assert" [json|{"assert":{"that":["x == '42' and y == '21'","add_result['msg'] == 'Adding 42 + 21'"]},"name":"Checking results"}|] ([("add_result", debugAddingNumbers0)] <> baseEnv)
+    pure $ [debugAddingNumbers0] <> [assertCheckingResults0]
 
   "
 )

@@ -7,6 +7,7 @@ module Haxible.Eval
     envLoop,
     traverseLoop,
     traverseInclude,
+    cleanVar,
     Value,
     Vars,
   )
@@ -62,16 +63,8 @@ loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
         ("changed", Bool $ any (fromMaybe False . preview (key "changed" . _Bool)) xs)
       ]
 
-cleanVar :: Value -> Value
-cleanVar = \case
-  Object obj -> Object $ Data.Aeson.KeyMap.filterWithKey (\k _ -> k `notElem` addedKey) obj
-  x -> x
-  where
-    -- TODO: keep in sync with the wrapper and the data source
-    addedKey = ["__haxible_play", "__haxible_ts"]
-
-runTask :: [(Text, Value)] -> Value -> [(Text, Value)] -> AnsibleHaxl Value
-runTask playAttrs taskObject baseEnv = dataFetch (RunTask (TaskCall {playAttrs, taskObject, env}))
+runTask :: [(Text, Value)] -> Text -> Value -> [(Text, Value)] -> AnsibleHaxl Value
+runTask playAttrs module_ taskObject baseEnv = dataFetch (RunTask (TaskCall {playAttrs, taskObject, env, module_}))
   where
     env = concatMap checkManyHost baseEnv
     -- When a task run on many host, we register a single variable with all the results,
@@ -89,6 +82,7 @@ runHaxible inventory action = withConnections 5 inventory $ \connections -> do
   ansibleState <- initHaxibleState connections
   ansibleEnv <- initEnv (stateSet ansibleState stateEmpty) ()
   xs <- runHaxl ansibleEnv action
+  putStrLn "\nReport:"
   traverse_ printResult xs
   putStrLn "Done."
   where
