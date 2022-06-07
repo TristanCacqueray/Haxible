@@ -5,8 +5,8 @@ import Data.Text qualified as Text
 import Haxible.Normalize
 import Haxible.Prelude
 
-renderScript :: FilePath -> [Definition] -> Text
-renderScript inventory defs =
+renderScript :: FilePath -> FilePath -> [Definition] -> Text
+renderScript inventory playPath defs =
   Text.unlines $
     [ "#!/usr/bin/env cabal",
       "-- Generated with haxible",
@@ -18,7 +18,7 @@ renderScript inventory defs =
       "module Main (main) where\n",
       "import Haxible.Eval\n",
       "main :: IO ()",
-      "main = runHaxible " <> quote (from inventory) <> " (playbook [] [])\n"
+      "main = runHaxible " <> quote (from inventory) <> " " <> quote (from playPath) <> " (playbook [] [])\n"
     ]
       <> concatMap renderDefinition defs
 
@@ -82,9 +82,6 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
 
 paren :: Text -> Text
 paren = Text.cons '(' . flip Text.snoc ')'
-
-quote :: Text -> Text
-quote = Text.cons '"' . flip Text.snoc '"'
 
 embedJSON :: Value -> Text
 embedJSON v = "[json|" <> unsafeFrom (Data.Aeson.encode v) <> "|]"

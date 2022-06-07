@@ -89,24 +89,32 @@ Given this playbook:
 Haxible runs three batches:
 
 ```
-[python] Runner ready
-[+] Batching 2 tasks
-  ▶ Running debug with {'msg': 'Starting local service'}
-  ▶ Running create_network with {'name': 'private'}
-[+] Batching 6 tasks
-  ▶ Running create_object with {'name': 'network-create_network_private_uuid'}
-  ▶ Running create_object with {'name': standalone-object'}
-  ▶ Running create_volume with {'name': 'db'}
-  ▶ Running create_instance {'name': 'monitoring', 'network': 'create_network_private_uuid'}
-  ▶ Running create_instance {'name': 'frontend', 'network': 'create_network_private_uuid'}
-  ▶ Running create_instance {'name': 'backend', 'network': 'create_network_private_uuid'}
-[+] Batching 1 task
-  ▶ Running create_instance {'name': 'database', 'network': 'create_network_private_uuid', 'volume': 'create_storage_db_uuid'}
-[python] Runner completed
+PLAY [concurrent] ***********************************************************************
+
+TASK [Create network] <17631> ***********************************************************
+ok: [localhost] <17631> => {"changed":false,"delay":null,"success":"ok","uid":"6b280cb6"}
+
+TASK [Create network object] <17631> ****************************************************
+TASK [Create object] <17662> ************************************************************
+TASK [Create storage] <17663> ***********************************************************
+TASK [Create instances] <17666> *********************************************************
+TASK [Create instances] <17665> *********************************************************
+ok: [localhost] <17631> => {"changed":false,"delay":null,"success":"ok","uid":"f8db2cc0"}
+
+TASK [Create instances] <17631> *********************************************************
+ok: [localhost] <17663> => {"changed":false,"delay":null,"success":"ok","uid":"b060e6d3"}
+
+TASK [Create database] <17663> **********************************************************
+ok: [localhost] <17666> => {"changed":false,"delay":null,"success":"ok","uid":"3ab9d5a3"}
+ok: [localhost] <17662> => {"changed":false,"delay":null,"success":"ok","uid":"8c0e3f35"}
+ok: [localhost] <17665> => {"changed":false,"delay":null,"success":"ok","uid":"1e4fa090"}
+ok: [localhost] <17631> => {"changed":false,"delay":null,"success":"ok","uid":"d7adee85"}
+ok: [localhost] <17663> => {"changed":false,"delay":null,"success":"ok","uid":"6977e877"}
 ```
 
 Thanks to the Haxl library, the order of the operations is automatically arranged to maximize concurrency.
 
+![demo timing](./test/playbooks/demo.png)
 
 ## Usage
 

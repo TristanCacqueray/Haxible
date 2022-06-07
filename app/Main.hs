@@ -1,9 +1,9 @@
 -- | This module contains the command line entrypoint
 module Main (main) where
 
-import Control.Monad (unless)
 import Data.Text.IO qualified (writeFile)
 import Haxible (compile, execute)
+import Haxible.Prelude
 import Options.Generic
 
 data CLI w = CLI
@@ -17,7 +17,8 @@ main :: IO ()
 main = do
   cli <- parseArgs
   code <- compile cli.inventory cli.playbook
-  let script = cli.playbook <> ".hs"
+  let (playbookName, _) = splitExtension cli.playbook
+  let script = playbookName <> ".hs"
   Data.Text.IO.writeFile script code
   unless cli.dry $ execute script
 

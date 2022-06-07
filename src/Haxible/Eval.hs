@@ -25,6 +25,7 @@ import Data.Vector qualified
 import Haxible.Connection
 import Haxible.DataSource
 import Haxible.Prelude
+import Haxible.Report
 import Haxl.Core hiding (env)
 import Language.Haskell.TH.Quote qualified
 import Text.Ginger
@@ -78,7 +79,7 @@ loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
       _ -> []
     copyKey k x = maybe [] (\p -> [(Data.Aeson.Key.fromText k, p)]) (preview (key k) x)
     attrs =
-      [ ("results", Array (Data.Vector.fromList $ cleanVar <$> xs)),
+      [ ("results", Array (Data.Vector.fromList xs)),
         ("msg", "All items completed"),
         ("skipped", Bool $ all (fromMaybe False . preview (key "skipped" . _Bool)) xs),
         ("changed", Bool $ any (fromMaybe False . preview (key "changed" . _Bool)) xs)
@@ -103,14 +104,15 @@ runTask playAttrs module_ taskObject baseEnv =
               ]
       | otherwise = [(k, cleanVar v)]
 
-runHaxible :: FilePath -> AnsibleHaxl [Value] -> IO ()
-runHaxible inventory action = withConnections 5 inventory $ \connections -> do
+runHaxible :: FilePath -> FilePath -> AnsibleHaxl [Value] -> IO ()
+runHaxible inventory playPath action = withConnections 5 inventory $ \connections -> do
   ansibleState <- initHaxibleState connections
   ansibleEnv <- initEnv (stateSet ansibleState stateEmpty) ()
   xs <- runHaxl ansibleEnv action
-  putStrLn "\nReport:"
-  traverse_ printResult xs
-  putStrLn "Done."
+  traverse_ (putStrLn . unsafeFrom . encode) xs
+  case nonEmpty xs of
+    Just res -> do
+      writeFile (playName <> ".plantuml") (from $ Haxible.Report.reportTiming res)
+    Nothing -> putStrLn "\nEmpty results :("
   where
-    printResult :: Value -> IO ()
-    printResult v = putStrLn $ "[ok]: " <> unsafeFrom (encode v)
+    (playName, _) = splitExtension playPath

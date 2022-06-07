@@ -4,6 +4,7 @@ module Haxible.Prelude
     module Data.Maybe,
     Vars,
     mkObj,
+    quote,
     Text,
     LByteString,
     Data.Aeson.Value (..),
@@ -21,6 +22,8 @@ module Haxible.Prelude
     Control.Lens.itoListOf,
     Debug.Trace.trace,
     System.Environment.lookupEnv,
+    Data.List.NonEmpty.nonEmpty,
+    Data.List.NonEmpty.NonEmpty,
     module Data.Aeson.Lens,
     module System.FilePath,
     module Control.Monad,
@@ -44,8 +47,10 @@ import Data.ByteString.Lazy qualified
 import Data.Foldable
 import Data.Generics.Labels ()
 import Data.List qualified
+import Data.List.NonEmpty qualified
 import Data.Maybe
 import Data.Text (Text)
+import Data.Text qualified as Text
 import Debug.Trace qualified
 import GHC.Generics qualified
 import System.Directory
@@ -59,3 +64,6 @@ type Vars = [(Text, Data.Aeson.Value)]
 
 mkObj :: [(Text, Data.Aeson.Value)] -> Data.Aeson.Value
 mkObj = Data.Aeson.Object . Data.Aeson.KeyMap.fromList . map (Data.Bifunctor.first Data.Aeson.Key.fromText)
+
+quote :: Text -> Text
+quote = Text.cons '"' . flip Text.snoc '"'

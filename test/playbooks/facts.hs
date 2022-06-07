@@ -10,7 +10,7 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" (playbook [] [])
+main = runHaxible "inventory.yaml" "test/playbooks/facts.yaml" (playbook [] [])
 
 playbook :: Vars -> Vars -> AnsibleHaxl [Value]
 playbook playAttrs baseEnv = do

@@ -74,6 +74,7 @@
             cabal-install
             hlint
             pkgs.haskell-language-server
+            pkgs.plantuml
           ];
         };
 

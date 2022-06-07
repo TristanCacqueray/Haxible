@@ -33,6 +33,7 @@ common common-options
     GeneralizedNewtypeDeriving
     DerivingStrategies
     OverloadedLabels
+    ViewPatterns
   ghc-options:
     -Wall -Wpartial-fields -Wincomplete-uni-patterns
     -Wincomplete-record-updates -Wunused-packages
@@ -78,6 +79,7 @@ library
     Haxible.DataSource
     Haxible.Eval
     Haxible.Prelude
+    Haxible.Report
 
 executable haxible
   import:         common-options

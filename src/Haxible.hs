@@ -14,7 +14,7 @@ compile inventory playPath = do
   basePlays <- Haxible.Syntax.decodeFile playPath
   plays <- traverse (Haxible.Import.resolveImport playPath) basePlays
   let exprs = Haxible.Normalize.normalizePlaybook plays
-  pure $ renderScript inventory exprs
+  pure $ renderScript inventory playPath exprs
 
 -- | Execute the haskell script with cabal.
 execute :: FilePath -> IO ()

@@ -29,7 +29,7 @@ test fp = do
   basePlays <- Haxible.Syntax.decodeFile playPath
   plays <- traverse (Haxible.Import.resolveImport playPath) basePlays
   let exprs = Haxible.Normalize.normalizePlaybook plays
-      script = Haxible.Codegen.renderScript "inventory.yaml" exprs
+      script = Haxible.Codegen.renderScript "inventory.yaml" playPath exprs
   pure $
     testGroup
       name
