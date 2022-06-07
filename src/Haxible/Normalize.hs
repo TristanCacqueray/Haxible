@@ -259,6 +259,19 @@ factsExpr task cacheable name value = do
   when (isJust (lookup "loop" task.attrs)) $ error "set_fact loop is not supported"
   pure $ Expr {binder, requires, provides, outputs, requirements, loop, term}
 
+blockExpr :: Task -> BlockValue -> State Env Expr
+blockExpr task block = do
+  binder <- freshName "block" (fromMaybe "" task.name)
+  let name = from binder
+  blockDef <- normalizeDefinition name block.tasks
+  modify (#definitions %~ (blockDef :))
+
+  unless (null block.rescues) $ error "block rescue is not yet implemented"
+
+  expr <- moduleExpr task Null
+  let outputs = Left blockDef.outputs
+  pure $ expr {binder, outputs, term = DefinitionCall CallDefinition {name, baseEnv = taskVars task, playAttrs = []}}
+
 normalizeTask :: Task -> State Env [Expr]
 normalizeTask task = do
   exprs <- case task.params of
@@ -267,7 +280,7 @@ normalizeTask task = do
     Tasks name xs -> (: []) <$> tasksExpr task name xs
     Facts vars -> traverse (uncurry (factsExpr task Nothing)) vars
     CacheableFacts cacheable vars -> traverse (uncurry (factsExpr task (Just cacheable))) vars
-    _ -> error "not implemented"
+    Block bv -> (: []) <$> blockExpr task bv
   pure $ map addLoopReq exprs
   where
     addLoopReq expr = expr {loop, requirements = extraReq <> expr.requirements}

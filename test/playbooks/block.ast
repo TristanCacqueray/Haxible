@@ -1,0 +1,236 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires =
+                [ Resource
+                    { name = Binder "debugBlockTask1"
+                    , dep = Register "block_result"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , playAttrs =
+                        [
+                            ( "hosts"
+                            , String "localhost"
+                            )
+                        ]
+                    , baseEnv = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires =
+        [ Resource
+            { name = Binder "debugBlockTask1"
+            , dep = Register "block_result"
+            }
+        ]
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "block0"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debugBlockTask0"
+                                , Right []
+                                )
+                            ,
+                                ( Binder "debugBlockTask1"
+                                , Right
+                                    [ Resource
+                                        { name = Binder "debugBlockTask1"
+                                        , dep = Register "block_result"
+                                        }
+                                    ]
+                                )
+                            ]
+                        }
+                    )
+                )
+            ,
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , exprs =
+        [ Expr
+            { binder = Binder "block0"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debugBlockTask0"
+                            , Right []
+                            )
+                        ,
+                            ( Binder "debugBlockTask1"
+                            , Right
+                                [ Resource
+                                    { name = Binder "debugBlockTask1"
+                                    , dep = Register "block_result"
+                                    }
+                                ]
+                            )
+                        ]
+                    }
+                )
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "block0"
+                    , playAttrs = []
+                    , baseEnv = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug0"
+            , requires =
+                [ Resource
+                    { name = Binder "debugBlockTask1"
+                    , dep = Register "block_result"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "block_result"
+                    , origin = Nested
+                        ( Binder "block0" ) 1
+                    }
+                ]
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "var"
+                                , String "block_result"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "block0"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "debugBlockTask1"
+            , dep = Register "block_result"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debugBlockTask0"
+                , Right []
+                )
+            ,
+                ( Binder "debugBlockTask1"
+                , Right
+                    [ Resource
+                        { name = Binder "debugBlockTask1"
+                        , dep = Register "block_result"
+                        }
+                    ]
+                )
+            ]
+        }
+    , exprs =
+        [ Expr
+            { binder = Binder "debugBlockTask0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "block task 1"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "block task"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debugBlockTask1"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "debugBlockTask1"
+                    , dep = Register "block_result"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "debugBlockTask1"
+                    , dep = Register "block_result"
+                    }
+                ]
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "block task 2"
+                                )
+                            ]
+                        )
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "block task"
+                            )
+                        ]
+                    }
+                )
+            }
+        ]
+    }
+]

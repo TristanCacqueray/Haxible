@@ -1,0 +1,14 @@
+- hosts: localhost
+  tasks:
+    - block:
+        - name: block task
+          debug:
+            msg: "block task 1"
+
+        - name: block task
+          debug:
+            msg: "block task 2"
+          register: block_result
+
+    - debug:
+        var: block_result

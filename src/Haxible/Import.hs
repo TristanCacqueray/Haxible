@@ -7,6 +7,7 @@ module Haxible.Import
     Task,
     TaskValue (..),
     RoleValue (..),
+    BlockValue (..),
   )
 where
 
@@ -89,7 +90,9 @@ resolveTask task = do
       rescues <- resolveBlock (fromMaybe Null (lookup "rescue" task.attrs))
       pure $ Block BlockValue {tasks, rescues}
     resolveBlock :: Value -> Importer [Task]
-    resolveBlock = traverse resolveTask . unwrapJSON . fromJSON
+    resolveBlock = \case
+      Null -> pure []
+      v -> traverse resolveTask . unwrapJSON . fromJSON $ v
     unwrapJSON = \case
       Error e -> error $ "Unexpected json: " <> e
       Success a -> a
