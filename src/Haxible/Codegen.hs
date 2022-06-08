@@ -42,15 +42,21 @@ renderDefinition def =
 renderExpr :: Expr -> Text
 renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
   where
-    requirements = textList $ (\req -> "(" <> quote req.name <> ", " <> mkOrigin req.origin <> ")") <$> e.requirements
+    requirements = mkReq e.requirements
+    mkReq x = textList $ (\req -> "(" <> quote req.name <> ", " <> mkOrigin req.origin <> ")") <$> x
     mkOrigin = \case
       Direct n -> from n
       Nested n i -> from n <> " !! " <> from (show i)
       LoopVar -> "__haxible_loop_item"
+    loopRequirements = mkReq (filter (not . loopVar) e.requirements)
+      where
+        loopVar req = case req.origin of
+          LoopVar -> True
+          _ -> False
 
     finalExpr = case e.loop of
       Just (Array xs) -> mkTraverse $ textList (embedJSON <$> toList xs)
-      Just (String v) -> mkTraverse $ "(envLoop " <> quote v <> " " <> paren (requirements <> " <> baseEnv") <> ")"
+      Just (String v) -> mkTraverse $ "(envLoop " <> quote v <> " " <> paren (loopRequirements <> " <> taskVars") <> ")"
       Just _ -> error $ "Invalid loop expression: " <> show e.loop
       Nothing
         | extractFact -> ["extractFact", "<$>"] <> callExpr
