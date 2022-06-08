@@ -56,9 +56,12 @@ resolveTask task = do
     "set_fact" -> setFact
     "block" -> block
     "add_host" -> error "add_host is not implemented"
-    _ -> pure $ Module task.params
+    x
+      | x `elem` notImplemented -> error $ from x <> ": NotImplemented"
+      | otherwise -> pure $ Module task.params
   pure $ task {params = taskValue}
   where
+    notImplemented = ["add_host", "import_playbook", "import_role"]
     withFile fp go = do
       hist <- asks history
       when (fp `elem` hist) $
