@@ -1,0 +1,10 @@
+- hosts: localhost
+  tasks:
+    - set_fact:
+        x: 42
+      when: false
+    - set_fact:
+        x: 41
+      when: true
+    - debug:
+        msg: "x is {{ x }}"

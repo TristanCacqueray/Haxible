@@ -89,7 +89,9 @@ extractFacts v = case preview (key "ansible_facts") v of
   Just (Object obj) -> case Data.Aeson.KeyMap.toList obj of
     [(_, value)] -> Right value
     xs -> Left $ "Multiple facts found: " <> show xs
-  _ -> Left $ "Can't find ansible_facts in " <> show v
+  _ -> case preview (key "skip_reason" . _String) v of
+    Just _ -> Right Null
+    Nothing -> Left $ "Can't find ansible_facts in " <> unsafeFrom (encode v)
 
 extractFact :: Value -> Value
 extractFact v = case extractFacts v of
@@ -122,7 +124,7 @@ runTask playAttrs module_ moduleObject taskAttrs baseTaskVars =
     addModule = \case
       Object obj -> Object $ Data.Aeson.KeyMap.insert "__haxible_module" (String module_) obj
       x -> x
-    taskVars = concatMap checkManyHost baseTaskVars
+    taskVars = filter ((/=) Null . snd) (concatMap checkManyHost baseTaskVars)
     -- When a task run on many host, we register a single variable with all the results,
     -- thus when accessing the variable, we need to lookup the current host result.
     checkManyHost (k, v)

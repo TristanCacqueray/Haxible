@@ -227,11 +227,13 @@ moduleExpr task value = do
     destPath = Path <$> (getAttr "path" <|> getAttr "dest")
     register = Register <$> (preview _String =<< lookup "register" task.attrs)
     getAttr n = preview (key n . _String) value
-
+    taskAttrs = getPropagableAttrs task.attrs
     attrs = fromMaybe Null . flip lookup task.attrs <$> ("vars" : propagableAttrs)
 
+getPropagableAttrs :: Vars -> Vars
+getPropagableAttrs = filter (`elemFst` propagableAttrs)
+  where
     elemFst = elem . fst
-    taskAttrs = filter (`elemFst` propagableAttrs) task.attrs
 
 roleExpr :: Task -> RoleValue -> State Env Expr
 roleExpr task role = do
@@ -272,7 +274,8 @@ factsExpr task cacheable name value = do
       provides = [resource]
       outputs = Right provides
       params = mkObj $ [(name, value)] <> maybe [] (\v -> [("cacheable", v)]) cacheable
-      term = ModuleCall CallModule {module_ = "set_fact", params, taskAttrs = []}
+      taskAttrs = getPropagableAttrs task.attrs
+      term = ModuleCall CallModule {module_ = "set_fact", params, taskAttrs}
       loop = Nothing
       requirements = []
   modify (\env -> env {availables = resource : availables})

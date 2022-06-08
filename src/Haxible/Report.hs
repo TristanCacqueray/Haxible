@@ -17,11 +17,12 @@ reportTiming rawResults =
   where
     orderedKeys = fst <$> sortOn (\(_, (s, _, _)) -> s) (Map.toList modules)
     results :: [Value]
-    results = reverse $ foldl' go mempty rawResults
+    results = reverse $ filter hasModule $ foldl' go mempty rawResults
       where
         go acc x = case preview (key "results" . _Array) x of
           Just xs -> toList xs <> acc
           Nothing -> x : acc
+        hasModule = isJust . preview (key "__haxible_module" . _String)
 
     scaleTime :: Integer -> Integer
     scaleTime x = round (fromInteger (x - minDate) * step)
