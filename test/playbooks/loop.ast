@@ -104,7 +104,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Call task in a loop"
+                            )
+                        ]
                     }
                 )
             }
@@ -134,7 +139,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Loop var"
+                            )
+                        ]
                     }
                 )
             }

@@ -198,7 +198,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "rescue task"
+                            )
+                        ]
                     }
                 )
             }
@@ -249,7 +254,12 @@
                 ( CallModule
                     { module_ = "command"
                     , params = String "exit 1"
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "block task"
+                            )
+                        ]
                     }
                 )
             }

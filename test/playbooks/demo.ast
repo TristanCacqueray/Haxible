@@ -118,7 +118,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create network"
+                            )
+                        ]
                     }
                 )
             }
@@ -165,7 +170,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create instances"
+                            )
+                        ]
                     }
                 )
             }
@@ -197,7 +207,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create storage"
+                            )
+                        ]
                     }
                 )
             }
@@ -247,7 +262,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create database"
+                            )
+                        ]
                     }
                 )
             }
@@ -269,7 +289,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create object"
+                            )
+                        ]
                     }
                 )
             }
@@ -302,7 +327,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Create network object"
+                            )
+                        ]
                     }
                 )
             }

@@ -193,7 +193,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "block task"
+                            )
+                        ]
                     }
                 )
             }
@@ -225,7 +230,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "block task"
+                            )
+                        ]
                     }
                 )
             }

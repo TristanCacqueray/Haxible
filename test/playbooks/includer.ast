@@ -301,7 +301,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Included task"
+                            )
+                        ]
                     }
                 )
             }
@@ -403,7 +408,12 @@
                 ( CallModule
                     { module_ = "debug"
                     , params = Null
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Unused include"
+                            )
+                        ]
                     }
                 )
             }
@@ -435,7 +445,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Nested included task"
+                            )
+                        ]
                     }
                 )
             }

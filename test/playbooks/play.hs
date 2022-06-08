@@ -30,7 +30,7 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
 roleAdder0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 roleAdder0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debugAddingNumbers0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"Adding {{ x }} + {{ y }}"}|])] <> taskAttrs) (taskVars)
-  assertCheckingResults0 <- runTask playAttrs "assert" ([("assert", [json|{"that":["x == '42' and y == '21'","add_result['msg'] == 'Adding 42 + 21'"]}|])] <> taskAttrs) ([("add_result", debugAddingNumbers0)] <> taskVars)
+  debugAddingNumbers0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"Adding {{ x }} + {{ y }}"}|]), ("name", [json|"Adding numbers"|])] <> taskAttrs) (taskVars)
+  assertCheckingResults0 <- runTask playAttrs "assert" ([("assert", [json|{"that":["x == '42' and y == '21'","add_result['msg'] == 'Adding 42 + 21'"]}|]), ("name", [json|"Checking results"|])] <> taskAttrs) ([("add_result", debugAddingNumbers0)] <> taskVars)
   pure $ [debugAddingNumbers0] <> [assertCheckingResults0]
 

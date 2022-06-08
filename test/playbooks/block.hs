@@ -28,7 +28,7 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
 block0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 block0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debugBlockTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"block task 1"}|])] <> taskAttrs) (taskVars)
-  debugBlockTask1 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"block task 2"}|])] <> taskAttrs) (taskVars)
+  debugBlockTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"block task 1"}|]), ("name", [json|"block task"|])] <> taskAttrs) (taskVars)
+  debugBlockTask1 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"block task 2"}|]), ("name", [json|"block task"|])] <> taskAttrs) (taskVars)
   pure $ [debugBlockTask0] <> [debugBlockTask1]
 

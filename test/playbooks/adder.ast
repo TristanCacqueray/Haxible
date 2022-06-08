@@ -300,7 +300,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Adding numbers"
+                            )
+                        ]
                     }
                 )
             }
@@ -336,7 +341,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Checking results"
+                            )
+                        ]
                     }
                 )
             }

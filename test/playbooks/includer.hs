@@ -28,14 +28,14 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
 tasksTasksGreetYaml0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 tasksTasksGreetYaml0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debugIncludedTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"Hello {{ include_param }}"}|])] <> taskAttrs) (taskVars)
+  debugIncludedTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"Hello {{ include_param }}"}|]), ("name", [json|"Included task"|])] <> taskAttrs) (taskVars)
   resultsTasksothertasksyaml00 <- tasksOtherTasksYaml0 playAttrs (taskAttrs) (taskVars)
   pure $ [debugIncludedTask0] <> resultsTasksothertasksyaml00
 
 tasksOtherTasksYaml0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 tasksOtherTasksYaml0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debugUnusedInclude0 <- runTask playAttrs "debug" ([("debug", [json|null|])] <> taskAttrs) (taskVars)
-  debugNestedIncludedTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"Nested {{ include_param }}"}|])] <> taskAttrs) (taskVars)
+  debugUnusedInclude0 <- runTask playAttrs "debug" ([("debug", [json|null|]), ("name", [json|"Unused include"|])] <> taskAttrs) (taskVars)
+  debugNestedIncludedTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"Nested {{ include_param }}"}|]), ("name", [json|"Nested included task"|])] <> taskAttrs) (taskVars)
   pure $ [debugUnusedInclude0] <> [debugNestedIncludedTask0]
 

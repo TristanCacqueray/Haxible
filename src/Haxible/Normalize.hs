@@ -234,7 +234,7 @@ moduleExpr task value = do
     attrs = fromMaybe Null . flip lookup task.attrs <$> ("vars" : propagableAttrs)
 
 getPropagableAttrs :: Vars -> Vars
-getPropagableAttrs = filter (`elemFst` propagableAttrs)
+getPropagableAttrs = filter (`elemFst` ("name" : propagableAttrs))
   where
     elemFst = elem . fst
 

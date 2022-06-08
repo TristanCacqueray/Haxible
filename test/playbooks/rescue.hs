@@ -28,12 +28,12 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
 block0Rescue :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 block0Rescue parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debugRescueTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"rescue task"}|])] <> taskAttrs) (taskVars)
+  debugRescueTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"rescue task"}|]), ("name", [json|"rescue task"|])] <> taskAttrs) (taskVars)
   pure $ [debugRescueTask0]
 
 block0Main :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 block0Main parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  commandBlockTask0 <- runTask playAttrs "command" ([("command", [json|"exit 1"|])] <> taskAttrs) (taskVars)
+  commandBlockTask0 <- runTask playAttrs "command" ([("command", [json|"exit 1"|]), ("name", [json|"block task"|])] <> taskAttrs) (taskVars)
   pure $ [commandBlockTask0]
 

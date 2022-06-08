@@ -117,7 +117,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Simple fact"
+                            )
+                        ]
                     }
                 )
             }
@@ -164,7 +169,12 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
+                    , taskAttrs =
+                        [
+                            ( "name"
+                            , String "Extra fact"
+                            )
+                        ]
                     }
                 )
             }
