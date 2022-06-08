@@ -224,7 +224,10 @@ moduleExpr task value = do
       outputs = Right provides
   pure $ Expr {binder, requires, provides, outputs, requirements, loop = Nothing, term}
   where
-    destPath = Path <$> (getAttr "path" <|> getAttr "dest")
+    destPath = Path <$> (ignoreJinjaPath =<< (getAttr "path" <|> getAttr "dest"))
+    ignoreJinjaPath p
+      | "{{" `Text.isInfixOf` p = Nothing
+      | otherwise = Just p
     register = Register <$> (preview _String =<< lookup "register" task.attrs)
     getAttr n = preview (key n . _String) value
     taskAttrs = getPropagableAttrs task.attrs
