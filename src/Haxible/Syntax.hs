@@ -95,7 +95,8 @@ propagableAttrs =
     "failed_when",
     "ignore_errors",
     "run_once",
-    "delegate_to"
+    "delegate_to",
+    "no_log"
   ]
 
 decodeFile :: (Show a, FromJSON a, MonadIO m) => FilePath -> m a
