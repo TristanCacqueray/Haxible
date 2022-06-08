@@ -80,7 +80,8 @@ formatResult withColor pid (code, val) = pre <> from txt <> post
 
 cleanVar :: Value -> Value
 cleanVar = \case
-  Object obj -> Object $ Data.Aeson.KeyMap.filterWithKey (\k _ -> k `notElem` addedKey) obj
+  Object obj -> Object $ cleanVar <$> Data.Aeson.KeyMap.filterWithKey (\k _ -> k `notElem` addedKey) obj
+  Array xs -> Array $ cleanVar <$> xs
   x -> x
   where
     -- TODO: keep in sync with the wrapper and the data source
