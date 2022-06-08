@@ -18,6 +18,7 @@ type Importer a = ReaderT Env IO a
 
 data Env = Env
   { source :: FilePath,
+    playSource :: FilePath,
     history :: [FilePath]
   }
   deriving (Eq, Show)
@@ -67,10 +68,10 @@ resolveTask task = do
       when (fp `elem` hist) $
         error $ "Cyclic import detected: " <> show fp <> " already in " <> show hist
       r <- decodeFile fp
-      local (const $ Env fp (fp : hist)) $ go r
+      local (\e -> e {source = fp, history = fp : hist}) $ go r
 
     getRolePath name path = do
-      source <- asks source
+      source <- asks playSource
       pure $ takeDirectory source </> "roles" </> name </> path
     includeRole = do
       let role_name = from $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.params
@@ -113,5 +114,5 @@ resolveTask task = do
 -- | Transform a 'PlaySyntax' into a resolved 'Play'
 resolveImport :: FilePath -> PlaySyntax -> IO Play
 resolveImport source (BasePlay baseTasks attrs) = do
-  tasks <- runReaderT (traverse resolveTask baseTasks) (Env source [])
+  tasks <- runReaderT (traverse resolveTask baseTasks) (Env source source [])
   pure $ BasePlay {tasks, attrs}
