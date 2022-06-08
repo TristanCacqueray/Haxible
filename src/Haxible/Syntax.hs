@@ -86,7 +86,17 @@ instance FromJSON TaskSyntax where
       nonModuleAttributes = ["name", "register", "loop", "loop_control", "rescue", "vars"] <> propagableAttrs
 
 propagableAttrs :: [Text]
-propagableAttrs = ["when", "retries", "delay", "until", "changed_when", "failed_when", "ignore_errors", "run_once"]
+propagableAttrs =
+  [ "when",
+    "retries",
+    "delay",
+    "until",
+    "changed_when",
+    "failed_when",
+    "ignore_errors",
+    "run_once",
+    "delegate_to"
+  ]
 
 decodeFile :: (Show a, FromJSON a, MonadIO m) => FilePath -> m a
 decodeFile fp = do
