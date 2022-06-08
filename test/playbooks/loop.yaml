@@ -6,5 +6,12 @@
       loop: ["A", "B", "C"]
       register: loop_res
 
+    - name: Loop var
+      debug:
+        msg: "loop control {{ lvar }}"
+      loop: ["E"]
+      loop_control:
+        loop_var: "lvar"
+
     - debug:
         msg: "loop result is {{ loop_res }}"

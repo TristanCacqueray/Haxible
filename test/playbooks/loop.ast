@@ -49,6 +49,10 @@
                     ]
                 )
             ,
+                ( Binder "debugLoopVar0"
+                , Right []
+                )
+            ,
                 ( Binder "debug0"
                 , Right []
                 )
@@ -97,6 +101,36 @@
                             [
                                 ( "msg"
                                 , String "loop {{ item }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debugLoopVar0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "lvar"
+                    , origin = LoopVar
+                    }
+                ]
+            , loop = Just
+                ( Array
+                    [ String "E" ]
+                )
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "loop control {{ lvar }}"
                                 )
                             ]
                         )

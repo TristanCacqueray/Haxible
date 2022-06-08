@@ -315,8 +315,11 @@ normalizeTask task = do
   where
     addLoopReq expr = expr {loop, requirements = extraReq <> expr.requirements}
     (loop, extraReq) = case lookup "loop" task.attrs of
-      Just v -> (Just v, [Requirement "item" LoopVar])
+      Just v ->
+        let loopVar = fromMaybe "item" (getLoopVar =<< lookup "loop_control" task.attrs)
+         in (Just v, [Requirement loopVar LoopVar])
       Nothing -> (Nothing, [])
+    getLoopVar = preview (key "loop_var" . _String)
 
 normalizeDefinition :: Text -> [Task] -> State Env Definition
 normalizeDefinition name tasks = do
