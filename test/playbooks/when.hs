@@ -22,14 +22,19 @@ playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
   resultsTaskstasksprintyaml00 <- tasksTasksPrintYaml0 playAttrs (taskAttrs) ([("print_arg", [json|"Hello!"|])] <> taskVars)
-  resultsTaskstasksprintyaml10 <- tasksTasksPrintYaml1 playAttrs ([("when", [json|false|])] <> taskAttrs) ([("print_arg", [json|"Hello!"|])] <> taskVars)
-  block0 <- block0 playAttrs ([("when", [json|true|])] <> taskAttrs) (taskVars)
-  pure $ resultsTaskstasksprintyaml00 <> resultsTaskstasksprintyaml10 <> block0
+  let when_ = False
+  resultsTaskstasksprintyaml10 <- if when_ then (tasksTasksPrintYaml1 playAttrs (taskAttrs) ([("print_arg", [json|"Hello!"|])] <> taskVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
+  let when_ = True
+  block0 <- if when_ then (block0 playAttrs (taskAttrs) (taskVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
+  when_ <- all extractWhen <$> sequence [runTask playAttrs "debug" [("debug", [json|{"msg":"{{ true or false }}"}|])] (taskVars), runTask playAttrs "debug" [("debug", [json|{"msg":"{{ true and false }}"}|])] (taskVars)]
+  debug3 <- if when_ then (runTask playAttrs "debug" ([("debug", [json|{"msg":"Should be skipped"}|])] <> taskAttrs) (taskVars)) else pure [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
+  pure $ resultsTaskstasksprintyaml00 <> resultsTaskstasksprintyaml10 <> block0 <> [debug3]
 
 block0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 block0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debug2 <- runTask playAttrs "debug" ([("debug", [json|null|]), ("when", [json|false|])] <> taskAttrs) (taskVars)
+  let when_ = False
+  debug2 <- if when_ then (runTask playAttrs "debug" ([("debug", [json|null|])] <> taskAttrs) (taskVars)) else pure [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
   pure $ [debug2]
 
 tasksTasksPrintYaml1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]

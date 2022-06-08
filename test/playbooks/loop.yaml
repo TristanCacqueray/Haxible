@@ -1,4 +1,6 @@
 - hosts: localhost
+  vars:
+    xs: [1, 2, 3]
   tasks:
     - name: Call task in a loop
       debug:
@@ -9,7 +11,7 @@
     - name: Loop var
       debug:
         msg: "loop control {{ lvar }}"
-      loop: ["E"]
+      loop: "{{ xs }}"
       loop_control:
         loop_var: "lvar"
 

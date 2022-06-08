@@ -12,6 +12,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -68,6 +69,10 @@
                         }
                     )
                 )
+            ,
+                ( Binder "debug3"
+                , Right []
+                )
             ]
         }
     , playAttrs =
@@ -92,6 +97,7 @@
                     }
                 )
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -121,16 +127,12 @@
                     }
                 )
             , requirements = []
+            , when_ = Just ( Bool False )
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "tasksTasksPrintYaml1"
-                    , taskAttrs =
-                        [
-                            ( "when"
-                            , Bool False
-                            )
-                        ]
+                    , taskAttrs = []
                     , taskVars =
                         [
                             ( "print_arg"
@@ -155,17 +157,41 @@
                     }
                 )
             , requirements = []
+            , when_ = Just ( Bool True )
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "block0"
-                    , taskAttrs =
-                        [
-                            ( "when"
-                            , Bool True
-                            )
-                        ]
+                    , taskAttrs = []
                     , taskVars = []
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug3"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , when_ = Just
+                ( Array
+                    [ String "true or false"
+                    , String "true and false"
+                    ]
+                )
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "Should be skipped"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
                     }
                 )
             }
@@ -191,17 +217,13 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Just ( Bool False )
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
                     , params = Null
-                    , taskAttrs =
-                        [
-                            ( "when"
-                            , Bool False
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -227,6 +249,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -265,6 +288,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule

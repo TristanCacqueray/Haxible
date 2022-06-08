@@ -17,6 +17,7 @@
                 ]
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -63,6 +64,21 @@
             ( "hosts"
             , String "localhost"
             )
+        ,
+            ( "vars"
+            , Object
+                ( fromList
+                    [
+                        ( "xs"
+                        , Array
+                            [ Number 1.0
+                            , Number 2.0
+                            , Number 3.0
+                            ]
+                        )
+                    ]
+                )
+            )
         ]
     , exprs =
         [ Expr
@@ -86,6 +102,7 @@
                     , origin = LoopVar
                     }
                 ]
+            , when_ = Nothing
             , loop = Just
                 ( Array
                     [ String "A"
@@ -124,10 +141,9 @@
                     , origin = LoopVar
                     }
                 ]
+            , when_ = Nothing
             , loop = Just
-                ( Array
-                    [ String "E" ]
-                )
+                ( String "{{ xs }}" )
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -165,6 +181,7 @@
                         ( Binder "debugCallTaskInALoop0" )
                     }
                 ]
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule

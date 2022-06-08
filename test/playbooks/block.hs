@@ -21,7 +21,8 @@ playbook parentPlayAttrs taskAttrs taskVars = do
 playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
-  block0 <- block0 playAttrs ([("when", [json|true|])] <> taskAttrs) (taskVars)
+  let when_ = True
+  block0 <- if when_ then (block0 playAttrs (taskAttrs) (taskVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|], [json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
   debug0 <- runTask playAttrs "debug" ([("debug", [json|{"var":"block_result"}|])] <> taskAttrs) ([("block_result", block0 !! 1)] <> taskVars)
   pure $ block0 <> [debug0]
 

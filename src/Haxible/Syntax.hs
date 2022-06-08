@@ -83,12 +83,11 @@ instance FromJSON TaskSyntax where
       <*> pure params
       <*> pure (items [module_] v)
     where
-      nonModuleAttributes = ["name", "register", "loop", "loop_control", "rescue", "vars"] <> propagableAttrs
+      nonModuleAttributes = ["name", "register", "loop", "loop_control", "rescue", "vars", "when"] <> propagableAttrs
 
 propagableAttrs :: [Text]
 propagableAttrs =
-  [ "when",
-    "retries",
+  [ "retries",
     "delay",
     "until",
     "changed_when",

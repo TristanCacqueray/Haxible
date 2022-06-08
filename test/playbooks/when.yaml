@@ -13,3 +13,9 @@
       block:
         - debug:
           when: false
+
+    - debug:
+        msg: "Should be skipped"
+      when:
+        - "true or false"
+        - "true and false"

@@ -54,8 +54,6 @@ library
     , bytestring
     , clock
     , filepath
-    , data-default
-    , ginger
     , hashable
     , mtl
     , process

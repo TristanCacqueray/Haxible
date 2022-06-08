@@ -21,6 +21,7 @@
                 ]
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -47,6 +48,7 @@
                         ( Binder "resultsLocalhost0" ) 0
                     }
                 ]
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -119,6 +121,7 @@
                     }
                 ]
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -172,6 +175,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule

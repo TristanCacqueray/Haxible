@@ -21,6 +21,7 @@
                 ]
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -94,6 +95,7 @@
                     }
                 ]
             , requirements = []
+            , when_ = Just ( Bool False )
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -106,12 +108,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "when"
-                            , Bool False
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -131,6 +128,7 @@
                     }
                 ]
             , requirements = []
+            , when_ = Just ( Bool True )
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -143,12 +141,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "when"
-                            , Bool True
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -178,6 +171,7 @@
                         ( Binder "facts0" )
                     }
                 ]
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule

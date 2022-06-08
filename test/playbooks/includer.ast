@@ -21,6 +21,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -157,6 +158,7 @@
                     , origin = LoopVar
                     }
                 ]
+            , when_ = Nothing
             , loop = Just
                 ( Array
                     [ String "Haxible"
@@ -202,6 +204,7 @@
                         ( Binder "resultsTaskstasksgreetyaml00" ) 2
                     }
                 ]
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -289,6 +292,7 @@
                     }
                 ]
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -339,6 +343,7 @@
                     }
                 )
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -403,6 +408,7 @@
                     }
                 ]
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -433,6 +439,7 @@
                     }
                 ]
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule

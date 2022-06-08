@@ -12,6 +12,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -75,6 +76,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -97,6 +99,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -112,6 +115,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -134,6 +138,7 @@
             , provides = []
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -196,6 +201,7 @@
                     }
                 ]
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -234,6 +240,7 @@
                         ( Binder "debugAddingNumbers0" )
                     }
                 ]
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule

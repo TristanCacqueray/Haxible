@@ -21,6 +21,7 @@
                 ]
             , outputs = Right []
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
@@ -105,6 +106,7 @@
                     }
                 ]
             , requirements = []
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -153,6 +155,7 @@
                         ( Binder "factsSimpleFact0" )
                     }
                 ]
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule
@@ -195,6 +198,7 @@
                         ( Binder "factsExtraFact0" )
                     }
                 ]
+            , when_ = Nothing
             , loop = Nothing
             , term = ModuleCall
                 ( CallModule

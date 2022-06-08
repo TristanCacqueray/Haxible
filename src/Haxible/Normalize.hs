@@ -8,6 +8,7 @@ module Haxible.Normalize
     CallDefinition (..),
     Origin (..),
     Requirement (..),
+    Environment (..),
   )
 where
 
@@ -44,6 +45,7 @@ data Expr = Expr
     provides :: [Resource],
     outputs :: Either Environment [Resource],
     requirements :: [Requirement],
+    when_ :: Maybe Value,
     loop :: Maybe Value,
     term :: Term
   }
@@ -222,8 +224,9 @@ moduleExpr task value = do
   let term = ModuleCall CallModule {module_ = task.module_, params = value, taskAttrs}
       requirements = []
       outputs = Right provides
-  pure $ Expr {binder, requires, provides, outputs, requirements, loop = Nothing, term}
+  pure $ Expr {binder, requires, provides, outputs, requirements, loop = Nothing, term, when_}
   where
+    when_ = lookup "when" task.attrs
     destPath = Path <$> (ignoreJinjaPath =<< (getAttr "path" <|> getAttr "dest"))
     ignoreJinjaPath p
       | "{{" `Text.isInfixOf` p = Nothing
@@ -281,10 +284,11 @@ factsExpr task cacheable name value = do
       term = ModuleCall CallModule {module_ = "set_fact", params, taskAttrs}
       loop = Nothing
       requirements = []
+      when_ = lookup "when" task.attrs
   modify (\env -> env {availables = resource : availables})
   -- expr <- moduleExpr task value
   when (isJust (lookup "loop" task.attrs)) $ error "set_fact loop is not supported"
-  pure $ Expr {binder, requires, provides, outputs, requirements, loop, term}
+  pure $ Expr {binder, requires, provides, outputs, requirements, loop, term, when_}
 
 blockExpr :: Task -> BlockValue -> State Env Expr
 blockExpr task block = do
@@ -370,6 +374,7 @@ normalizePlaybook plays =
       binder <- freshName "results" (playName play)
       let term = DefinitionCall CallDefinition {name = def.name, taskVars = [], taskAttrs = []}
           outputs = Right []
-      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, requirements = [], loop = Nothing, term}
+          when_ = Nothing
+      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, requirements = [], loop = Nothing, term, when_}
     topLevel :: [Expr] -> Definition
     topLevel exprs = (emptyDefinition "playbook") {exprs}
