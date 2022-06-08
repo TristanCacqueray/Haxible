@@ -34,7 +34,7 @@
                 , Right []
                 )
             ,
-                ( Binder "roleAdder0"
+                ( Binder "resultsAdder0"
                 , Right []
                 )
             ,
@@ -92,7 +92,7 @@
                 )
             }
         , Expr
-            { binder = Binder "roleAdder0"
+            { binder = Binder "resultsAdder0"
             , requires = []
             , provides = []
             , outputs = Right []
@@ -100,7 +100,7 @@
             , loop = Nothing
             , term = DefinitionCall
                 ( CallDefinition
-                    { name = "roleAdder"
+                    { name = "roleAdder0"
                     , taskAttrs = []
                     , taskVars = []
                     }
@@ -153,7 +153,7 @@
         ]
     }
 , Definition
-    { name = "roleAdder"
+    { name = "roleAdder0"
     , requires = []
     , provides =
         [ Resource

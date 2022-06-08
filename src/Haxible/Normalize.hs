@@ -236,31 +236,31 @@ moduleExpr task value = do
 roleExpr :: Task -> RoleValue -> State Env Expr
 roleExpr task role = do
   when (isJust $ lookup "register" task.attrs) (error "Register include_role is not supported")
+  Binder name <- freshName "role" role.name
   roleDef <- normalizeDefinition name role.tasks
   modify (#definitions %~ (roleDef :))
 
   expr <- moduleExpr task Null
-  binder <- freshName "role" role.name
+  binder <- freshName "results" role.name
   pure $ expr {binder, term = DefinitionCall CallDefinition {name, taskVars, taskAttrs}}
   where
     taskAttrs = getTaskAttrs task
     taskVars = getTaskVars task <> role.defaults
-    name = "role" <> cleanName role.name
 
 tasksExpr :: Task -> Text -> [Task] -> State Env Expr
 tasksExpr task includeName tasks = do
   when (isJust $ lookup "register" task.attrs) (error "Register include_tasks is not supported")
+  Binder name <- freshName "tasks" includeName
   tasksDef <- normalizeDefinition name tasks
   modify (#definitions %~ (tasksDef :))
 
   expr <- moduleExpr task Null
-  binder <- freshName "tasks" name
+  binder <- freshName "results" name
   let outputs = Left tasksDef.outputs
   pure $ expr {binder, outputs, term = DefinitionCall CallDefinition {name, taskVars, taskAttrs}}
   where
     taskVars = getTaskVars task
     taskAttrs = getTaskAttrs task
-    name = "tasks" <> cleanName includeName
 
 factsExpr :: Task -> Maybe Value -> Text -> Value -> State Env Expr
 factsExpr task cacheable name value = do
