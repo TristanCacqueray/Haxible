@@ -10,26 +10,30 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/rescue.yaml" (playbook [] [])
+main = runHaxible "inventory.yaml" "test/playbooks/rescue.yaml" (playbook [] [] [])
 
-playbook :: Vars -> Vars -> AnsibleHaxl [Value]
-playbook playAttrs baseEnv = do
-  resultsLocalhost0 <- playLocalhost0 ([("hosts", [json|"localhost"|])] <> playAttrs) ([] <> [] <> baseEnv)
+playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playbook parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 playAttrs baseEnv = do
-  block0 <- tryRescue block0Main block0Rescue ([] <> playAttrs) ([] <> [] <> baseEnv)
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"var":"block_result"}}|] ([("block_result", block0 !! 0)] <> baseEnv)
+playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+  block0 <- tryRescue (block0Main playAttrs) (block0Rescue playAttrs) (taskAttrs) (taskVars)
+  debug0 <- runTask playAttrs "debug" [json|{"debug":{"var":"block_result"}}|] taskAttrs ([("block_result", block0 !! 0)] <> taskVars)
   pure $ block0 <> [debug0]
 
-block0Rescue :: Vars -> Vars -> AnsibleHaxl [Value]
-block0Rescue playAttrs baseEnv = do
-  debugRescueTask0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"rescue task"},"name":"rescue task"}|] ([] <> baseEnv)
+block0Rescue :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+block0Rescue parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  debugRescueTask0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"rescue task"}}|] taskAttrs (taskVars)
   pure $ [debugRescueTask0]
 
-block0Main :: Vars -> Vars -> AnsibleHaxl [Value]
-block0Main playAttrs baseEnv = do
-  commandBlockTask0 <- runTask playAttrs "command" [json|{"command":"exit 1","name":"block task"}|] ([] <> baseEnv)
+block0Main :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+block0Main parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  commandBlockTask0 <- runTask playAttrs "command" [json|{"command":"exit 1"}|] taskAttrs (taskVars)
   pure $ [commandBlockTask0]
 

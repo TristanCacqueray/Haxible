@@ -4,6 +4,7 @@
     , provides = []
     , outputs = Environment
         { getEnv = [] }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -20,13 +21,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -58,6 +54,12 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "debugCallTaskInALoop0"
@@ -98,12 +100,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Call task in a loop"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }

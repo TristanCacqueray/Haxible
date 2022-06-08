@@ -16,6 +16,7 @@ import Data.Map qualified as Map
 import Data.Text qualified as Text
 import Haxible.Import
 import Haxible.Prelude
+import Haxible.Syntax (propagableAttrs)
 
 -- $setup
 -- >>> let mkTask attrs = BaseTask {name = Nothing, module_ = "", params = Module "", attrs}
@@ -27,9 +28,14 @@ data Definition = Definition
     requires :: [Resource],
     provides :: [Resource],
     outputs :: Environment,
+    playAttrs :: Vars,
     exprs :: [Expr]
   }
   deriving (Show, Eq)
+
+emptyDefinition :: Text -> Definition
+emptyDefinition name =
+  Definition {name, requires = [], provides = [], outputs = Environment [], playAttrs = [], exprs = []}
 
 -- | An expression is a single instruction.
 data Expr = Expr
@@ -53,7 +59,7 @@ data Term
 data CallModule = CallModule {module_ :: Text, params :: Value, taskAttrs :: Vars}
   deriving (Show, Eq)
 
-data CallDefinition = CallDefinition {name :: Text, playAttrs :: Vars, baseEnv :: Vars}
+data CallDefinition = CallDefinition {name :: Text, taskAttrs :: Vars, taskVars :: Vars}
   deriving (Show, Eq)
 
 -- | A resource is a global object such as a registered result or a file path.
@@ -208,7 +214,7 @@ moduleExpr task value = do
   availables <- gets availables
 
   -- Look for requirements and provides
-  let requires = getRequirements availables [loop, value, vars]
+  let requires = getRequirements availables (value : attrs)
       provides = Resource binder <$> maybeToList register <> maybeToList destPath
   modify (\env -> env {availables = provides <> availables})
 
@@ -222,10 +228,10 @@ moduleExpr task value = do
     register = Register <$> (preview _String =<< lookup "register" task.attrs)
     getAttr n = preview (key n . _String) value
 
-    notElemFst = notElem . fst
-    taskAttrs = filter (`notElemFst` ["register", "loop", "loop_control"]) task.attrs
-    loop = fromMaybe Null $ lookup "loop" task.attrs
-    vars = fromMaybe Null $ lookup "vars" task.attrs
+    attrs = fromMaybe Null . flip lookup task.attrs <$> ("vars" : propagableAttrs)
+
+    elemFst = elem . fst
+    taskAttrs = filter (`elemFst` propagableAttrs) task.attrs
 
 roleExpr :: Task -> RoleValue -> State Env Expr
 roleExpr task role = do
@@ -235,9 +241,10 @@ roleExpr task role = do
 
   expr <- moduleExpr task Null
   binder <- freshName "role" role.name
-  pure $ expr {binder, term = DefinitionCall CallDefinition {name, baseEnv, playAttrs = []}}
+  pure $ expr {binder, term = DefinitionCall CallDefinition {name, taskVars, taskAttrs}}
   where
-    baseEnv = taskVars task <> role.defaults
+    taskAttrs = getTaskAttrs task
+    taskVars = getTaskVars task <> role.defaults
     name = "role" <> cleanName role.name
 
 tasksExpr :: Task -> Text -> [Task] -> State Env Expr
@@ -249,8 +256,10 @@ tasksExpr task includeName tasks = do
   expr <- moduleExpr task Null
   binder <- freshName "tasks" name
   let outputs = Left tasksDef.outputs
-  pure $ expr {binder, outputs, term = DefinitionCall CallDefinition {name, baseEnv = taskVars task, playAttrs = []}}
+  pure $ expr {binder, outputs, term = DefinitionCall CallDefinition {name, taskVars, taskAttrs}}
   where
+    taskVars = getTaskVars task
+    taskAttrs = getTaskAttrs task
     name = "tasks" <> cleanName includeName
 
 factsExpr :: Task -> Maybe Value -> Text -> Value -> State Env Expr
@@ -289,7 +298,9 @@ blockExpr task block = do
 
   expr <- moduleExpr task Null
   let outputs = Left outs
-  pure $ expr {binder, outputs, term = dc CallDefinition {name, baseEnv = taskVars task, playAttrs = []}}
+      taskVars = getTaskVars task
+      taskAttrs = getTaskAttrs task
+  pure $ expr {binder, outputs, term = dc CallDefinition {name, taskVars, taskAttrs}}
 
 normalizeTask :: Task -> State Env [Expr]
 normalizeTask task = do
@@ -313,12 +324,14 @@ normalizeDefinition name tasks = do
   let provides = nub $ concatMap (.provides) exprs
       requires = nub $ filter (`notElem` provides) $ concatMap (.requires) exprs
       outputs = Environment $ (\e -> (e.binder, e.outputs)) <$> exprs
-  pure $ Definition {name, exprs, requires, provides, outputs}
+  pure $ Definition {name, exprs, requires, provides, outputs, playAttrs = []}
 
 normalizePlay :: Play -> State Env Definition
 normalizePlay play = do
   Binder name <- freshName "play" (playName play)
-  normalizeDefinition name play.tasks
+  addPlayAttrs <$> normalizeDefinition name play.tasks
+  where
+    addPlayAttrs def = def {playAttrs = play.attrs}
 
 -- | Extract the hosts from a play attributes:
 -- >>> playName BasePlay {tasks = [], attrs = [("hosts", [json|"localhost"|])]}
@@ -327,10 +340,13 @@ playName :: Play -> Text
 playName play = fromMaybe "" (preview _String =<< lookup "hosts" play.attrs)
 
 -- | Extract the vars from a task object:
--- >>> taskVars (mkTask [("vars", [json|{"test": null}|])])
+-- >>> getTaskVars (mkTask [("vars", [json|{"test": null}|])])
 -- [("test",Null)]
-taskVars :: Task -> Vars
-taskVars task = itoListOf members (fromMaybe Null $ lookup "vars" task.attrs)
+getTaskVars :: Task -> Vars
+getTaskVars task = itoListOf members (fromMaybe Null $ lookup "vars" task.attrs)
+
+getTaskAttrs :: Task -> Vars
+getTaskAttrs task = filter (\(k, _) -> k `elem` propagableAttrs) task.attrs
 
 -- | Transform a list of 'Play' into a list of 'Definition'.
 normalizePlaybook :: [Play] -> [Definition]
@@ -343,15 +359,8 @@ normalizePlaybook plays =
   where
     topLevelCall (play, def) = do
       binder <- freshName "results" (playName play)
-      let term = DefinitionCall CallDefinition {name = def.name, playAttrs = play.attrs, baseEnv = []}
+      let term = DefinitionCall CallDefinition {name = def.name, taskVars = [], taskAttrs = []}
           outputs = Right []
       pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, requirements = [], loop = Nothing, term}
     topLevel :: [Expr] -> Definition
-    topLevel xs =
-      Definition
-        { name = "playbook",
-          requires = [],
-          provides = [],
-          outputs = Environment [],
-          exprs = xs
-        }
+    topLevel exprs = (emptyDefinition "playbook") {exprs}

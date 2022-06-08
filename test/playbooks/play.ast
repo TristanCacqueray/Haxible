@@ -4,6 +4,7 @@
     , provides = []
     , outputs = Environment
         { getEnv = [] }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -15,28 +16,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ,
-                            ( "vars"
-                            , Object
-                                ( fromList
-                                    [
-                                        ( "x"
-                                        , String "42"
-                                        )
-                                    ,
-                                        ( "y"
-                                        , String "21"
-                                        )
-                                    ]
-                                )
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -66,6 +47,27 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ,
+            ( "vars"
+            , Object
+                ( fromList
+                    [
+                        ( "x"
+                        , String "42"
+                        )
+                    ,
+                        ( "y"
+                        , String "21"
+                        )
+                    ]
+                )
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "debug0"
@@ -99,8 +101,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "roleAdder"
-                    , playAttrs = []
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -176,6 +178,7 @@
                 )
             ]
         }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "debugAddingNumbers0"
@@ -205,12 +208,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Adding numbers"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -246,12 +244,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Checking results"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }

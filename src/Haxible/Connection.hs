@@ -22,13 +22,15 @@ import System.Process.Typed
 
 data TaskCall = TaskCall
   { -- | The playbook attributes, such as `hosts` or `become`.
-    playAttrs :: [(Text, Value)],
-    -- | The module name for debug purpose, it is more convenient to access than reading it from the task object.
+    playAttrs :: Vars,
+    -- | The module name for debug purpose, it is more convenient to access than reading it from the moduleObject.
     module_ :: Text,
     -- | The task object, e.g `{"file": {"path": "/etc/zuul"}}`.
-    taskObject :: Value,
-    -- | A list of variables to be added to play vars, e.g. for the attribute template values.
-    playVars :: [(Text, Value)]
+    moduleObject :: Value,
+    -- | Extra task attributes, such as "when"
+    taskAttrs :: Vars,
+    -- | Extra task vars, e.g. role defaults
+    taskVars :: Vars
   }
   deriving (Eq, Show, Typeable, Generic, Hashable)
 
@@ -52,7 +54,7 @@ formatPid pid = "<" <> from (show pid) <> ">"
 formatTask :: Pid -> TaskCall -> Text
 formatTask pid tc = "TASK [" <> name <> "] " <> formatPid pid
   where
-    name = fromMaybe tc.module_ (preview (key "name" . _String) tc.taskObject)
+    name = fromMaybe tc.module_ (preview (key "name" . _String) tc.moduleObject)
 
 formatResult :: Bool -> Pid -> (Int, Value) -> String
 formatResult withColor pid (code, val) = pre <> from txt <> post
@@ -78,6 +80,7 @@ cleanVar = \case
     -- TODO: keep in sync with the wrapper and the data source
     addedKey =
       ["__haxible_play", "__haxible_start", "__haxible_end", "__haxible_module"]
+        <> ["__haxible_multi_hosts"]
         <> ["_ansible_no_log", "_ansible_verbose_always"]
 
 -- | Creates the Python interpreters.
@@ -92,7 +95,7 @@ withConnections count inventory callback =
 
       let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
-            let callParams = [mkObj taskCall.playAttrs, taskCall.taskObject, mkObj taskCall.playVars]
+            let callParams = [mkObj taskCall.playAttrs, taskCall.moduleObject, mkObj taskCall.taskAttrs, mkObj taskCall.taskVars]
             pid <- fromMaybe (error "no pid?!") <$> getPid (unsafeProcessHandle p)
             say (addSep termWidth (formatTask pid taskCall))
             hPutStrLn (getStdin p) (toStrict $ encode callParams)

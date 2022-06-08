@@ -10,22 +10,25 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/block.yaml" (playbook [] [])
+main = runHaxible "inventory.yaml" "test/playbooks/block.yaml" (playbook [] [] [])
 
-playbook :: Vars -> Vars -> AnsibleHaxl [Value]
-playbook playAttrs baseEnv = do
-  resultsLocalhost0 <- playLocalhost0 ([("hosts", [json|"localhost"|])] <> playAttrs) ([] <> [] <> baseEnv)
+playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playbook parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 playAttrs baseEnv = do
-  block0 <- block0 ([] <> playAttrs) ([] <> [] <> baseEnv)
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"var":"block_result"}}|] ([("block_result", block0 !! 1)] <> baseEnv)
+playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+  block0 <- block0 playAttrs ([("when", [json|true|])] <> taskAttrs) (taskVars)
+  debug0 <- runTask playAttrs "debug" [json|{"debug":{"var":"block_result"}}|] taskAttrs ([("block_result", block0 !! 1)] <> taskVars)
   pure $ block0 <> [debug0]
 
-block0 :: Vars -> Vars -> AnsibleHaxl [Value]
-block0 playAttrs baseEnv = do
-  debugBlockTask0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"block task 1"},"name":"block task"}|] ([] <> baseEnv)
-  debugBlockTask1 <- runTask playAttrs "debug" [json|{"debug":{"msg":"block task 2"},"name":"block task"}|] ([] <> baseEnv)
+block0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+block0 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  debugBlockTask0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"block task 1"}}|] taskAttrs (taskVars)
+  debugBlockTask1 <- runTask playAttrs "debug" [json|{"debug":{"msg":"block task 2"}}|] taskAttrs (taskVars)
   pure $ [debugBlockTask0] <> [debugBlockTask1]
 

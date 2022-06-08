@@ -4,6 +4,7 @@
     , provides = []
     , outputs = Environment
         { getEnv = [] }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -24,13 +25,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -53,13 +49,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playZuulExecutor0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "zuul_executor"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -78,13 +69,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playNodepoolLauncher0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "nodepool_launcher"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -109,13 +95,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost1"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -155,6 +136,12 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "stat0"
@@ -263,6 +250,12 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "zuul_executor"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "file0"
@@ -371,6 +364,12 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "nodepool_launcher"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "file1"
@@ -468,6 +467,12 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "debug1"

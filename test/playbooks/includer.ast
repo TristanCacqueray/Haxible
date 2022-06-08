@@ -4,6 +4,7 @@
     , provides = []
     , outputs = Environment
         { getEnv = [] }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -24,13 +25,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -102,6 +98,12 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "tasksTaskstasksgreetyaml0"
@@ -164,8 +166,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "tasksTasksGreetYaml"
-                    , playAttrs = []
-                    , baseEnv =
+                    , taskAttrs = []
+                    , taskVars =
                         [
                             ( "include_param"
                             , String "{{ item }}"
@@ -269,6 +271,7 @@
                 )
             ]
         }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "debugIncludedTask0"
@@ -298,12 +301,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Included task"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -340,8 +338,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "tasksOtherTasksYaml"
-                    , playAttrs = []
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -382,6 +380,7 @@
                 )
             ]
         }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "debugUnusedInclude0"
@@ -404,12 +403,7 @@
                 ( CallModule
                     { module_ = "debug"
                     , params = Null
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Unused include"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -441,12 +435,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Nested included task"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }

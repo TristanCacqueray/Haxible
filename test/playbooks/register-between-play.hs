@@ -10,21 +10,24 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/register-between-play.yaml" (playbook [] [])
+main = runHaxible "inventory.yaml" "test/playbooks/register-between-play.yaml" (playbook [] [] [])
 
-playbook :: Vars -> Vars -> AnsibleHaxl [Value]
-playbook playAttrs baseEnv = do
-  resultsLocalhost0 <- playLocalhost0 ([("hosts", [json|"localhost"|])] <> playAttrs) ([] <> [] <> baseEnv)
-  resultsLocalhost1 <- playLocalhost1 ([("hosts", [json|"localhost"|])] <> playAttrs) ([("r1", resultsLocalhost0 !! 0)] <> [] <> baseEnv)
+playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playbook parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
+  resultsLocalhost1 <- playLocalhost1 playAttrs (taskAttrs) ([("r1", resultsLocalhost0 !! 0)] <> taskVars)
   pure $ resultsLocalhost0 <> resultsLocalhost1
 
-playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 playAttrs baseEnv = do
-  stat0 <- runTask playAttrs "stat" [json|{"stat":{"path":"/"}}|] ([] <> baseEnv)
+playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+  stat0 <- runTask playAttrs "stat" [json|{"stat":{"path":"/"}}|] taskAttrs (taskVars)
   pure $ [stat0]
 
-playLocalhost1 :: Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost1 playAttrs baseEnv = do
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"r1 is {{ r1 }}"}}|] ([] <> baseEnv)
+playLocalhost1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost1 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"r1 is {{ r1 }}"}}|] taskAttrs (taskVars)
   pure $ [debug0]
 

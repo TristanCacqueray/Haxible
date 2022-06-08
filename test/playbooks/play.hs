@@ -10,24 +10,27 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/play.yaml" (playbook [] [])
+main = runHaxible "inventory.yaml" "test/playbooks/play.yaml" (playbook [] [] [])
 
-playbook :: Vars -> Vars -> AnsibleHaxl [Value]
-playbook playAttrs baseEnv = do
-  resultsLocalhost0 <- playLocalhost0 ([("hosts", [json|"localhost"|]), ("vars", [json|{"x":"42","y":"21"}|])] <> playAttrs) ([] <> [] <> baseEnv)
+playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playbook parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 playAttrs baseEnv = do
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"a pre task"}}|] ([] <> baseEnv)
-  roleAdder0 <- roleAdder ([] <> playAttrs) ([] <> [] <> baseEnv)
-  debug1 <- runTask playAttrs "debug" [json|{"debug":{"msg":"a task"}}|] ([] <> baseEnv)
-  debug2 <- runTask playAttrs "debug" [json|{"debug":{"msg":"a post task"}}|] ([] <> baseEnv)
+playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = [("hosts", [json|"localhost"|]), ("vars", [json|{"x":"42","y":"21"}|])] <> parentPlayAttrs
+  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"a pre task"}}|] taskAttrs (taskVars)
+  roleAdder0 <- roleAdder playAttrs (taskAttrs) (taskVars)
+  debug1 <- runTask playAttrs "debug" [json|{"debug":{"msg":"a task"}}|] taskAttrs (taskVars)
+  debug2 <- runTask playAttrs "debug" [json|{"debug":{"msg":"a post task"}}|] taskAttrs (taskVars)
   pure $ [debug0] <> roleAdder0 <> [debug1] <> [debug2]
 
-roleAdder :: Vars -> Vars -> AnsibleHaxl [Value]
-roleAdder playAttrs baseEnv = do
-  debugAddingNumbers0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Adding {{ x }} + {{ y }}"},"name":"Adding numbers"}|] ([] <> baseEnv)
-  assertCheckingResults0 <- runTask playAttrs "assert" [json|{"assert":{"that":["x == '42' and y == '21'","add_result['msg'] == 'Adding 42 + 21'"]},"name":"Checking results"}|] ([("add_result", debugAddingNumbers0)] <> baseEnv)
+roleAdder :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+roleAdder parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  debugAddingNumbers0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Adding {{ x }} + {{ y }}"}}|] taskAttrs (taskVars)
+  assertCheckingResults0 <- runTask playAttrs "assert" [json|{"assert":{"that":["x == '42' and y == '21'","add_result['msg'] == 'Adding 42 + 21'"]}}|] taskAttrs ([("add_result", debugAddingNumbers0)] <> taskVars)
   pure $ [debugAddingNumbers0] <> [assertCheckingResults0]
 

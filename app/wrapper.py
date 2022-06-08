@@ -67,7 +67,10 @@ class PlaybookRunner:
             loader=self.loader, passwords=None, forks=5, stdout_callback=cb)
         play = Play().load(playbook)
         run_result = tqm.run(play)
-        if len(cb.results) == 1:
+        if len(cb.results) == 0:
+            print("No result found!", file=sys.stderr)
+            exit(1)
+        elif len(cb.results) == 1:
             task_result = list(cb.results.values())[0]
         else:
             # For multi host results, the output is a Map Host Result with a special key to indicate
@@ -92,11 +95,13 @@ module_loader.add_directory(os.path.dirname(inventory) + "/library")
 def run_task(inputs):
     # The Haxl DataSource provides the play without tasks, the task to run
     # and extra environment vars for the play.
-    [play, task, playVars] = inputs
+    [play, task, taskAttrs, taskVars] = inputs
     # Prepare the final play structure.
-    if playVars:
+    if taskAttrs:
+        task.update(taskAttrs)
+    if taskVars:
         play.setdefault("vars", {})
-        play["vars"].update(playVars)
+        play["vars"].update(taskVars)
     loggy(f"{json.dumps(play)}: Running task {json.dumps(task)}")
     play["tasks"] = [task]
     play["gather_facts"] = "no"

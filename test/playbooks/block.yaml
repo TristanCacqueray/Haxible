@@ -9,6 +9,7 @@
           debug:
             msg: "block task 2"
           register: block_result
+      when: true
 
     - debug:
         var: block_result

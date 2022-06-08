@@ -4,6 +4,7 @@
     , provides = []
     , outputs = Environment
         { getEnv = [] }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -24,24 +25,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ,
-                            ( "vars"
-                            , Object
-                                ( fromList
-                                    [
-                                        ( "play_var"
-                                        , String "play-var"
-                                        )
-                                    ]
-                                )
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -86,6 +71,23 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ,
+            ( "vars"
+            , Object
+                ( fromList
+                    [
+                        ( "play_var"
+                        , String "play-var"
+                        )
+                    ]
+                )
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "factsSimpleFact0"

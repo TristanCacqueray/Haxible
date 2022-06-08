@@ -115,14 +115,14 @@ loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
       ]
         <> play
 
-runTask :: [(Text, Value)] -> Text -> Value -> [(Text, Value)] -> AnsibleHaxl Value
-runTask playAttrs module_ taskObject basePlayVars =
-  addModule <$> dataFetch (RunTask (TaskCall {playAttrs, taskObject, playVars, module_}))
+runTask :: Vars -> Text -> Value -> Vars -> Vars -> AnsibleHaxl Value
+runTask playAttrs module_ moduleObject taskAttrs baseTaskVars =
+  addModule <$> dataFetch (RunTask (TaskCall {playAttrs, moduleObject, taskAttrs, taskVars, module_}))
   where
     addModule = \case
       Object obj -> Object $ Data.Aeson.KeyMap.insert "__haxible_module" (String module_) obj
       x -> x
-    playVars = concatMap checkManyHost basePlayVars
+    taskVars = concatMap checkManyHost baseTaskVars
     -- When a task run on many host, we register a single variable with all the results,
     -- thus when accessing the variable, we need to lookup the current host result.
     checkManyHost (k, v)

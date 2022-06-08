@@ -6,6 +6,7 @@ module Haxible.Syntax
     BaseTask (..),
     TaskSyntax,
     PlaySyntax,
+    propagableAttrs,
   )
 where
 
@@ -82,7 +83,10 @@ instance FromJSON TaskSyntax where
       <*> pure params
       <*> pure (items [module_] v)
     where
-      nonModuleAttributes = ["name", "register", "loop", "vars", "rescue"]
+      nonModuleAttributes = ["name", "register", "loop", "rescue", "vars"] <> propagableAttrs
+
+propagableAttrs :: [Text]
+propagableAttrs = ["when", "retries", "delay", "until", "changed_when", "failed_when", "ignore_errors"]
 
 decodeFile :: (Show a, FromJSON a, MonadIO m) => FilePath -> m a
 decodeFile fp = do

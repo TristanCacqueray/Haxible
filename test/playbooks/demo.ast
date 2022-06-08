@@ -4,6 +4,7 @@
     , provides = []
     , outputs = Environment
         { getEnv = [] }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -24,13 +25,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -87,6 +83,12 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "create_networkCreateNetwork0"
@@ -116,12 +118,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Create network"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -168,12 +165,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Create instances"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -205,12 +197,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Create storage"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -260,12 +247,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Create database"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -287,12 +269,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Create object"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -325,12 +302,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Create network object"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }

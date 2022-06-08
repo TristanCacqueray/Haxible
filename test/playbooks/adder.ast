@@ -4,6 +4,7 @@
     , provides = []
     , outputs = Environment
         { getEnv = [] }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -20,17 +21,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , playAttrs =
-                        [
-                            ( "gather_facts"
-                            , Bool False
-                            )
-                        ,
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -55,17 +47,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playBackend0"
-                    , playAttrs =
-                        [
-                            ( "gather_facts"
-                            , Bool False
-                            )
-                        ,
-                            ( "hosts"
-                            , String "backend"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -97,6 +80,16 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "debug0"
@@ -187,6 +180,16 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
+            ( "hosts"
+            , String "backend"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "roleAdder0"
@@ -203,8 +206,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "roleAdder"
-                    , playAttrs = []
-                    , baseEnv =
+                    , taskAttrs = []
+                    , taskVars =
                         [
                             ( "x"
                             , String "{{ answer['msg'] }}"
@@ -267,6 +270,7 @@
                 )
             ]
         }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "debugAddingNumbers0"
@@ -296,12 +300,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Adding numbers"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -337,12 +336,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Checking results"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }

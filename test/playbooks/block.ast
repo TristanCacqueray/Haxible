@@ -4,6 +4,7 @@
     , provides = []
     , outputs = Environment
         { getEnv = [] }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -20,13 +21,8 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , playAttrs =
-                        [
-                            ( "hosts"
-                            , String "localhost"
-                            )
-                        ]
-                    , baseEnv = []
+                    , taskAttrs = []
+                    , taskVars = []
                     }
                 )
             }
@@ -71,6 +67,12 @@
                 )
             ]
         }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
     , exprs =
         [ Expr
             { binder = Binder "block0"
@@ -100,8 +102,13 @@
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "block0"
-                    , playAttrs = []
-                    , baseEnv = []
+                    , taskAttrs =
+                        [
+                            ( "when"
+                            , Bool True
+                            )
+                        ]
+                    , taskVars = []
                     }
                 )
             }
@@ -166,6 +173,7 @@
                 )
             ]
         }
+    , playAttrs = []
     , exprs =
         [ Expr
             { binder = Binder "debugBlockTask0"
@@ -185,12 +193,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "block task"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }
@@ -222,12 +225,7 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "block task"
-                            )
-                        ]
+                    , taskAttrs = []
                     }
                 )
             }

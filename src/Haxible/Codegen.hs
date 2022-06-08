@@ -18,18 +18,20 @@ renderScript inventory playPath defs =
       "module Main (main) where\n",
       "import Haxible.Eval\n",
       "main :: IO ()",
-      "main = runHaxible " <> quote (from inventory) <> " " <> quote (from playPath) <> " (playbook [] [])\n"
+      "main = runHaxible " <> quote (from inventory) <> " " <> quote (from playPath) <> " (playbook [] [] [])\n"
     ]
       <> concatMap renderDefinition defs
 
 renderDefinition :: Definition -> [Text]
 renderDefinition def =
-  [ def.name <> " :: Vars -> Vars -> AnsibleHaxl [Value]",
-    def.name <> " playAttrs baseEnv = do"
+  [ def.name <> " :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]",
+    def.name <> " parentPlayAttrs taskAttrs taskVars = do",
+    "  let playAttrs = " <> concatList [playAttrs, "parentPlayAttrs"]
   ]
     <> (mappend "  " <$> map renderExpr def.exprs)
     <> ["  pure $ " <> outputList, ""]
   where
+    playAttrs = textList (mkJsonArg <$> def.playAttrs)
     outputList = Text.intercalate " <> " (toOutput <$> def.exprs)
     toOutput expr = case expr.term of
       -- Module call produces a single value
@@ -67,17 +69,24 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
             "playAttrs",
             quote module_,
             embedJSON (mkObj $ [(module_, params)] <> taskAttrs),
-            paren (requirements <> " <> baseEnv")
+            "taskAttrs",
+            paren (concatList [requirements, "taskVars"])
           ]
         )
-      DefinitionCall CallDefinition {name, playAttrs, baseEnv} ->
-        (False, [name] <> cdExpr playAttrs baseEnv)
-      BlockRescueCall CallDefinition {name, playAttrs, baseEnv} ->
-        (False, ["tryRescue", name <> "Main", name <> "Rescue"] <> cdExpr playAttrs baseEnv)
+      DefinitionCall CallDefinition {name, taskAttrs, taskVars} ->
+        (False, [name, "playAttrs"] <> cdExpr taskAttrs taskVars)
+      BlockRescueCall CallDefinition {name, taskAttrs, taskVars} ->
+        ( False,
+          [ "tryRescue",
+            paren (name <> "Main playAttrs"),
+            paren (name <> "Rescue playAttrs")
+          ]
+            <> cdExpr taskAttrs taskVars
+        )
 
-    cdExpr playAttrs baseEnv =
-      [ paren (textList (mkJsonArg <$> playAttrs) <> " <> playAttrs"),
-        paren (requirements <> " <> " <> textList (mkJsonArg <$> baseEnv) <> " <> baseEnv")
+    cdExpr taskAttrs taskVars =
+      [ paren (concatList [textList (mkJsonArg <$> taskAttrs), "taskAttrs"]),
+        paren (concatList [requirements, textList (mkJsonArg <$> taskVars), "taskVars"])
       ]
 
 -- | Add parenthesis
@@ -103,3 +112,6 @@ mkJsonArg (n, v) = "(" <> quote n <> ", " <> embedJSON v <> ")"
 -- "[a, b]"
 textList :: [Text] -> Text
 textList xs = "[" <> Text.intercalate ", " xs <> "]"
+
+concatList :: [Text] -> Text
+concatList = Text.intercalate " <> " . filter (/= "[]")
