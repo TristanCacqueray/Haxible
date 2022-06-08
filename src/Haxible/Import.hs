@@ -58,7 +58,9 @@ resolveTask task = do
     "block" -> block
     "add_host" -> error "add_host is not implemented"
     x
-      | x `elem` notImplemented -> error $ from x <> ": NotImplemented"
+      | x `elem` notImplemented -> do
+          source <- asks source
+          error $ source <> ": " <> from x <> ": NotImplemented"
       | otherwise -> pure $ Module task.params
   pure $ task {params = taskValue}
   where
