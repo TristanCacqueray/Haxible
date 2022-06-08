@@ -35,10 +35,13 @@ Haxible does the following:
 - Compile the generated code with the Glasgow Haskell Compiler.
 - Perform the tasks through the `ansible-playbook` command.
 
-The implementation is presently missing:
+Limitations:
 
-- Dynamic vars such as `add_hosts` or `include_vars`.
-- Control flow such as `block` or `include_tasks`.
+- Each tasks run in a dedicated playbook: dynamic `add_host` is not currently implemented.
+- Variable inheritance is simpler: local scope takes priority over global scope (as expected), therefore `include_vars` no longer overrides locally defined variables.
+  In other words, the closer a variable is defined, the higher its priority: Task vars > Include vars > Play vars > Inventory vars > Role defaults > Extra vars.
+- Tasks run concurrently by default, thus adding extra register/vars pairs may be required to force sequencial evaluation.
+  Though Haxible may be improved to detect common pattern such as running `package` modules before `service` modules.
 
 
 ## Demo

@@ -55,6 +55,7 @@ resolveTask task = do
     "include_tasks" -> includeTasks
     "set_fact" -> setFact
     "block" -> block
+    "add_host" -> error $ "add_host is not implemented"
     _ -> pure $ Module task.params
   pure $ task {params = taskValue}
   where
