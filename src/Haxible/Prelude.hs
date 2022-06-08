@@ -13,6 +13,8 @@ module Haxible.Prelude
     Data.Aeson.fromJSON,
     Data.Bifunctor.first,
     Data.List.nub,
+    Data.List.sortOn,
+    Data.List.partition,
     GHC.Generics.Generic,
     module Control.Monad.Reader,
     module Control.Monad.State,

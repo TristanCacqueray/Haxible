@@ -74,8 +74,7 @@ renderExpr e = from e.binder <> " <- " <> Text.unwords finalExpr
           [ "runTask",
             "playAttrs",
             quote module_,
-            embedJSON (mkObj $ [(module_, params)] <> taskAttrs),
-            "taskAttrs",
+            paren (concatList [textList (mkJsonArg <$> [(module_, params)] <> taskAttrs), "taskAttrs"]),
             paren (concatList [requirements, "taskVars"])
           ]
         )

@@ -22,13 +22,13 @@ playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
   block0 <- block0 playAttrs ([("when", [json|true|])] <> taskAttrs) (taskVars)
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"var":"block_result"}}|] taskAttrs ([("block_result", block0 !! 1)] <> taskVars)
+  debug0 <- runTask playAttrs "debug" ([("debug", [json|{"var":"block_result"}|])] <> taskAttrs) ([("block_result", block0 !! 1)] <> taskVars)
   pure $ block0 <> [debug0]
 
 block0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 block0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debugBlockTask0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"block task 1"}}|] taskAttrs (taskVars)
-  debugBlockTask1 <- runTask playAttrs "debug" [json|{"debug":{"msg":"block task 2"}}|] taskAttrs (taskVars)
+  debugBlockTask0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"block task 1"}|])] <> taskAttrs) (taskVars)
+  debugBlockTask1 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"block task 2"}|])] <> taskAttrs) (taskVars)
   pure $ [debugBlockTask0] <> [debugBlockTask1]
 

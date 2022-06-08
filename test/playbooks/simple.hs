@@ -24,28 +24,28 @@ playbook parentPlayAttrs taskAttrs taskVars = do
 playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
-  stat0 <- runTask playAttrs "stat" [json|{"stat":{"path":"/etc"}}|] taskAttrs (taskVars)
-  command0 <- runTask playAttrs "command" [json|{"command":"echo etc exist: {{ etc.stat.exists }}"}|] taskAttrs ([("etc", stat0), ("_etc", stat0)] <> taskVars)
+  stat0 <- runTask playAttrs "stat" ([("stat", [json|{"path":"/etc"}|])] <> taskAttrs) (taskVars)
+  command0 <- runTask playAttrs "command" ([("command", [json|"echo etc exist: {{ etc.stat.exists }}"|])] <> taskAttrs) ([("etc", stat0), ("_etc", stat0)] <> taskVars)
   pure $ [stat0] <> [command0]
 
 playZuulExecutor0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playZuulExecutor0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"zuul_executor"|])] <> parentPlayAttrs
-  file0 <- runTask playAttrs "file" [json|{"file":{"path":"/tmp/zuul","state":"directory"}}|] taskAttrs (taskVars)
-  command1 <- runTask playAttrs "command" [json|{"command":"echo Starting executor -d /tmp/zuul"}|] taskAttrs ([("zuuldir", file0), ("_tmp_zuul", file0)] <> taskVars)
+  file0 <- runTask playAttrs "file" ([("file", [json|{"path":"/tmp/zuul","state":"directory"}|])] <> taskAttrs) (taskVars)
+  command1 <- runTask playAttrs "command" ([("command", [json|"echo Starting executor -d /tmp/zuul"|])] <> taskAttrs) ([("zuuldir", file0), ("_tmp_zuul", file0)] <> taskVars)
   pure $ [file0] <> [command1]
 
 playNodepoolLauncher0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playNodepoolLauncher0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"nodepool_launcher"|])] <> parentPlayAttrs
-  file1 <- runTask playAttrs "file" [json|{"file":{"path":"/tmp/nodepool","state":"directory"}}|] taskAttrs (taskVars)
-  command2 <- runTask playAttrs "command" [json|{"command":"echo Starting scheduler -d /tmp/nodepool"}|] taskAttrs ([("_tmp_nodepool", file1)] <> taskVars)
-  debug0 <- runTask playAttrs "debug" [json|{"debug":null}|] taskAttrs (taskVars)
+  file1 <- runTask playAttrs "file" ([("file", [json|{"path":"/tmp/nodepool","state":"directory"}|])] <> taskAttrs) (taskVars)
+  command2 <- runTask playAttrs "command" ([("command", [json|"echo Starting scheduler -d /tmp/nodepool"|])] <> taskAttrs) ([("_tmp_nodepool", file1)] <> taskVars)
+  debug0 <- runTask playAttrs "debug" ([("debug", [json|null|])] <> taskAttrs) (taskVars)
   pure $ [file1] <> [command2] <> [debug0]
 
 playLocalhost1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost1 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
-  debug1 <- runTask playAttrs "debug" [json|{"debug":{"msg":"etc stats is {{ etc }}"}}|] taskAttrs (taskVars)
+  debug1 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"etc stats is {{ etc }}"}|])] <> taskAttrs) (taskVars)
   pure $ [debug1]
 

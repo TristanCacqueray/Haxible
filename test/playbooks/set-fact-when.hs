@@ -21,8 +21,8 @@ playbook parentPlayAttrs taskAttrs taskVars = do
 playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
-  facts0 <- extractFact <$> runTask playAttrs "set_fact" [json|{"set_fact":{"x":42},"when":false}|] taskAttrs (taskVars)
-  facts1 <- extractFact <$> runTask playAttrs "set_fact" [json|{"set_fact":{"x":41},"when":true}|] taskAttrs (taskVars)
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"x is {{ x }}"}}|] taskAttrs ([("x", facts1), ("x", facts0)] <> taskVars)
+  facts0 <- extractFact <$> runTask playAttrs "set_fact" ([("set_fact", [json|{"x":42}|]), ("when", [json|false|])] <> taskAttrs) (taskVars)
+  facts1 <- extractFact <$> runTask playAttrs "set_fact" ([("set_fact", [json|{"x":41}|]), ("when", [json|true|])] <> taskAttrs) (taskVars)
+  debug0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"x is {{ x }}"}|])] <> taskAttrs) ([("x", facts1), ("x", facts0)] <> taskVars)
   pure $ [facts0] <> [facts1] <> [debug0]
 

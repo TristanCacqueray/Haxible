@@ -23,17 +23,24 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
   resultsTaskstasksprintyaml00 <- tasksTasksPrintYaml0 playAttrs (taskAttrs) ([("print_arg", [json|"Hello!"|])] <> taskVars)
   resultsTaskstasksprintyaml10 <- tasksTasksPrintYaml1 playAttrs ([("when", [json|false|])] <> taskAttrs) ([("print_arg", [json|"Hello!"|])] <> taskVars)
-  pure $ resultsTaskstasksprintyaml00 <> resultsTaskstasksprintyaml10
+  block0 <- block0 playAttrs ([("when", [json|true|])] <> taskAttrs) (taskVars)
+  pure $ resultsTaskstasksprintyaml00 <> resultsTaskstasksprintyaml10 <> block0
+
+block0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+block0 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = parentPlayAttrs
+  debug2 <- runTask playAttrs "debug" ([("debug", [json|null|]), ("when", [json|false|])] <> taskAttrs) (taskVars)
+  pure $ [debug2]
 
 tasksTasksPrintYaml1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 tasksTasksPrintYaml1 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debug1 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Print task {{ print_arg }}"}}|] taskAttrs (taskVars)
+  debug1 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"Print task {{ print_arg }}"}|])] <> taskAttrs) (taskVars)
   pure $ [debug1]
 
 tasksTasksPrintYaml0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 tasksTasksPrintYaml0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"Print task {{ print_arg }}"}}|] taskAttrs (taskVars)
+  debug0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"Print task {{ print_arg }}"}|])] <> taskAttrs) (taskVars)
   pure $ [debug0]
 

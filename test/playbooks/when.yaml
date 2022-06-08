@@ -8,3 +8,8 @@
       vars:
         print_arg: "Hello!"
       when: false
+
+    - when: true
+      block:
+        - debug:
+          when: false

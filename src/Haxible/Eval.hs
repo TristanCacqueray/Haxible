@@ -15,6 +15,7 @@ module Haxible.Eval
   )
 where
 
+import Control.Exception (handle)
 import Data.Aeson hiding (json)
 import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
@@ -26,8 +27,7 @@ import Haxible.DataSource
 import Haxible.Prelude
 import Haxible.Report
 import Haxl.Core hiding (env)
-import Text.Ginger
-import Control.Exception (handle)
+import Text.Ginger hiding (length)
 
 type BlockFun = Vars -> Vars -> AnsibleHaxl [Value]
 
@@ -55,7 +55,6 @@ envLoop n env = runGinger context template
         Right x -> x
         Left err -> error $ "Couldn't resolve loop list: " <> err
       Nothing -> [] -- error $ "Invalid loop variable: " <> show g
-
     context = makeContext' lookupVar gvarToList Nothing
     template :: Template SourcePos
     template = case runIdentity (parseGinger (const undefined) Nothing (from n)) of
@@ -118,13 +117,26 @@ loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
       ]
         <> play
 
-runTask :: Vars -> Text -> Value -> Vars -> Vars -> AnsibleHaxl Value
-runTask playAttrs module_ moduleObject taskAttrs baseTaskVars =
-  addModule <$> dataFetch (RunTask (TaskCall {playAttrs, moduleObject, taskAttrs, taskVars, module_}))
+-- | Combine multiple when attributes in a list
+--
+-- >>> dump $ mkObj $ combineWhen [("when", String "a"), ("debug", Null), ("when", String "b")]
+-- {"debug":null,"when":["a","b"]}
+combineWhen :: Vars -> Vars
+combineWhen xs
+  | length whens > 1 = whenAttr : rest
+  | otherwise = xs
+  where
+    whenAttr = ("when", Array (Data.Vector.fromList (map snd whens)))
+    (whens, rest) = partition ((==) "when" . fst) xs
+
+runTask :: Vars -> Text -> Vars -> Vars -> AnsibleHaxl Value
+runTask playAttrs module_ baseTaskAttrs baseTaskVars =
+  addModule <$> dataFetch (RunTask (TaskCall {playAttrs, taskAttrs, taskVars, module_}))
   where
     addModule = \case
       Object obj -> Object $ Data.Aeson.KeyMap.insert "__haxible_module" (String module_) obj
       x -> x
+    taskAttrs = combineWhen baseTaskAttrs
     taskVars = filter ((/=) Null . snd) (concatMap checkManyHost baseTaskVars)
     -- When a task run on many host, we register a single variable with all the results,
     -- thus when accessing the variable, we need to lookup the current host result.

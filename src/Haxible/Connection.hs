@@ -25,9 +25,7 @@ data TaskCall = TaskCall
     playAttrs :: Vars,
     -- | The module name for debug purpose, it is more convenient to access than reading it from the moduleObject.
     module_ :: Text,
-    -- | The task object, e.g `{"file": {"path": "/etc/zuul"}}`.
-    moduleObject :: Value,
-    -- | Extra task attributes, such as "when"
+    -- | The task attributes
     taskAttrs :: Vars,
     -- | Extra task vars, e.g. role defaults
     taskVars :: Vars
@@ -54,7 +52,7 @@ formatPid pid = "<" <> from (show pid) <> ">"
 formatTask :: Pid -> TaskCall -> Text
 formatTask pid tc = "TASK [" <> name <> "] " <> formatPid pid
   where
-    name = fromMaybe tc.module_ (preview (key "name" . _String) tc.moduleObject)
+    name = fromMaybe tc.module_ (preview _String =<< lookup "name" tc.taskAttrs)
 
 formatResult :: Bool -> Pid -> (Int, Value) -> String
 formatResult withColor pid (code, val) = pre <> from txt <> post
@@ -102,7 +100,7 @@ withConnections count inventory callback =
 
       let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
-            let callParams = [mkObj taskCall.playAttrs, taskCall.moduleObject, mkObj taskCall.taskAttrs, mkObj taskCall.taskVars]
+            let callParams = [mkObj taskCall.playAttrs, mkObj taskCall.taskAttrs, mkObj taskCall.taskVars]
             pid <- fromMaybe (error "no pid?!") <$> getPid (unsafeProcessHandle p)
             say (addSep termWidth (formatTask pid taskCall))
             hPutStrLn (getStdin p) (toStrict $ encode callParams)

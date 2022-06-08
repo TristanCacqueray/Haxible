@@ -22,12 +22,12 @@ playbook parentPlayAttrs taskAttrs taskVars = do
 playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
-  stat0 <- runTask playAttrs "stat" [json|{"stat":{"path":"/"}}|] taskAttrs (taskVars)
+  stat0 <- runTask playAttrs "stat" ([("stat", [json|{"path":"/"}|])] <> taskAttrs) (taskVars)
   pure $ [stat0]
 
 playLocalhost1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost1 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
-  debug0 <- runTask playAttrs "debug" [json|{"debug":{"msg":"r1 is {{ r1 }}"}}|] taskAttrs (taskVars)
+  debug0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"r1 is {{ r1 }}"}|])] <> taskAttrs) (taskVars)
   pure $ [debug0]
 

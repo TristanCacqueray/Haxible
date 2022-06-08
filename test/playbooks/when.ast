@@ -55,6 +55,19 @@
                         }
                     )
                 )
+            ,
+                ( Binder "block0"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug2"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
+                )
             ]
         }
     , playAttrs =
@@ -122,6 +135,71 @@
                         [
                             ( "print_arg"
                             , String "Hello!"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "block0"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug2"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "block0"
+                    , taskAttrs =
+                        [
+                            ( "when"
+                            , Bool True
+                            )
+                        ]
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "block0"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug2"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs = []
+    , exprs =
+        [ Expr
+            { binder = Binder "debug2"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Null
+                    , taskAttrs =
+                        [
+                            ( "when"
+                            , Bool False
                             )
                         ]
                     }

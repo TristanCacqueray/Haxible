@@ -97,10 +97,8 @@ module_loader.add_directory(os.path.dirname(inventory) + "/library")
 def run_task(inputs):
     # The Haxl DataSource provides the play without tasks, the task to run
     # and extra environment vars for the play.
-    [play, task, taskAttrs, taskVars] = inputs
+    [play, task, taskVars] = inputs
     # Prepare the final play structure.
-    if taskAttrs:
-        task.update(taskAttrs)
     if taskVars:
         play.setdefault("vars", {})
         play["vars"].update(taskVars)
