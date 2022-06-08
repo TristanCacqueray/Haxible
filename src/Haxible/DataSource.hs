@@ -1,5 +1,5 @@
 -- | This module contains the Haxl logic
-module Haxible.DataSource (AnsibleHaxl, initHaxibleState, dataFetch, TaskReq (..)) where
+module Haxible.DataSource (AnsibleHaxl, initHaxibleState, dataFetch, TaskReq (..), TaskError (..)) where
 
 import Control.Concurrent.Async (async)
 import Control.Exception (Exception, SomeException, try)

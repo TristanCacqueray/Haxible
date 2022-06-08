@@ -27,6 +27,7 @@ import Haxible.Prelude
 import Haxible.Report
 import Haxl.Core hiding (env)
 import Text.Ginger
+import Control.Exception (handle)
 
 type BlockFun = Vars -> Vars -> AnsibleHaxl [Value]
 
@@ -139,7 +140,7 @@ runHaxible :: FilePath -> FilePath -> AnsibleHaxl [Value] -> IO ()
 runHaxible inventory playPath action = withConnections 5 inventory $ \connections -> do
   ansibleState <- initHaxibleState connections
   ansibleEnv <- initEnv (stateSet ansibleState stateEmpty) ()
-  xs <- runHaxl ansibleEnv action
+  xs <- handle printError (runHaxl ansibleEnv action)
   traverse_ (putStrLn . unsafeFrom . encode) xs
   case nonEmpty xs of
     Just res -> do
@@ -147,3 +148,6 @@ runHaxible inventory playPath action = withConnections 5 inventory $ \connection
     Nothing -> putStrLn "\nEmpty results :("
   where
     (playName, _) = splitExtension playPath
+    printError (TaskError code v) = do
+      putStrLn $ "Error: " <> show code <> ": " <> unsafeFrom (encode v)
+      pure []
