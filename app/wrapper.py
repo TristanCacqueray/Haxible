@@ -59,7 +59,9 @@ class PlaybookRunner:
 
             runner_on_ok = add_result
             runner_on_failed = add_result
-            runner_on_skipped = add_result
+
+            def v2_runner_on_skipped(self, result):
+                self.add_result(result._host.get_name(), result._result)
 
         cb = CallbackModule()
         tqm = TaskQueueManager(

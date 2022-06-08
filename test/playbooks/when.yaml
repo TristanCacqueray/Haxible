@@ -1,0 +1,10 @@
+- hosts: localhost
+  tasks:
+    - include_tasks: ./tasks/print.yaml
+      vars:
+        print_arg: "Hello!"
+
+    - include_tasks: ./tasks/print.yaml
+      vars:
+        print_arg: "Hello!"
+      when: false

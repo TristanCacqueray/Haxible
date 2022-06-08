@@ -1,0 +1,2 @@
+- debug:
+    msg: "Print task {{ print_arg }}"

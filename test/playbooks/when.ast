@@ -1,0 +1,208 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , taskAttrs = []
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "resultsTaskstasksprintyaml00"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug0"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
+                )
+            ,
+                ( Binder "resultsTaskstasksprintyaml10"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug1"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsTaskstasksprintyaml00"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug0"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "tasksTasksPrintYaml0"
+                    , taskAttrs = []
+                    , taskVars =
+                        [
+                            ( "print_arg"
+                            , String "Hello!"
+                            )
+                        ]
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "resultsTaskstasksprintyaml10"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug1"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
+            , requirements = []
+            , loop = Nothing
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "tasksTasksPrintYaml1"
+                    , taskAttrs =
+                        [
+                            ( "when"
+                            , Bool False
+                            )
+                        ]
+                    , taskVars =
+                        [
+                            ( "print_arg"
+                            , String "Hello!"
+                            )
+                        ]
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "tasksTasksPrintYaml1"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug1"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs = []
+    , exprs =
+        [ Expr
+            { binder = Binder "debug1"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "Print task {{ print_arg }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "tasksTasksPrintYaml0"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs = []
+    , exprs =
+        [ Expr
+            { binder = Binder "debug0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , loop = Nothing
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "Print task {{ print_arg }}"
+                                )
+                            ]
+                        )
+                    , taskAttrs = []
+                    }
+                )
+            }
+        ]
+    }
+]

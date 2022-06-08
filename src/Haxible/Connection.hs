@@ -65,10 +65,13 @@ formatResult withColor pid (code, val) = pre <> from txt <> post
     txt = res <> ": [" <> host <> "] " <> formatPid pid <> " => " <> jsonDump <> "\n"
     jsonDump = decodeUtf8 . from . encode . cleanVar $ val
     host = fromMaybe "unknown?!" (preview (key "__haxible_play" . key "hosts" . _String) val)
+    skipped = isJust (preview (key "skip_reason") val)
     resColor
+      | skipped = Cyan
       | code /= 0 = Red
       | otherwise = Green
     res
+      | skipped = "skipping"
       | code == 0 = "ok"
       | otherwise = from (show code)
 
