@@ -72,7 +72,8 @@ resolveTask task = do
     includeRole = do
       let role_name = from $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.params
           name = from role_name
-      role_path <- getRolePath role_name $ "tasks" </> "main.yaml"
+          task_name = from $ fromMaybe "main" $ preview (key "tasks_from" . _String) $ task.params
+      role_path <- getRolePath role_name $ "tasks" </> task_name <> ".yaml"
       role_defaults <- getRolePath role_name $ "defaults" </> "main.yaml"
       JsonVars defaults <- liftIO do
         defaultExist <- doesFileExist role_defaults
