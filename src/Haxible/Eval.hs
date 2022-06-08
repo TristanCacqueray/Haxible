@@ -53,7 +53,7 @@ envLoop n env = runGinger context template
       Just xs -> case traverse fromGValEither xs of
         Right x -> x
         Left err -> error $ "Couldn't resolve loop list: " <> err
-      Nothing -> error $ "Invalid loop variable: " <> show g
+      Nothing -> [] -- error $ "Invalid loop variable: " <> show g
 
     context = makeContext' lookupVar gvarToList Nothing
     template :: Template SourcePos
