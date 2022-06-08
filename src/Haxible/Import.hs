@@ -74,7 +74,9 @@ resolveTask task = do
           name = from role_name
       role_path <- getRolePath role_name $ "tasks" </> "main.yaml"
       role_defaults <- getRolePath role_name $ "defaults" </> "main.yaml"
-      JsonVars defaults <- decodeFile role_defaults
+      JsonVars defaults <- liftIO do
+        defaultExist <- doesFileExist role_defaults
+        if defaultExist then decodeFile role_defaults else pure (JsonVars [])
       withFile role_path $ \baseTasks -> do
         tasks <- traverse resolveTask baseTasks
         pure $ Role RoleValue {name, tasks, defaults}
