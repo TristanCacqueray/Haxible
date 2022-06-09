@@ -9,7 +9,7 @@ import Haxible.Prelude
 reportTiming :: NonEmpty Value -> Text
 reportTiming rawResults =
   Text.unlines $
-    ["@startuml", "scale 1 as 100 pixels"]
+    ["@startuml", "scale 1 as 20 pixels"]
       <> (mappend "concise " <$> orderedKeys)
       <> concatMap toTiming (Map.toList modules)
       <> ["@enduml"]
@@ -33,7 +33,7 @@ reportTiming rawResults =
         Text.unwords [from (show end), "is", "{hidden}"]
       ]
 
-    step = 9 / (unsafeInto @Double $ maxDate - minDate)
+    step = 49 / (unsafeInto @Double $ maxDate - minDate)
     minDate, maxDate :: Integer
     minDate = minimum $ map (getNumber "__haxible_start") results
     maxDate = maximum $ map (getNumber "__haxible_end") results

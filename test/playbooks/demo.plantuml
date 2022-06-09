@@ -1,5 +1,5 @@
 @startuml
-scale 1 as 100 pixels
+scale 1 as 20 pixels
 concise create_network0
 concise create_instance0
 concise create_instance1
@@ -10,34 +10,34 @@ concise create_volume0
 concise create_instance3
 
 @create_instance0
-3 is "Create instances"
-6 is {hidden}
+18 is "Create instances"
+36 is {hidden}
 
 @create_instance1
-3 is "Create instances"
-6 is {hidden}
+18 is "Create instances"
+36 is {hidden}
 
 @create_instance2
-3 is "Create instances"
-8 is {hidden}
+18 is "Create instances"
+45 is {hidden}
 
 @create_instance3
-6 is "Create database"
-9 is {hidden}
+35 is "Create database"
+49 is {hidden}
 
 @create_network0
 0 is "Create network"
-3 is {hidden}
+18 is {hidden}
 
 @create_object0
-3 is "Create object"
-6 is {hidden}
+18 is "Create object"
+36 is {hidden}
 
 @create_object1
-3 is "Create network object"
-6 is {hidden}
+18 is "Create network object"
+31 is {hidden}
 
 @create_volume0
-3 is "Create storage"
-6 is {hidden}
+18 is "Create storage"
+35 is {hidden}
 @enduml
