@@ -47,6 +47,7 @@ data Expr = Expr
     requirements :: [Requirement],
     when_ :: Maybe Value,
     loop :: Maybe Value,
+    taskAttrs :: Vars,
     term :: Term
   }
   deriving (Show, Eq)
@@ -58,10 +59,10 @@ data Term
   | BlockRescueCall CallDefinition
   deriving (Show, Eq)
 
-data CallModule = CallModule {module_ :: Text, params :: Value, taskAttrs :: Vars}
+data CallModule = CallModule {module_ :: Text, params :: Value}
   deriving (Show, Eq)
 
-data CallDefinition = CallDefinition {name :: Text, taskAttrs :: Vars, taskVars :: Vars}
+data CallDefinition = CallDefinition {name :: Text, taskVars :: Vars}
   deriving (Show, Eq)
 
 -- | A resource is a global object such as a registered result or a file path.
@@ -221,10 +222,10 @@ moduleExpr task value = do
   modify (\env -> env {availables = provides <> availables})
 
   -- Create the expr
-  let term = ModuleCall CallModule {module_ = task.module_, params = value, taskAttrs}
+  let term = ModuleCall CallModule {module_ = task.module_, params = value}
       requirements = []
       outputs = Right provides
-  pure $ Expr {binder, requires, provides, outputs, requirements, loop = Nothing, term, when_}
+  pure $ Expr {binder, requires, provides, outputs, requirements, loop = Nothing, term, taskAttrs, when_}
   where
     when_ = lookup "when" task.attrs
     destPath = Path <$> (ignoreJinjaPath =<< (getAttr "path" <|> getAttr "dest"))
@@ -250,7 +251,7 @@ roleExpr task role = do
 
   expr <- moduleExpr task Null
   binder <- freshName "results" role.name
-  pure $ expr {binder, term = DefinitionCall CallDefinition {name, taskVars, taskAttrs}}
+  pure $ expr {binder, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
   where
     taskAttrs = getTaskAttrs task
     taskVars = getTaskVars task <> role.defaults
@@ -265,7 +266,7 @@ tasksExpr task includeName tasks = do
   expr <- moduleExpr task Null
   binder <- freshName "results" name
   let outputs = Left tasksDef.outputs
-  pure $ expr {binder, outputs, term = DefinitionCall CallDefinition {name, taskVars, taskAttrs}}
+  pure $ expr {binder, outputs, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
   where
     taskVars = getTaskVars task
     taskAttrs = getTaskAttrs task
@@ -281,14 +282,14 @@ factsExpr task cacheable name value = do
       outputs = Right provides
       params = mkObj $ [(name, value)] <> maybe [] (\v -> [("cacheable", v)]) cacheable
       taskAttrs = getPropagableAttrs task.attrs
-      term = ModuleCall CallModule {module_ = "set_fact", params, taskAttrs}
+      term = ModuleCall CallModule {module_ = "set_fact", params}
       loop = Nothing
       requirements = []
       when_ = lookup "when" task.attrs
   modify (\env -> env {availables = resource : availables})
   -- expr <- moduleExpr task value
   when (isJust (lookup "loop" task.attrs)) $ error "set_fact loop is not supported"
-  pure $ Expr {binder, requires, provides, outputs, requirements, loop, term, when_}
+  pure $ Expr {binder, requires, provides, outputs, requirements, loop, term, taskAttrs, when_}
 
 blockExpr :: Task -> BlockValue -> State Env Expr
 blockExpr task block = do
@@ -310,7 +311,7 @@ blockExpr task block = do
   let outputs = Left outs
       taskVars = getTaskVars task
       taskAttrs = getTaskAttrs task
-  pure $ expr {binder, outputs, term = dc CallDefinition {name, taskVars, taskAttrs}}
+  pure $ expr {binder, outputs, taskAttrs, term = dc CallDefinition {name, taskVars}}
 
 normalizeTask :: Task -> State Env [Expr]
 normalizeTask task = do
@@ -372,9 +373,10 @@ normalizePlaybook plays =
   where
     topLevelCall (play, def) = do
       binder <- freshName "results" (playName play)
-      let term = DefinitionCall CallDefinition {name = def.name, taskVars = [], taskAttrs = []}
+      let term = DefinitionCall CallDefinition {name = def.name, taskVars = []}
           outputs = Right []
           when_ = Nothing
-      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, requirements = [], loop = Nothing, term, when_}
+          taskAttrs = []
+      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, requirements = [], loop = Nothing, term, taskAttrs, when_}
     topLevel :: [Expr] -> Definition
     topLevel exprs = (emptyDefinition "playbook") {exprs}

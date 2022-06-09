@@ -23,10 +23,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -97,6 +97,7 @@
             , requirements = []
             , when_ = Just ( Bool False )
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "set_fact"
@@ -108,7 +109,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -130,6 +130,7 @@
             , requirements = []
             , when_ = Just ( Bool True )
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "set_fact"
@@ -141,7 +142,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -173,6 +173,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -184,7 +185,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }

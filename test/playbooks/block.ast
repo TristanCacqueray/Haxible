@@ -19,10 +19,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -101,10 +101,10 @@
             , requirements = []
             , when_ = Just ( Bool True )
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "block0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -128,6 +128,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -139,7 +140,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -181,6 +181,12 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "block task"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -192,12 +198,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "block task"
-                            )
-                        ]
                     }
                 )
             }
@@ -219,6 +219,12 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "block task"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -230,12 +236,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "block task"
-                            )
-                        ]
                     }
                 )
             }

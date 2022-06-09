@@ -23,10 +23,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -165,10 +165,10 @@
                     , String "World"
                     ]
                 )
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "tasksTasksGreetYaml0"
-                    , taskAttrs = []
                     , taskVars =
                         [
                             ( "include_param"
@@ -206,6 +206,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -219,7 +220,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -294,6 +294,12 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Included task"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -305,12 +311,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Included task"
-                            )
-                        ]
                     }
                 )
             }
@@ -345,10 +345,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "tasksOtherTasksYaml0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -410,16 +410,16 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Unused include"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
                     , params = Null
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Unused include"
-                            )
-                        ]
                     }
                 )
             }
@@ -441,6 +441,12 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Nested included task"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -452,12 +458,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Nested included task"
-                            )
-                        ]
                     }
                 )
             }

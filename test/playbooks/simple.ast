@@ -23,10 +23,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -48,10 +48,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playZuulExecutor0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -69,10 +69,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playNodepoolLauncher0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -96,10 +96,10 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost1"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -173,6 +173,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "stat"
@@ -184,7 +185,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -212,11 +212,11 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "command"
                     , params = String "echo etc exist: {{ etc.stat.exists }}"
-                    , taskAttrs = []
                     }
                 )
             }
@@ -289,6 +289,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "file"
@@ -304,7 +305,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -332,11 +332,11 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "command"
                     , params = String "echo Starting executor -d /tmp/zuul"
-                    , taskAttrs = []
                     }
                 )
             }
@@ -397,6 +397,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "file"
@@ -412,7 +413,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -435,11 +435,11 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "command"
                     , params = String "echo Starting scheduler -d /tmp/nodepool"
-                    , taskAttrs = []
                     }
                 )
             }
@@ -451,11 +451,11 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
                     , params = Null
-                    , taskAttrs = []
                     }
                 )
             }
@@ -498,6 +498,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -509,7 +510,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }

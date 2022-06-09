@@ -14,10 +14,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -99,10 +99,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "tasksTasksPrintYaml0"
-                    , taskAttrs = []
                     , taskVars =
                         [
                             ( "print_arg"
@@ -129,10 +129,10 @@
             , requirements = []
             , when_ = Just ( Bool False )
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "tasksTasksPrintYaml1"
-                    , taskAttrs = []
                     , taskVars =
                         [
                             ( "print_arg"
@@ -159,10 +159,10 @@
             , requirements = []
             , when_ = Just ( Bool True )
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "block0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -180,6 +180,7 @@
                     ]
                 )
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -191,7 +192,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -219,11 +219,11 @@
             , requirements = []
             , when_ = Just ( Bool False )
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
                     , params = Null
-                    , taskAttrs = []
                     }
                 )
             }
@@ -251,6 +251,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -262,7 +263,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -290,6 +290,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -301,7 +302,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }

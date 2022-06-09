@@ -19,10 +19,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -110,6 +110,12 @@
                     , String "C"
                     ]
                 )
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Call task in a loop"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -121,12 +127,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Call task in a loop"
-                            )
-                        ]
                     }
                 )
             }
@@ -144,6 +144,12 @@
             , when_ = Nothing
             , loop = Just
                 ( String "{{ xs }}" )
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Loop var"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -155,12 +161,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Loop var"
-                            )
-                        ]
                     }
                 )
             }
@@ -183,6 +183,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -194,7 +195,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }

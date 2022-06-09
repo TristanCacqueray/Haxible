@@ -40,61 +40,51 @@ renderDefinition def =
       _ -> from expr.binder
 
 renderExpr :: Expr -> [Text]
-renderExpr e = whenExpr <> loopExpr <> [from e.binder <> " <- " <> Text.unwords finalWhenExpr]
+renderExpr e = whenBinder <> loopBinder <> [from e.binder <> " <- " <> Text.unwords finalExpr]
   where
-    toJinja v = Text.unwords ["{{", v, "}}"]
-    toJinjas = \case
-      String v -> toJinja v
-      v -> error $ "Expected a string, got: " <> unsafeFrom (encode v)
-    whenExpr = case e.when_ of
-      Just (Bool True) -> ["let when_ = True"]
-      Just (Bool False) -> ["let when_ = False"]
-      Just (String v) -> [Text.unwords ["when_", "<-", "extractWhen", "<$>", debugCall (toJinja v)]]
-      Just (Array v) -> [Text.unwords ["when_", "<-", "all extractWhen <$> sequence", textList (debugCall <$> (toJinjas <$> toList v))]]
-      Just v -> error $ "Expected a string for when, got: " <> unsafeFrom (encode v)
-      Nothing -> []
-    debugCall v =
-      Text.unwords
-        [ "runTask playAttrs",
-          quote "debug",
-          textList (mkJsonArg <$> [("debug", mkObj [("msg", String v)])]),
-          paren (concatList [requirementsWithoutLoop, "taskVars"])
-        ]
-    finalWhenExpr
-      | isJust e.when_ = ["if when_ then", paren (Text.unwords finalExpr), "else pure", skipResult]
-      | otherwise = finalExpr
-    skipResult
-      | singleResult = embedJSON skippedOutput
-      | otherwise = textList (embedJSON <$> skipResults [] e.outputs)
-    skipResults acc = \case
-      Left (Environment xs) -> concatMap (skipResults acc . snd) xs
-      Right _ -> skippedOutput : acc
-
-    loopExpr = case e.loop of
-      Just (Array xs) -> ["let loop_ = " <> textList (embedJSON <$> toList xs)]
-      Just (String v) -> [Text.unwords ["loop_", "<-", "extractLoop", "<$>", debugCall v]]
-      Just v -> error $ "Invalid loop expression: " <> unsafeFrom (encode v)
-      Nothing -> []
-
     singleResult = case e.term of
       ModuleCall _ | isNothing e.loop -> True
       _ -> False
+    extractFact = case e.term of
+      ModuleCall cm | cm.module_ == "set_fact" -> True
+      _ -> False
 
-    skippedOutput = [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
+    -- Bind the when value if necessary
+    whenBinder = case e.when_ of
+      Just (Bool True) -> ["let when_ = True"]
+      Just (Bool False) -> ["let when_ = False"]
+      Just (String v) -> [Text.unwords ["when_", "<-", "extractWhen", "<$>", callDebug (toJinja v)]]
+      Just (Array v) -> [Text.unwords ["when_", "<-", "all extractWhen <$> sequence", textList (callDebug <$> (toJinjas <$> toList v))]]
+      Just v -> error $ "Expected a string for when, got: " <> unsafeFrom (encode v)
+      Nothing -> []
 
-    requirements = mkReq e.requirements
-    mkReq x = textList $ (\req -> "(" <> quote req.name <> ", " <> mkOrigin req.origin <> ")") <$> x
-    mkOrigin = \case
-      Direct n -> from n
-      Nested n i -> from n <> " !! " <> from (show i)
-      LoopVar -> "__haxible_loop_item"
-    requirementsWithoutLoop = mkReq (filter (not . loopVar) e.requirements)
+    loopBinder = case e.loop of
+      Just (Array xs) -> ["let loop_ = " <> textList (embedJSON <$> toList xs)]
+      Just (String v) -> [Text.unwords ["loop_", "<-", "extractLoop", "<$>", callDebug v]]
+      Just v -> error $ "Invalid loop expression: " <> unsafeFrom (encode v)
+      Nothing -> []
+
+    callDebug = debugCall (filter (not . loopVar) e.requirements)
       where
-        loopVar req = case req.origin of
-          LoopVar -> True
-          _ -> False
+        loopVar req
+          | req.origin == LoopVar = True
+          | otherwise = False
 
     finalExpr
+      | isJust e.when_ = ["if when_ then", paren (Text.unwords loopExpr), "else pure", skipResult]
+      | otherwise = loopExpr
+
+    skipResult
+      | singleResult = embedJSON skippedOutput
+      | otherwise = textList (embedJSON <$> skipResults [] e.outputs)
+      where
+        skipResults acc = \case
+          Left (Environment xs) -> concatMap (skipResults acc . snd) xs
+          Right _ -> skippedOutput : acc
+
+        skippedOutput = [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
+
+    loopExpr
       | isJust e.loop = mkTraverse "loop_"
       | extractFact = ["extractFact", "<$>"] <> callExpr
       | otherwise = callExpr
@@ -105,32 +95,51 @@ renderExpr e = whenExpr <> loopExpr <> [from e.binder <> " <- " <> Text.unwords 
           BlockRescueCall _ -> "traverseInclude"
         mkTraverse arg = [traverser, "(\\__haxible_loop_item -> "] <> callExpr <> [") ", arg]
 
-    vars = paren (concatList [requirements, "taskVars"])
+    vars = paren (concatList [textReq e.requirements, "taskVars"])
 
-    (extractFact, callExpr) = case e.term of
-      ModuleCall CallModule {module_, params, taskAttrs} ->
-        ( module_ == "set_fact",
-          [ "runTask playAttrs",
-            quote module_,
-            paren (concatList [textList (mkJsonArg <$> [(module_, params)] <> taskAttrs), "taskAttrs"]),
-            vars
-          ]
-        )
-      DefinitionCall CallDefinition {name, taskAttrs, taskVars} ->
-        (False, [name, "playAttrs"] <> cdExpr taskAttrs taskVars)
-      BlockRescueCall CallDefinition {name, taskAttrs, taskVars} ->
-        ( False,
-          [ "tryRescue",
-            paren (name <> "Main playAttrs"),
-            paren (name <> "Rescue playAttrs")
-          ]
-            <> cdExpr taskAttrs taskVars
-        )
+    callExpr = case e.term of
+      ModuleCall CallModule {module_, params} ->
+        [ "runTask playAttrs",
+          quote module_,
+          paren (concatList [textList (mkJsonArg <$> [(module_, params)] <> e.taskAttrs), "taskAttrs"]),
+          vars
+        ]
+      DefinitionCall CallDefinition {name, taskVars} ->
+        [name, "playAttrs"] <> callParams e.taskAttrs taskVars
+      BlockRescueCall CallDefinition {name, taskVars} ->
+        ["tryRescue", paren (name <> "Main playAttrs"), paren (name <> "Rescue playAttrs")]
+          <> callParams e.taskAttrs taskVars
 
-    cdExpr taskAttrs taskVars =
+    callParams taskAttrs taskVars =
       [ paren (concatList [textList (mkJsonArg <$> taskAttrs), "taskAttrs"]),
-        paren (concatList [requirements, textList (mkJsonArg <$> taskVars), "taskVars"])
+        paren (concatList [textReq e.requirements, textList (mkJsonArg <$> taskVars), "taskVars"])
       ]
+
+textReq :: [Requirement] -> Text
+textReq xs = textList $ (\req -> "(" <> quote req.name <> ", " <> mkOrigin req.origin <> ")") <$> xs
+  where
+    mkOrigin = \case
+      Direct n -> from n
+      Nested n i -> from n <> " !! " <> from (show i)
+      LoopVar -> "__haxible_loop_item"
+
+-- Call the debug module to evaluate a string template
+debugCall :: [Requirement] -> Text -> Text
+debugCall reqs template =
+  Text.unwords
+    [ "runTask playAttrs",
+      quote "debug",
+      textList (mkJsonArg <$> [("debug", mkObj [("msg", String template)])]),
+      paren (concatList [textReq reqs, "taskVars"])
+    ]
+
+toJinja :: Text -> Text
+toJinja v = Text.unwords ["{{", v, "}}"]
+
+toJinjas :: Value -> Text
+toJinjas = \case
+  String v -> toJinja v
+  v -> error $ "Expected a string, got: " <> unsafeFrom (encode v)
 
 -- | Add parenthesis
 -- >>> paren "toto"

@@ -23,10 +23,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -108,6 +108,12 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Simple fact"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "set_fact"
@@ -119,12 +125,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Simple fact"
-                            )
-                        ]
                     }
                 )
             }
@@ -157,6 +157,12 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Extra fact"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "set_fact"
@@ -172,12 +178,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Extra fact"
-                            )
-                        ]
                     }
                 )
             }
@@ -200,6 +200,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -211,7 +212,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }

@@ -14,10 +14,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "playLocalhost0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -78,6 +78,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -89,7 +90,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -101,10 +101,10 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
                     { name = "roleAdder0"
-                    , taskAttrs = []
                     , taskVars = []
                     }
                 )
@@ -117,6 +117,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -128,7 +129,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -140,6 +140,7 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -151,7 +152,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs = []
                     }
                 )
             }
@@ -203,6 +203,12 @@
             , requirements = []
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Adding numbers"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "debug"
@@ -214,12 +220,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Adding numbers"
-                            )
-                        ]
                     }
                 )
             }
@@ -242,6 +242,12 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Checking results"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "assert"
@@ -256,12 +262,6 @@
                                 )
                             ]
                         )
-                    , taskAttrs =
-                        [
-                            ( "name"
-                            , String "Checking results"
-                            )
-                        ]
                     }
                 )
             }
