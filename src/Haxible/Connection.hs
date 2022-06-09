@@ -52,7 +52,7 @@ formatPid :: Pid -> Text
 formatPid pid = "<" <> from (show pid) <> ">"
 
 formatTask :: Pid -> TaskCall -> Text
-formatTask pid tc = "TASK [" <> name <> "] " <> formatPid pid
+formatTask pid tc = "TASK " <> formatPid pid <> " [" <> name <> "]"
   where
     name = fromMaybe tc.module_ (preview _String =<< lookup "name" tc.taskAttrs)
 

@@ -94,20 +94,20 @@ Haxible runs three batches:
 ```
 PLAY [concurrent] ***********************************************************************
 
-TASK [Create network] <17631> ***********************************************************
+TASK <17631> [Create network] ***********************************************************
 ok: [localhost] <17631> => {"changed":false,"delay":null,"success":"ok","uid":"6b280cb6"}
 
-TASK [Create network object] <17631> ****************************************************
-TASK [Create object] <17662> ************************************************************
-TASK [Create storage] <17663> ***********************************************************
-TASK [Create instances] <17666> *********************************************************
-TASK [Create instances] <17665> *********************************************************
+TASK <17631> [Create network object] ****************************************************
+TASK <17662> [Create object] ************************************************************
+TASK <17663> [Create storage] ***********************************************************
+TASK <17666> [Create instances] *********************************************************
+TASK <17665> [Create instances] *********************************************************
 ok: [localhost] <17631> => {"changed":false,"delay":null,"success":"ok","uid":"f8db2cc0"}
 
-TASK [Create instances] <17631> *********************************************************
+TASK <17631> [Create instances] *********************************************************
 ok: [localhost] <17663> => {"changed":false,"delay":null,"success":"ok","uid":"b060e6d3"}
 
-TASK [Create database] <17663> **********************************************************
+TASK <17663> [Create database] **********************************************************
 ok: [localhost] <17666> => {"changed":false,"delay":null,"success":"ok","uid":"3ab9d5a3"}
 ok: [localhost] <17662> => {"changed":false,"delay":null,"success":"ok","uid":"8c0e3f35"}
 ok: [localhost] <17665> => {"changed":false,"delay":null,"success":"ok","uid":"1e4fa090"}
