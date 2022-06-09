@@ -67,16 +67,11 @@ formatResult withColor pid (code, val) = pre <> from txt <> post
     host = fromMaybe "unknown?!" (preview (key "__haxible_play" . key "hosts" . _String) val)
     skipped = isJust (preview (key "skip_reason") val)
     changed = fromMaybe False (preview (key "changed" . _Bool) val)
-    resColor
-      | skipped = Cyan
-      | changed = Yellow
-      | code /= 0 = Red
-      | otherwise = Green
-    res
-      | skipped = "skipping"
-      | changed = "changed"
-      | code == 0 = "ok"
-      | otherwise = from (show code)
+    (res, resColor)
+      | code /= 0 = ("failed", Red)
+      | skipped = ("skipping", Cyan)
+      | changed = ("changed", Yellow)
+      | otherwise = ("ok", Green)
 
 cleanVar :: Value -> Value
 cleanVar = \case
@@ -88,7 +83,7 @@ cleanVar = \case
     addedKey =
       ["__haxible_play", "__haxible_start", "__haxible_end", "__haxible_module"]
         <> ["__haxible_multi_hosts"]
-        <> ["_ansible_no_log", "_ansible_verbose_always"]
+        <> ["_ansible_no_log", "_ansible_verbose_always", "__ansible_delegated_vars"]
 
 -- | Creates the Python interpreters.
 withConnections :: Int -> FilePath -> FilePath -> (Connections -> IO ()) -> IO ()
