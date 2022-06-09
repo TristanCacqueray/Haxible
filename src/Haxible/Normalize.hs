@@ -76,6 +76,8 @@ data Resource = Resource
 data Dependency
   = Register Text
   | Path Text
+  | -- Command module in the same path creates dependency
+    Command FilePath
   deriving (Eq, Show)
 
 -- | A binder is a haskell variable name.
@@ -106,9 +108,11 @@ dependencyName = \case
   Path p ->
     -- a fake variable that is used to force the dependency relationship
     "_fake_" <> cleanName p
+  Command fp -> "_fake_" <> cleanName (from fp)
 dependencyValue = \case
   Register n -> n
   Path p -> p
+  Command _ -> "__haxible_command"
 
 -- | The requirements indicates what binders are used by an expression.
 data Requirement = Requirement {name :: Text, origin :: Origin} deriving (Show, Eq)
@@ -212,15 +216,30 @@ getRequires availables = concatMap findRequirements
       Array x -> concatMap findRequirements x
       _ -> []
 
-moduleExpr :: Task -> Value -> State Env Expr
-moduleExpr task value = do
+samePathCommand :: FilePath -> Dependency -> Bool
+samePathCommand fp = \case
+  Command fp' | fp == fp' -> True
+  _ -> False
+
+moduleExpr :: FilePath -> Task -> Value -> State Env Expr
+moduleExpr taskPath task value = do
   binder <- freshName task.module_ (fromMaybe "" task.name)
 
   availables <- gets availables
 
   -- Look for requirements and provides
-  let requires = getRequires availables (value : attrs)
-      provides = Resource binder <$> maybeToList register <> maybeToList destPath
+  let moduleRequires = getRequires availables (value : attrs)
+      moduleProvides = Resource binder <$> maybeToList register <> maybeToList destPath
+  -- Command defined in the same block/tasks/role are automatically inter-dependent.
+  let commandRequires
+        | task.module_ == "command" = filter (samePathCommand taskPath . (.dep)) availables
+        | otherwise = []
+      commandProvides
+        | task.module_ == "command" = [Resource binder (Command taskPath)]
+        | otherwise = []
+
+  let requires = commandRequires <> moduleRequires
+      provides = commandProvides <> moduleProvides
   modify (\env -> env {availables = provides <> availables})
 
   -- Create the expr
@@ -248,7 +267,7 @@ roleExpr task role = do
   roleDef <- normalizeDefinition role.rolePath name role.tasks
   modify (#definitions %~ (roleDef :))
 
-  expr <- moduleExpr task Null
+  expr <- moduleExpr "" task Null
   binder <- freshName "results" role.name
   pure $ expr {binder, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
   where
@@ -262,7 +281,7 @@ tasksExpr tasksPath task includeName tasks = do
   tasksDef <- normalizeDefinition tasksPath name tasks
   modify (#definitions %~ (tasksDef :))
 
-  expr <- moduleExpr task Null
+  expr <- moduleExpr "" task Null
   binder <- freshName "results" name
   let outputs = Left tasksDef.outputs
   pure $ expr {binder, outputs, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
@@ -306,7 +325,7 @@ blockExpr parentPath task block = do
       modify (#definitions %~ ([rescueDef, blockDef] <>))
       pure (rescueDef.outputs, BlockRescueCall)
 
-  expr <- moduleExpr task Null
+  expr <- moduleExpr "" task Null
   let outputs = Left outs
       taskVars = getTaskVars task
       taskAttrs = getTaskAttrs task
@@ -315,7 +334,7 @@ blockExpr parentPath task block = do
 normalizeTask :: FilePath -> Task -> State Env [Expr]
 normalizeTask taskPath task = do
   exprs <- case task.params of
-    Module v -> (: []) <$> moduleExpr task v
+    Module v -> (: []) <$> moduleExpr taskPath task v
     Role r -> (: []) <$> roleExpr task r
     Tasks tasksPath name xs -> (: []) <$> tasksExpr tasksPath task name xs
     Facts vars -> traverse (uncurry (factsExpr task Nothing)) vars
@@ -333,11 +352,18 @@ normalizeTask taskPath task = do
 
 normalizeDefinition :: FilePath -> Text -> [Task] -> State Env Definition
 normalizeDefinition source name tasks = do
+  modify (\env -> env {availables = updateAvailable env.availables})
   exprs <- concat <$> traverse (normalizeTask source) tasks
   let provides = nub $ concatMap (.provides) exprs
       requires = nub $ filter (`notElem` provides) $ concatMap (.requires) exprs
       outputs = Environment $ (\e -> (e.binder, e.outputs)) <$> exprs
   pure $ Definition {name, exprs, requires, provides, outputs, playAttrs = [], source}
+  where
+    -- Cleanup unrelated resource.
+    updateAvailable = filter (not . unusedResource . (.dep))
+    unusedResource = \case
+      Command fp -> source == fp
+      _ -> False
 
 normalizePlay :: Play -> State Env Definition
 normalizePlay play = do

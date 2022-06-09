@@ -19,6 +19,10 @@
                     { name = Binder "stat0"
                     , dep = Path "/etc"
                     }
+                , Resource
+                    { name = Binder "command0"
+                    , dep = Command "test/playbooks"
+                    }
                 ]
             , outputs = Right []
             , inputs = []
@@ -44,6 +48,10 @@
                     { name = Binder "file0"
                     , dep = Path "/tmp/zuul"
                     }
+                , Resource
+                    { name = Binder "command1"
+                    , dep = Command "test/playbooks"
+                    }
                 ]
             , outputs = Right []
             , inputs = []
@@ -64,6 +72,10 @@
                 [ Resource
                     { name = Binder "file1"
                     , dep = Path "/tmp/nodepool"
+                    }
+                , Resource
+                    { name = Binder "command2"
+                    , dep = Command "test/playbooks"
                     }
                 ]
             , outputs = Right []
@@ -119,6 +131,10 @@
             { name = Binder "stat0"
             , dep = Path "/etc"
             }
+        , Resource
+            { name = Binder "command0"
+            , dep = Command "test/playbooks"
+            }
         ]
     , outputs = Environment
         { getEnv =
@@ -137,7 +153,12 @@
                 )
             ,
                 ( Binder "command0"
-                , Right []
+                , Right
+                    [ Resource
+                        { name = Binder "command0"
+                        , dep = Command "test/playbooks"
+                        }
+                    ]
                 )
             ]
         }
@@ -198,8 +219,18 @@
                     , dep = Register "etc"
                     }
                 ]
-            , provides = []
-            , outputs = Right []
+            , provides =
+                [ Resource
+                    { name = Binder "command0"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "command0"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
             , inputs =
                 [ Requirement
                     { name = "etc"
@@ -236,6 +267,10 @@
             { name = Binder "file0"
             , dep = Path "/tmp/zuul"
             }
+        , Resource
+            { name = Binder "command1"
+            , dep = Command "test/playbooks"
+            }
         ]
     , outputs = Environment
         { getEnv =
@@ -254,7 +289,12 @@
                 )
             ,
                 ( Binder "command1"
-                , Right []
+                , Right
+                    [ Resource
+                        { name = Binder "command1"
+                        , dep = Command "test/playbooks"
+                        }
+                    ]
                 )
             ]
         }
@@ -319,8 +359,18 @@
                     , dep = Path "/tmp/zuul"
                     }
                 ]
-            , provides = []
-            , outputs = Right []
+            , provides =
+                [ Resource
+                    { name = Binder "command1"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "command1"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
             , inputs =
                 [ Requirement
                     { name = "zuuldir"
@@ -353,6 +403,10 @@
             { name = Binder "file1"
             , dep = Path "/tmp/nodepool"
             }
+        , Resource
+            { name = Binder "command2"
+            , dep = Command "test/playbooks"
+            }
         ]
     , outputs = Environment
         { getEnv =
@@ -367,7 +421,12 @@
                 )
             ,
                 ( Binder "command2"
-                , Right []
+                , Right
+                    [ Resource
+                        { name = Binder "command2"
+                        , dep = Command "test/playbooks"
+                        }
+                    ]
                 )
             ,
                 ( Binder "debug0"
@@ -428,8 +487,18 @@
                     , dep = Path "/tmp/nodepool"
                     }
                 ]
-            , provides = []
-            , outputs = Right []
+            , provides =
+                [ Resource
+                    { name = Binder "command2"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "command2"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
             , inputs =
                 [ Requirement
                     { name = "_fake_TmpNodepool"

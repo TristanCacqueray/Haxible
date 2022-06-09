@@ -1,0 +1,145 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , source = ""
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhosts0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "command0"
+                    , dep = Command "test/playbooks"
+                    }
+                , Resource
+                    { name = Binder "command1"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhosts0"
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhosts0"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "command0"
+            , dep = Command "test/playbooks"
+            }
+        , Resource
+            { name = Binder "command1"
+            , dep = Command "test/playbooks"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "command0"
+                , Right
+                    [ Resource
+                        { name = Binder "command0"
+                        , dep = Command "test/playbooks"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "command1"
+                , Right
+                    [ Resource
+                        { name = Binder "command1"
+                        , dep = Command "test/playbooks"
+                        }
+                    ]
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhosts"
+            )
+        ]
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "command0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "command0"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "command0"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "command"
+                    , params = String "echo 1"
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "command1"
+            , requires =
+                [ Resource
+                    { name = Binder "command0"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , provides =
+                [ Resource
+                    { name = Binder "command1"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "command1"
+                    , dep = Command "test/playbooks"
+                    }
+                ]
+            , inputs =
+                [ Requirement
+                    { name = "_fake_TestPlaybooks"
+                    , origin = Direct
+                        ( Binder "command0" )
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "command"
+                    , params = String "echo 2"
+                    }
+                )
+            }
+        ]
+    }
+]

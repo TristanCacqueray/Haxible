@@ -1,0 +1,5 @@
+# This playbook demonstrate implicit dependency between commands
+- hosts: localhosts
+  tasks:
+    - command: echo 1
+    - command: echo 2

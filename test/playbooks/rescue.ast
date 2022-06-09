@@ -222,6 +222,10 @@
     , provides =
         [ Resource
             { name = Binder "commandBlockTask0"
+            , dep = Command "test/playbooks"
+            }
+        , Resource
+            { name = Binder "commandBlockTask0"
             , dep = Register "block_result"
             }
         ]
@@ -231,6 +235,10 @@
                 ( Binder "commandBlockTask0"
                 , Right
                     [ Resource
+                        { name = Binder "commandBlockTask0"
+                        , dep = Command "test/playbooks"
+                        }
+                    , Resource
                         { name = Binder "commandBlockTask0"
                         , dep = Register "block_result"
                         }
@@ -247,11 +255,19 @@
             , provides =
                 [ Resource
                     { name = Binder "commandBlockTask0"
+                    , dep = Command "test/playbooks"
+                    }
+                , Resource
+                    { name = Binder "commandBlockTask0"
                     , dep = Register "block_result"
                     }
                 ]
             , outputs = Right
                 [ Resource
+                    { name = Binder "commandBlockTask0"
+                    , dep = Command "test/playbooks"
+                    }
+                , Resource
                     { name = Binder "commandBlockTask0"
                     , dep = Register "block_result"
                     }
