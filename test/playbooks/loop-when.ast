@@ -12,7 +12,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -86,7 +86,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "loop_item"
                     , origin = LoopVar

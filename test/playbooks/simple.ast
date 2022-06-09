@@ -21,7 +21,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -46,7 +46,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -67,7 +67,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -88,7 +88,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "etc"
                     , origin = Nested
@@ -172,7 +172,7 @@
                     , dep = Path "/etc"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -200,7 +200,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "etc"
                     , origin = Direct
@@ -289,7 +289,7 @@
                     , dep = Path "/tmp/zuul"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -321,7 +321,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "zuuldir"
                     , origin = Direct
@@ -398,7 +398,7 @@
                     , dep = Path "/tmp/nodepool"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -430,7 +430,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "_fake_TmpNodepool"
                     , origin = Direct
@@ -452,7 +452,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -500,7 +500,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []

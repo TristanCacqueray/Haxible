@@ -21,7 +21,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -107,7 +107,7 @@
                     , dep = Register "fact_var"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -150,7 +150,7 @@
                     , dep = Register "extra_var"
                     }
                 ]
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "fact_var"
                     , origin = Direct
@@ -193,7 +193,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "extra_var"
                     , origin = Direct

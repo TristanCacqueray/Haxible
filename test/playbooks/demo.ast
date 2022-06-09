@@ -21,7 +21,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -108,7 +108,7 @@
                     , dep = Register "network"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -141,7 +141,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "item"
                     , origin = LoopVar
@@ -199,7 +199,7 @@
                     , dep = Register "storage"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -236,7 +236,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "storage"
                     , origin = Direct
@@ -283,7 +283,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -316,7 +316,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "network"
                     , origin = Direct

@@ -17,7 +17,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -100,7 +100,7 @@
                         ]
                     }
                 )
-            , requirements = []
+            , inputs = []
             , when_ = Just ( Bool True )
             , loop = Nothing
             , taskAttrs = []
@@ -121,7 +121,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "block_result"
                     , origin = Nested
@@ -181,7 +181,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -219,7 +219,7 @@
                     , dep = Register "block_result"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =

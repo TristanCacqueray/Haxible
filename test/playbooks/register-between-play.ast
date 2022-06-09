@@ -21,7 +21,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -42,7 +42,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "r1"
                     , origin = Nested
@@ -122,7 +122,7 @@
                     , dep = Path "/"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -177,7 +177,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []

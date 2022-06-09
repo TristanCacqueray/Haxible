@@ -17,7 +17,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -98,7 +98,7 @@
                     , dep = Register "loop_res"
                     }
                 ]
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "item"
                     , origin = LoopVar
@@ -137,7 +137,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "lvar"
                     , origin = LoopVar
@@ -176,7 +176,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "loop_res"
                     , origin = Direct

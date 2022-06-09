@@ -21,7 +21,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -154,7 +154,7 @@
                         ]
                     }
                 )
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "item"
                     , origin = LoopVar
@@ -194,7 +194,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "included_result"
                     , origin = Nested
@@ -294,7 +294,7 @@
                     , dep = Register "included_result"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -345,7 +345,7 @@
                         ]
                     }
                 )
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -411,7 +411,7 @@
                     , dep = Register "_unused"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -442,7 +442,7 @@
                     , dep = Register "nested_included_result"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =

@@ -12,7 +12,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -98,7 +98,7 @@
                         ]
                     }
                 )
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -128,7 +128,7 @@
                         ]
                     }
                 )
-            , requirements = []
+            , inputs = []
             , when_ = Just ( Bool False )
             , loop = Nothing
             , taskAttrs = []
@@ -158,7 +158,7 @@
                         ]
                     }
                 )
-            , requirements = []
+            , inputs = []
             , when_ = Just ( Bool True )
             , loop = Nothing
             , taskAttrs = []
@@ -174,7 +174,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Just
                 ( Array
                     [ String "true or false"
@@ -219,7 +219,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Just ( Bool False )
             , loop = Nothing
             , taskAttrs = []
@@ -252,7 +252,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -292,7 +292,7 @@
             , requires = []
             , provides = []
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []

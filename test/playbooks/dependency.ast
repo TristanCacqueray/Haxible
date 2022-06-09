@@ -25,7 +25,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -124,7 +124,7 @@
                     , dep = Register "_provider"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -157,7 +157,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "_provider"
                     , origin = Direct
@@ -201,7 +201,7 @@
                     , dep = Path "{{ info_dir }}"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs =
@@ -248,7 +248,7 @@
                     , dep = Path "{{ info_dir }}/log"
                     }
                 ]
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "_fake_InfoDir"
                     , origin = Direct

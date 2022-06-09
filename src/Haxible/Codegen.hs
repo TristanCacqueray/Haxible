@@ -87,7 +87,7 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
       Nothing -> []
       where
         -- we resolve the when value with every vars
-        callDebug = debugCall e.requirements
+        callDebug = debugCall e.inputs
 
     -- Bind the loop value
     loopBinder = \case
@@ -96,7 +96,7 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
       v -> error $ "Invalid loop expression: " <> unsafeFrom (encode v)
       where
         -- we resolve the loop value with every vars, but the loop var
-        callDebug = debugCall (filter (not . loopVar) e.requirements)
+        callDebug = debugCall (filter (not . loopVar) e.inputs)
         loopVar req
           | req.origin == LoopVar = True
           | otherwise = False
@@ -110,7 +110,7 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
           ModuleCall cm | cm.module_ == "set_fact" -> True
           _ -> False
 
-    vars = paren (concatList [textReq e.requirements, "taskVars"])
+    vars = paren (concatList [textReq e.inputs, "taskVars"])
 
     callExpr = case e.term of
       ModuleCall CallModule {module_, params} ->
@@ -127,7 +127,7 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
 
     callParams taskAttrs taskVars =
       [ paren (concatList [textList (mkJsonArg <$> taskAttrs), "taskAttrs"]),
-        paren (concatList [textReq e.requirements, textList (mkJsonArg <$> taskVars), "taskVars"])
+        paren (concatList [textReq e.inputs, textList (mkJsonArg <$> taskVars), "taskVars"])
       ]
 
 textReq :: [Requirement] -> Text

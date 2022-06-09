@@ -45,7 +45,7 @@ data Expr = Expr
     requires :: [Resource],
     provides :: [Resource],
     outputs :: Either Environment [Resource],
-    requirements :: [Requirement],
+    inputs :: [Requirement],
     when_ :: Maybe Value,
     loop :: Maybe Value,
     taskAttrs :: Vars,
@@ -127,9 +127,9 @@ emptyEnv = Env [] [] []
 
 type ReqAcc = ([(Binder, [Resource])], [(Binder, Environment)])
 
--- | propagate binders to sub expression to set the requirements
-solveRequirements :: [Definition] -> [Definition]
-solveRequirements defs = map updateCallEnv defs
+-- | propagate binders to sub expression to set the inputs
+solveInputs :: [Definition] -> [Definition]
+solveInputs defs = map updateCallEnv defs
   where
     updateCallEnv :: Definition -> Definition
     updateCallEnv def = def {exprs = reverse . fst . foldl' setCallEnv ([], ([], [])) $ def.exprs}
@@ -144,7 +144,7 @@ solveRequirements defs = map updateCallEnv defs
           ModuleCall _ -> ((expr.binder, expr.provides) : avail, nested)
           DefinitionCall dc -> (avail, (expr.binder, getOutputs dc.name) : nested)
           BlockRescueCall rc -> (avail, (expr.binder, getOutputs (rc.name <> "Rescue")) : nested)
-        newExpr = expr {requirements = expr.requirements <> directRequirement <> nestedRequirement}
+        newExpr = expr {inputs = expr.inputs <> directRequirement <> nestedRequirement}
 
         reMatch :: [Resource] -> Bool
         reMatch = any (`elem` expr.requires)
@@ -197,10 +197,11 @@ cleanName :: Text -> Text
 cleanName = mconcat . map Text.toTitle . Text.split (not . Data.Char.isAlphaNum)
 
 -- | Extract requirements from a task value
--- >>> getRequirements (mkRes <$> ["hostname", "file_stat"]) [[json|{"ping": "{{ hostname }}"}|]]
+--
+-- >>> getRequires (mkRes <$> ["hostname", "file_stat"]) [[json|{"ping": "{{ hostname }}"}|]]
 -- [Resource {name = Binder "hostname", dep = Register "hostname"}]
-getRequirements :: [Resource] -> [Value] -> [Resource]
-getRequirements availables = concatMap findRequirements
+getRequires :: [Resource] -> [Value] -> [Resource]
+getRequires availables = concatMap findRequirements
   where
     findRequirements :: Value -> [Resource]
     findRequirements v = case v of
@@ -218,15 +219,15 @@ moduleExpr task value = do
   availables <- gets availables
 
   -- Look for requirements and provides
-  let requires = getRequirements availables (value : attrs)
+  let requires = getRequires availables (value : attrs)
       provides = Resource binder <$> maybeToList register <> maybeToList destPath
   modify (\env -> env {availables = provides <> availables})
 
   -- Create the expr
   let term = ModuleCall CallModule {module_ = task.module_, params = value}
-      requirements = []
+      inputs = []
       outputs = Right provides
-  pure $ Expr {binder, requires, provides, outputs, requirements, loop = Nothing, term, taskAttrs, when_}
+  pure $ Expr {binder, requires, provides, outputs, inputs, loop = Nothing, term, taskAttrs, when_}
   where
     when_ = lookup "when" task.attrs
     destPath = Path <$> (getAttr "path" <|> getAttr "dest")
@@ -274,7 +275,7 @@ factsExpr task cacheable name value = do
   -- exprs
   binder <- freshName "facts" (fromMaybe "" task.name)
   availables <- gets availables
-  let requires = getRequirements availables [value]
+  let requires = getRequires availables [value]
       resource = Resource {name = binder, dep = Register name}
       provides = [resource]
       outputs = Right provides
@@ -282,12 +283,12 @@ factsExpr task cacheable name value = do
       taskAttrs = getPropagableAttrs task.attrs
       term = ModuleCall CallModule {module_ = "set_fact", params}
       loop = Nothing
-      requirements = []
+      inputs = []
       when_ = lookup "when" task.attrs
   modify (\env -> env {availables = resource : availables})
   -- expr <- moduleExpr task value
   when (isJust (lookup "loop" task.attrs)) $ error "set_fact loop is not supported"
-  pure $ Expr {binder, requires, provides, outputs, requirements, loop, term, taskAttrs, when_}
+  pure $ Expr {binder, requires, provides, outputs, inputs, loop, term, taskAttrs, when_}
 
 blockExpr :: FilePath -> Task -> BlockValue -> State Env Expr
 blockExpr parentPath task block = do
@@ -322,7 +323,7 @@ normalizeTask taskPath task = do
     Block bv -> (: []) <$> blockExpr taskPath task bv
   pure $ map addLoopReq exprs
   where
-    addLoopReq expr = expr {loop, requirements = extraReq <> expr.requirements}
+    addLoopReq expr = expr {loop, inputs = extraReq <> expr.inputs}
     (loop, extraReq) = case lookup "loop" task.attrs of
       Just v ->
         let loopVar = fromMaybe "item" (getLoopVar =<< lookup "loop_control" task.attrs)
@@ -367,7 +368,7 @@ normalizePlaybook plays =
         defs <- traverse normalizePlay plays
         exprs <- traverse topLevelCall (zip plays defs)
         pure $ topLevel exprs : defs
-   in solveRequirements (xs <> env.definitions)
+   in solveInputs (xs <> env.definitions)
   where
     topLevelCall (play, def) = do
       binder <- freshName "results" (playName play)
@@ -375,6 +376,6 @@ normalizePlaybook plays =
           outputs = Right []
           when_ = Nothing
           taskAttrs = []
-      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, requirements = [], loop = Nothing, term, taskAttrs, when_}
+      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, inputs = [], loop = Nothing, term, taskAttrs, when_}
     topLevel :: [Expr] -> Definition
     topLevel exprs = (emptyDefinition "playbook" "") {exprs}

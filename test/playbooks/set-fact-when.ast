@@ -21,7 +21,7 @@
                     }
                 ]
             , outputs = Right []
-            , requirements = []
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -96,7 +96,7 @@
                     , dep = Register "x"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Just ( Bool False )
             , loop = Nothing
             , taskAttrs = []
@@ -129,7 +129,7 @@
                     , dep = Register "x"
                     }
                 ]
-            , requirements = []
+            , inputs = []
             , when_ = Just ( Bool True )
             , loop = Nothing
             , taskAttrs = []
@@ -161,7 +161,7 @@
                 ]
             , provides = []
             , outputs = Right []
-            , requirements =
+            , inputs =
                 [ Requirement
                     { name = "x"
                     , origin = Direct
