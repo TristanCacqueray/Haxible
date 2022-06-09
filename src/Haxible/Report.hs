@@ -30,8 +30,12 @@ reportTiming rawResults =
     toTiming (name, (scaleTime -> start, scaleTime -> end, name')) =
       [ "\n" <> "@" <> name,
         Text.unwords [from (show start), "is", quote name'],
-        Text.unwords [from (show end), "is", "{hidden}"]
+        Text.unwords [from (show end'), "is", "{hidden}"]
       ]
+      where
+        end'
+          | start == end = end + 1
+          | otherwise = end
 
     step = 49 / (unsafeInto @Double $ maxDate - minDate)
     minDate, maxDate :: Integer
