@@ -28,7 +28,7 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   resultsTaskstasksprintyaml10 <- if when_ then (tasksTasksPrintYaml1 playAttrs (taskAttrs) ([("print_arg", [json|"Hello!"|])] <> taskVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
   let when_ = True
   block0 <- if when_ then (block0 playAttrs (taskAttrs) (taskVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
-  when_ <- all extractWhen <$> sequence [runTask "" playAttrs "debug" [("debug", [json|{"msg":"{{ true or false }}"}|])] (taskVars), runTask "" playAttrs "debug" [("debug", [json|{"msg":"{{ true and false }}"}|])] (taskVars)]
+  when_ <- all extractWhen <$> sequence [runTask "" playAttrs "debug" [("name", [json|"Resolving template {{ true or false }}"|]), ("debug", [json|{"msg":"{{ true or false }}"}|])] (taskVars), runTask "" playAttrs "debug" [("name", [json|"Resolving template {{ true and false }}"|]), ("debug", [json|{"msg":"{{ true and false }}"}|])] (taskVars)]
   debug3 <- if when_ then (runTask src playAttrs "debug" ([("debug", [json|{"msg":"Should be skipped"}|])] <> taskAttrs) (taskVars)) else pure [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
   pure $ resultsTaskstasksprintyaml00 <> resultsTaskstasksprintyaml10 <> block0 <> [debug3]
 

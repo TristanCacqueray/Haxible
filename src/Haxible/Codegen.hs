@@ -135,7 +135,12 @@ debugCall reqs template =
   Text.unwords
     [ "runTask \"\" playAttrs",
       quote "debug",
-      textList (mkJsonArg <$> [("debug", mkObj [("msg", String template)])]),
+      textList
+        ( mkJsonArg
+            <$> [ ("name", String ("Resolving template " <> template)),
+                  ("debug", mkObj [("msg", String template)])
+                ]
+        ),
       paren (concatList [textReq reqs, "taskVars"])
     ]
 
