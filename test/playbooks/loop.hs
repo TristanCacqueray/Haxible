@@ -24,9 +24,13 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|]), ("vars", [json|{"xs":[1,2,3]}|])] <> parentPlayAttrs
       src = "test/playbooks"
   let loop_ = [[json|"A"|], [json|"B"|], [json|"C"|]]
-  debugCallTaskInALoop0 <- traverseLoop (\__haxible_loop_item ->  runTask src playAttrs "debug" ([("debug", [json|{"msg":"loop {{ item }}"}|]), ("name", [json|"Call task in a loop"|])] <> taskAttrs) ([("item", __haxible_loop_item)] <> taskVars) )  loop_
+  let loopFun loop_item = do
+        runTask src playAttrs "debug" ([("debug", [json|{"msg":"loop {{ item }}"}|]), ("name", [json|"Call task in a loop"|])] <> taskAttrs) ([("item", loop_item)] <> taskVars)
+  debugCallTaskInALoop0 <- traverseLoop loopFun loop_
   loop_ <- extractLoop <$> runTask "" playAttrs "debug" [("name", [json|"Resolving template {{ xs }}"|]), ("debug", [json|{"msg":"{{ xs }}"}|])] (taskVars)
-  debugLoopVar0 <- traverseLoop (\__haxible_loop_item ->  runTask src playAttrs "debug" ([("debug", [json|{"msg":"loop control {{ lvar }}"}|]), ("name", [json|"Loop var"|])] <> taskAttrs) ([("lvar", __haxible_loop_item)] <> taskVars) )  loop_
+  let loopFun loop_item = do
+        runTask src playAttrs "debug" ([("debug", [json|{"msg":"loop control {{ lvar }}"}|]), ("name", [json|"Loop var"|])] <> taskAttrs) ([("lvar", loop_item)] <> taskVars)
+  debugLoopVar0 <- traverseLoop loopFun loop_
   debug0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"loop result is {{ loop_res }}"}|])] <> taskAttrs) ([("loop_res", debugCallTaskInALoop0)] <> taskVars)
   pure $ [debugCallTaskInALoop0] <> [debugLoopVar0] <> [debug0]
 

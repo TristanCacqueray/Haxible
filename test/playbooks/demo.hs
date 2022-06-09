@@ -25,7 +25,9 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
       src = "test/playbooks"
   create_networkCreateNetwork0 <- runTask src playAttrs "create_network" ([("create_network", [json|{"name":"private"}|]), ("name", [json|"Create network"|])] <> taskAttrs) (taskVars)
   let loop_ = [[json|"backend"|], [json|"frontend"|], [json|"monitoring"|]]
-  create_instanceCreateInstances0 <- traverseLoop (\__haxible_loop_item ->  runTask src playAttrs "create_instance" ([("create_instance", [json|{"name":"{{ item }}","network":"{{ network.uid }}"}|]), ("name", [json|"Create instances"|])] <> taskAttrs) ([("item", __haxible_loop_item), ("network", create_networkCreateNetwork0)] <> taskVars) )  loop_
+  let loopFun loop_item = do
+        runTask src playAttrs "create_instance" ([("create_instance", [json|{"name":"{{ item }}","network":"{{ network.uid }}"}|]), ("name", [json|"Create instances"|])] <> taskAttrs) ([("item", loop_item), ("network", create_networkCreateNetwork0)] <> taskVars)
+  create_instanceCreateInstances0 <- traverseLoop loopFun loop_
   create_volumeCreateStorage0 <- runTask src playAttrs "create_volume" ([("create_volume", [json|{"name":"db"}|]), ("name", [json|"Create storage"|])] <> taskAttrs) (taskVars)
   create_instanceCreateDatabase0 <- runTask src playAttrs "create_instance" ([("create_instance", [json|{"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"}|]), ("name", [json|"Create database"|])] <> taskAttrs) ([("storage", create_volumeCreateStorage0), ("network", create_networkCreateNetwork0)] <> taskVars)
   create_objectCreateObject0 <- runTask src playAttrs "create_object" ([("create_object", [json|{"name":"standalone-object"}|]), ("name", [json|"Create object"|])] <> taskAttrs) (taskVars)

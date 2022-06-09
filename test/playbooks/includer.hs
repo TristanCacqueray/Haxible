@@ -24,7 +24,9 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
       src = "test/playbooks"
   let loop_ = [[json|"Haxible"|], [json|"World"|]]
-  resultsTaskstasksgreetyaml00 <- traverseInclude (\__haxible_loop_item ->  tasksTasksGreetYaml0 playAttrs (taskAttrs) ([("item", __haxible_loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> taskVars) )  loop_
+  let loopFun loop_item = do
+        tasksTasksGreetYaml0 playAttrs (taskAttrs) ([("item", loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> taskVars)
+  resultsTaskstasksgreetyaml00 <- traverseInclude loopFun loop_
   debug0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}|])] <> taskAttrs) ([("included_result", resultsTaskstasksgreetyaml00 !! 0), ("nested_included_result", resultsTaskstasksgreetyaml00 !! 2)] <> taskVars)
   pure $ resultsTaskstasksgreetyaml00 <> [debug0]
 

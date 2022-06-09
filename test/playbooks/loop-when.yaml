@@ -1,0 +1,14 @@
+- hosts: localhost
+  vars:
+    xs:
+      - enabled: true
+        msg: "Hello"
+      - enabled: false
+        msg: "Exit"
+  tasks:
+    - debug:
+        msg: "{{ loop_item.msg }}"
+      when: "loop_item.enabled"
+      loop: "{{ xs }}"
+      loop_control:
+        loop_var: loop_item

@@ -1,0 +1,116 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , source = ""
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ,
+            ( "vars"
+            , Object
+                ( fromList
+                    [
+                        ( "xs"
+                        , Array
+                            [ Object
+                                ( fromList
+                                    [
+                                        ( "enabled"
+                                        , Bool True
+                                        )
+                                    ,
+                                        ( "msg"
+                                        , String "Hello"
+                                        )
+                                    ]
+                                )
+                            , Object
+                                ( fromList
+                                    [
+                                        ( "enabled"
+                                        , Bool False
+                                        )
+                                    ,
+                                        ( "msg"
+                                        , String "Exit"
+                                        )
+                                    ]
+                                )
+                            ]
+                        )
+                    ]
+                )
+            )
+        ]
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "debug0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "loop_item"
+                    , origin = LoopVar
+                    }
+                ]
+            , when_ = Just
+                ( String "loop_item.enabled" )
+            , loop = Just
+                ( String "{{ xs }}" )
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "{{ loop_item.msg }}"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        ]
+    }
+]

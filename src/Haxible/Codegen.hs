@@ -46,16 +46,38 @@ renderDefinition def =
       _ -> from expr.binder
 
 renderExpr :: Expr -> [Text]
-renderExpr e = whenBinder <> loopBinder <> [from e.binder <> " <- " <> Text.unwords finalExpr]
+renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
   where
-    singleResult = case e.term of
-      ModuleCall _ | isNothing e.loop -> True
-      _ -> False
-    extractFact = case e.term of
-      ModuleCall cm | cm.module_ == "set_fact" -> True
-      _ -> False
+    (preCode, finalExpr) = case e.loop of
+      Just v ->
+        ( mconcat
+            [ -- Get the loop_ value
+              loopBinder v,
+              -- Create a local function to resolve the when_ value per loop item
+              ["let loopFun loop_item = do"]
+                <> (mappend "      " <$> (whenBinder <> whenExpr callExpr))
+            ],
+          let traverser = case e.term of
+                ModuleCall _ -> "traverseLoop"
+                DefinitionCall _ -> "traverseInclude"
+                BlockRescueCall _ -> "traverseInclude"
+           in [traverser, "loopFun", "loop_"]
+        )
+      Nothing -> (whenBinder, whenExpr (factExtract <> callExpr))
 
-    -- Bind the when value if necessary
+    whenExpr inner
+      | isJust e.when_ = [Text.unwords ["if when_ then", paren (Text.unwords inner), "else pure", skipResult]]
+      | otherwise = [Text.unwords inner]
+      where
+        skipResult = case e.term of
+          ModuleCall _ -> embedJSON skippedOutput
+          _ -> textList (embedJSON <$> skipResults [] e.outputs)
+        skipResults acc = \case
+          Left (Environment xs) -> concatMap (skipResults acc . snd) xs
+          Right _ -> skippedOutput : acc
+        skippedOutput = [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
+
+    -- Bind the when value
     whenBinder = case e.when_ of
       Just (Bool True) -> ["let when_ = True"]
       Just (Bool False) -> ["let when_ = False"]
@@ -63,43 +85,30 @@ renderExpr e = whenBinder <> loopBinder <> [from e.binder <> " <- " <> Text.unwo
       Just (Array v) -> [Text.unwords ["when_", "<-", "all extractWhen <$> sequence", textList (callDebug <$> (toJinjas <$> toList v))]]
       Just v -> error $ "Expected a string for when, got: " <> unsafeFrom (encode v)
       Nothing -> []
-
-    loopBinder = case e.loop of
-      Just (Array xs) -> ["let loop_ = " <> textList (embedJSON <$> toList xs)]
-      Just (String v) -> [Text.unwords ["loop_", "<-", "extractLoop", "<$>", callDebug v]]
-      Just v -> error $ "Invalid loop expression: " <> unsafeFrom (encode v)
-      Nothing -> []
-
-    callDebug = debugCall (filter (not . loopVar) e.requirements)
       where
+        -- we resolve the when value with every vars
+        callDebug = debugCall e.requirements
+
+    -- Bind the loop value
+    loopBinder = \case
+      Array xs -> ["let loop_ = " <> textList (embedJSON <$> toList xs)]
+      String v -> [Text.unwords ["loop_", "<-", "extractLoop", "<$>", callDebug v]]
+      v -> error $ "Invalid loop expression: " <> unsafeFrom (encode v)
+      where
+        -- we resolve the loop value with every vars, but the loop var
+        callDebug = debugCall (filter (not . loopVar) e.requirements)
         loopVar req
           | req.origin == LoopVar = True
           | otherwise = False
 
-    finalExpr
-      | isJust e.when_ = ["if when_ then", paren (Text.unwords loopExpr), "else pure", skipResult]
-      | otherwise = loopExpr
-
-    skipResult
-      | singleResult = embedJSON skippedOutput
-      | otherwise = textList (embedJSON <$> skipResults [] e.outputs)
+    -- Inject extractFact call when needed
+    factExtract
+      | extractFact = ["extractFact", "<$>"]
+      | otherwise = []
       where
-        skipResults acc = \case
-          Left (Environment xs) -> concatMap (skipResults acc . snd) xs
-          Right _ -> skippedOutput : acc
-
-        skippedOutput = [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
-
-    loopExpr
-      | isJust e.loop = mkTraverse "loop_"
-      | extractFact = ["extractFact", "<$>"] <> callExpr
-      | otherwise = callExpr
-      where
-        traverser = case e.term of
-          ModuleCall _ -> "traverseLoop"
-          DefinitionCall _ -> "traverseInclude"
-          BlockRescueCall _ -> "traverseInclude"
-        mkTraverse arg = [traverser, "(\\__haxible_loop_item -> "] <> callExpr <> [") ", arg]
+        extractFact = case e.term of
+          ModuleCall cm | cm.module_ == "set_fact" -> True
+          _ -> False
 
     vars = paren (concatList [textReq e.requirements, "taskVars"])
 
@@ -127,7 +136,7 @@ textReq xs = textList $ (\req -> "(" <> quote req.name <> ", " <> mkOrigin req.o
     mkOrigin = \case
       Direct n -> from n
       Nested n i -> from n <> " !! " <> from (show i)
-      LoopVar -> "__haxible_loop_item"
+      LoopVar -> "loop_item"
 
 -- Call the debug module to evaluate a string template
 debugCall :: [Requirement] -> Text -> Text
