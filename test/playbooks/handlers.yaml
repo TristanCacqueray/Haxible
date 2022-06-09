@@ -1,0 +1,14 @@
+- hosts: localhost
+  tasks:
+    - command: "echo change config"
+      notify: Run Handler
+    - command: "echo noop"
+      changed_when: false
+      notify: Run Other Handler
+  handlers:
+    - name: Run Handler
+      debug:
+        msg: "Running handler"
+    - name: Run Other Handler
+      debug:
+        msg: "KO, other handler should not run"

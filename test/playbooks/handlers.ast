@@ -8,7 +8,7 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhosts0"
+            { binder = Binder "resultsLocalhost0"
             , requires = []
             , provides =
                 [ Resource
@@ -27,7 +27,7 @@
             , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
-                    { name = "playLocalhosts0"
+                    { name = "playLocalhost0"
                     , taskVars = []
                     }
                 )
@@ -36,7 +36,7 @@
     , handlers = []
     }
 , Definition
-    { name = "playLocalhosts0"
+    { name = "playLocalhost0"
     , requires = []
     , provides =
         [ Resource
@@ -73,7 +73,7 @@
     , playAttrs =
         [
             ( "hosts"
-            , String "localhosts"
+            , String "localhost"
             )
         ]
     , source = "test/playbooks"
@@ -96,11 +96,16 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , taskAttrs = []
+            , taskAttrs =
+                [
+                    ( "notify"
+                    , String "Run Handler"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "command"
-                    , params = String "echo 1"
+                    , params = String "echo change config"
                     }
                 )
             }
@@ -133,15 +138,67 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , taskAttrs = []
+            , taskAttrs =
+                [
+                    ( "changed_when"
+                    , Bool False
+                    )
+                ,
+                    ( "notify"
+                    , String "Run Other Handler"
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "command"
-                    , params = String "echo 2"
+                    , params = String "echo noop"
                     }
                 )
             }
         ]
-    , handlers = []
+    , handlers =
+        [
+            ( "Run Handler"
+            , "debug"
+            ,
+                [
+                    ( "debug"
+                    , Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "Running handler"
+                                )
+                            ]
+                        )
+                    )
+                ,
+                    ( "name"
+                    , String "Run Handler"
+                    )
+                ]
+            )
+        ,
+            ( "Run Other Handler"
+            , "debug"
+            ,
+                [
+                    ( "debug"
+                    , Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "KO, other handler should not run"
+                                )
+                            ]
+                        )
+                    )
+                ,
+                    ( "name"
+                    , String "Run Other Handler"
+                    )
+                ]
+            )
+        ]
     }
 ]

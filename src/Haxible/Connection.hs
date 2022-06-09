@@ -81,7 +81,7 @@ cleanVar = \case
   where
     -- TODO: keep in sync with the wrapper and the data source
     addedKey =
-      ["__haxible_play", "__haxible_start", "__haxible_end", "__haxible_module"]
+      ["__haxible_play", "__haxible_start", "__haxible_end", "__haxible_module", "__haxible_notify"]
         <> ["__haxible_multi_hosts"]
         <> ["_ansible_no_log", "_ansible_verbose_always", "__ansible_delegated_vars"]
 

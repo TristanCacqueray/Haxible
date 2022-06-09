@@ -20,6 +20,7 @@ import Haxible.Prelude
 
 data BasePlay task = BasePlay
   { tasks :: [task],
+    handlers :: [task],
     playPath :: FilePath,
     -- | The list of attributes such as `become` or `gather_facts`.
     attrs :: [(Text, Value)]
@@ -59,9 +60,10 @@ instance FromJSON PlaySyntax where
     pre_tasks <- v `getList` "pre_tasks"
     tasks <- v `getList` "tasks"
     roles <- map mkRoleTask <$> (v `getList` "roles")
+    handlers <- v `getList` "handlers"
     post_tasks <- v `getList` "post_tasks"
     pure $
-      BasePlay (pre_tasks <> roles <> tasks <> post_tasks) "" (items nonPlayAttributes v)
+      BasePlay (pre_tasks <> roles <> tasks <> post_tasks) handlers "" (items nonPlayAttributes v)
     where
       getList v k = fromMaybe [] <$> v .:? k
       mkRoleTask name =
@@ -71,7 +73,7 @@ instance FromJSON PlaySyntax where
             params = mkObj [("name", String name)],
             attrs = []
           }
-      nonPlayAttributes = ["pre_tasks", "tasks", "post_tasks", "roles"]
+      nonPlayAttributes = ["pre_tasks", "tasks", "post_tasks", "roles", "handlers"]
 
 instance FromJSON TaskSyntax where
   parseJSON = withObject "BaseTask" $ \v -> do
@@ -85,7 +87,7 @@ instance FromJSON TaskSyntax where
       <*> pure params
       <*> pure (first (Text.replace "with_items" "loop") <$> items [module_] v)
     where
-      nonModuleAttributes = ["name", "register", "with_items", "loop", "loop_control", "rescue", "vars", "when"] <> propagableAttrs
+      nonModuleAttributes = ["name", "register", "with_items", "loop", "loop_control", "rescue", "vars", "when", "notify", "listen"] <> propagableAttrs
 
 propagableAttrs :: [Text]
 propagableAttrs =
@@ -97,7 +99,8 @@ propagableAttrs =
     "ignore_errors",
     "run_once",
     "delegate_to",
-    "no_log"
+    "no_log",
+    "notify"
   ]
 
 decodeFile :: (Show a, FromJSON a, MonadIO m) => FilePath -> m a

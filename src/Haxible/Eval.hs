@@ -3,6 +3,7 @@ module Haxible.Eval
   ( AnsibleHaxl,
     runHaxible,
     runTask,
+    notifyHandler,
     json,
     extractLoop,
     extractFact,
@@ -95,7 +96,7 @@ loopResult :: [Value] -> Value
 loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
   where
     play = case xs of
-      (x : _) -> copyKey "__haxible_play" x <> copyKey "__haxible_module" x
+      (x : _) -> copyKey "__haxible_play" x <> copyKey "__haxible_module" x <> copyKey "__haxible_notify" x
       _ -> []
     copyKey k x = maybe [] (\p -> [(Data.Aeson.Key.fromText k, p)]) (preview (key k) x)
     attrs =
@@ -106,10 +107,29 @@ loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
       ]
         <> play
 
-runTask :: FilePath -> Vars -> Text -> Vars -> Vars -> AnsibleHaxl Value
-runTask taskPath playAttrs module_ taskAttrs baseTaskVars =
-  addModule <$> dataFetch (RunTask (TaskCall {taskPath, playAttrs, taskAttrs, taskVars, module_}))
+notifyHandler :: Vars -> [Value] -> Text -> Text -> Vars -> AnsibleHaxl ()
+notifyHandler playAttrs res handler module_ taskAttrs
+  | handlerMatch =
+      void $ dataFetch (RunTask TaskCall {taskPath, playAttrs, taskAttrs, taskVars, module_})
+  | otherwise = pure ()
   where
+    taskPath = ""
+    taskVars = []
+    handlerMatch = any notifyMatchListen res
+    notifyMatchListen v = case (preview (key "changed" . _Bool) v, preview (key "__haxible_notify") v) of
+      (Just True, Just (String s)) -> s == handler
+      _ -> False
+
+runTask :: FilePath -> Vars -> Text -> Vars -> Vars -> AnsibleHaxl Value
+runTask taskPath playAttrs module_ baseTaskAttrs baseTaskVars =
+  addNotify . addModule <$> dataFetch (RunTask (TaskCall {taskPath, playAttrs, taskAttrs, taskVars, module_}))
+  where
+    taskAttrs = filter ((/=) "notify" . fst) baseTaskAttrs
+    addNotify = case lookup "notify" baseTaskAttrs of
+      Just n -> \case
+        Object obj -> Object $ Data.Aeson.KeyMap.insert "__haxible_notify" n obj
+        x -> error $ "Can't add notify to: " <> unsafeFrom (encode x)
+      Nothing -> id
     addModule = \case
       Object obj -> Object $ Data.Aeson.KeyMap.insert "__haxible_module" (String module_) obj
       x -> x

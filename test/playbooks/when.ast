@@ -24,6 +24,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "playLocalhost0"
@@ -198,6 +199,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "block0"
@@ -231,6 +233,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "tasksTasksPrintYaml1"
@@ -271,6 +274,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "tasksTasksPrintYaml0"
@@ -311,5 +315,6 @@
                 )
             }
         ]
+    , handlers = []
     }
 ]

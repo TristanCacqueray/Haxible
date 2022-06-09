@@ -60,6 +60,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "playLocalhost0"
@@ -141,6 +142,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "playLocalhost1"
@@ -196,5 +198,6 @@
                 )
             }
         ]
+    , handlers = []
     }
 ]

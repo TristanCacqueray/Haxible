@@ -33,6 +33,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "playLocalhost0"
@@ -226,6 +227,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "tasksTasksGreetYaml0"
@@ -357,6 +359,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "tasksOtherTasksYaml0"
@@ -466,5 +469,6 @@
                 )
             }
         ]
+    , handlers = []
     }
 ]

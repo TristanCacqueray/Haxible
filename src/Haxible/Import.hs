@@ -29,6 +29,7 @@ type Task = BaseTask TaskValue
 
 data TaskValue
   = Module Value
+  | Handler Text Value
   | Role RoleValue
   | Tasks FilePath Text [Task]
   | Facts Vars
@@ -38,6 +39,7 @@ data TaskValue
 
 data RoleValue = RoleValue
   { tasks :: [Task],
+    handlers :: [Task],
     defaults :: [(Text, Value)],
     rolePath :: FilePath,
     name :: Text
@@ -85,9 +87,13 @@ resolveTask task = do
         defaultExist <- doesFileExist role_defaults
         if defaultExist then decodeFile role_defaults else pure (JsonVars [])
       rolePath <- getRolePath role_name ""
+      handlers <- do
+        handler_path <- getRolePath role_name $ "handlers" </> "main.yaml"
+        handlerExist <- liftIO $ doesFileExist handler_path
+        if handlerExist then map resolveHandler <$> decodeFile handler_path else pure []
       withFile role_tasks $ \baseTasks -> do
         tasks <- traverse resolveTask baseTasks
-        pure $ Role RoleValue {name, rolePath, tasks, defaults}
+        pure $ Role RoleValue {name, handlers, rolePath, tasks, defaults}
 
     includeTasks = do
       source <- asks source
@@ -115,9 +121,19 @@ resolveTask task = do
         Just v -> CacheableFacts v (filter (\var -> fst var /= "cacheable") vars)
         Nothing -> Facts vars
 
+resolveHandler :: TaskSyntax -> Task
+resolveHandler task = task {params = Handler name task.params}
+  where
+    name =
+      fromMaybe
+        (error $ "Handler needs a name or a listen: " <> show task)
+        (getName "listen" <|> getName "name")
+    getName k = preview _String =<< lookup k task.attrs
+
 -- | Transform a 'PlaySyntax' into a resolved 'Play'
 resolveImport :: FilePath -> PlaySyntax -> IO Play
-resolveImport source (BasePlay baseTasks _ attrs) = do
+resolveImport source (BasePlay baseTasks baseHandlers _ attrs) = do
   tasks <- runReaderT (traverse resolveTask baseTasks) (Env source source [])
+  let handlers = resolveHandler <$> baseHandlers
   let playPath = takeDirectory source
-  pure $ BasePlay {tasks, playPath, attrs}
+  pure $ BasePlay {tasks, handlers, playPath, attrs}

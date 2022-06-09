@@ -33,6 +33,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "playLocalhost0"
@@ -150,6 +151,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "block0Rescue"
@@ -215,6 +217,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "block0Main"
@@ -289,5 +292,6 @@
                 )
             }
         ]
+    , handlers = []
     }
 ]

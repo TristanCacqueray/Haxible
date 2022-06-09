@@ -31,13 +31,14 @@ data Definition = Definition
     outputs :: Environment,
     playAttrs :: Vars,
     source :: FilePath,
-    exprs :: [Expr]
+    exprs :: [Expr],
+    handlers :: [(Text, Text, Vars)]
   }
   deriving (Show, Eq)
 
 emptyDefinition :: Text -> FilePath -> Definition
 emptyDefinition name source =
-  Definition {name, requires = [], provides = [], outputs = Environment [], playAttrs = [], exprs = [], source}
+  Definition {name, requires = [], provides = [], outputs = Environment [], playAttrs = [], exprs = [], handlers = [], source}
 
 -- | An expression is a single instruction.
 data Expr = Expr
@@ -264,7 +265,7 @@ roleExpr :: Task -> RoleValue -> State Env Expr
 roleExpr task role = do
   when (isJust $ lookup "register" task.attrs) (error "Register include_role is not supported")
   Binder name <- freshName "role" role.name
-  roleDef <- normalizeDefinition role.rolePath name role.tasks
+  roleDef <- normalizeDefinitionWithHandlers role.handlers role.rolePath name role.tasks
   modify (#definitions %~ (roleDef :))
 
   expr <- moduleExpr "" task Null
@@ -340,6 +341,7 @@ normalizeTask taskPath task = do
     Facts vars -> traverse (uncurry (factsExpr task Nothing)) vars
     CacheableFacts cacheable vars -> traverse (uncurry (factsExpr task (Just cacheable))) vars
     Block bv -> (: []) <$> blockExpr taskPath task bv
+    Handler {} -> error "The impossible has happened: handler can't be in task list"
   pure $ map addLoopReq exprs
   where
     addLoopReq expr = expr {loop, inputs = extraReq <> expr.inputs}
@@ -350,30 +352,37 @@ normalizeTask taskPath task = do
       Nothing -> (Nothing, [])
     getLoopVar = preview (key "loop_var" . _String)
 
-normalizeDefinition :: FilePath -> Text -> [Task] -> State Env Definition
-normalizeDefinition source name tasks = do
+normalizeDefinitionWithHandlers :: [Task] -> FilePath -> Text -> [Task] -> State Env Definition
+normalizeDefinitionWithHandlers handlersTask source name tasks = do
   modify (\env -> env {availables = updateAvailable env.availables})
   exprs <- concat <$> traverse (normalizeTask source) tasks
   let provides = nub $ concatMap (.provides) exprs
       requires = nub $ filter (`notElem` provides) $ concatMap (.requires) exprs
       outputs = Environment $ (\e -> (e.binder, e.outputs)) <$> exprs
-  pure $ Definition {name, exprs, requires, provides, outputs, playAttrs = [], source}
+      handlers = mkHandlers <$> handlersTask
+  pure $ Definition {name, exprs, handlers, requires, provides, outputs, playAttrs = [], source}
   where
+    mkHandlers task = case task.params of
+      Handler n v -> (n, task.module_, [(task.module_, v)] <> filter ((/=) "listen" . fst) task.attrs)
+      _ -> error "The impossible has happened: non handler can't be in handler list"
     -- Cleanup unrelated resource.
     updateAvailable = filter (not . unusedResource . (.dep))
     unusedResource = \case
       Command fp -> source == fp
       _ -> False
 
+normalizeDefinition :: FilePath -> Text -> [Task] -> State Env Definition
+normalizeDefinition = normalizeDefinitionWithHandlers []
+
 normalizePlay :: Play -> State Env Definition
 normalizePlay play = do
   Binder name <- freshName "play" (playName play)
-  addPlayAttrs <$> normalizeDefinition play.playPath name play.tasks
+  addPlayAttrs <$> normalizeDefinitionWithHandlers play.handlers play.playPath name play.tasks
   where
     addPlayAttrs def = def {playAttrs = play.attrs}
 
 -- | Extract the hosts from a play attributes:
--- >>> playName BasePlay {tasks = [], playPath = "", attrs = [("hosts", [json|"localhost"|])]}
+-- >>> playName BasePlay {tasks = [], handlers = [], playPath = "", attrs = [("hosts", [json|"localhost"|])]}
 -- "localhost"
 playName :: Play -> Text
 playName play = fromMaybe "" (preview _String =<< lookup "hosts" play.attrs)

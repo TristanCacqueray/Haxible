@@ -35,8 +35,18 @@ renderDefinition def =
     "      src = " <> quote (from def.source)
   ]
     <> (mappend "  " <$> concatMap renderExpr def.exprs)
-    <> ["  pure $ " <> outputList, ""]
+    <> handlersOrReturn
+    <> [""]
   where
+    handlersOrReturn = case def.handlers of
+      [] -> ["  pure $ " <> outputList]
+      xs ->
+        [ "  let res = " <> outputList,
+          "  " <> def.name <> "Handlers playAttrs res",
+          "  pure res",
+          ""
+        ]
+          <> renderHandlers def.name xs
     playAttrs = textList (mkJsonArg <$> def.playAttrs)
     outputList = Text.intercalate " <> " (toOutput <$> def.exprs)
     toOutput expr = case expr.term of
@@ -44,6 +54,17 @@ renderDefinition def =
       ModuleCall _ -> "[" <> from expr.binder <> "]"
       -- Otherwise we got a list of values
       _ -> from expr.binder
+
+renderHandlers :: Text -> [(Text, Text, Vars)] -> [Text]
+renderHandlers name handlers =
+  [ name <> "Handlers :: Vars -> [Value] -> AnsibleHaxl ()",
+    name <> "Handlers playAttrs res = do"
+  ]
+    <> (mappend "  " <$> map renderHandler handlers)
+  where
+    renderHandler (handler, action, taskAttrs) =
+      Text.unwords
+        ["notifyHandler playAttrs res", quote handler, quote action, textList (mkJsonArg <$> taskAttrs)]
 
 renderExpr :: Expr -> [Text]
 renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]

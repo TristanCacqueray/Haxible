@@ -24,6 +24,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "playLocalhost0"
@@ -158,6 +159,7 @@
                 )
             }
         ]
+    , handlers = []
     }
 , Definition
     { name = "roleAdder0"
@@ -269,5 +271,6 @@
                 )
             }
         ]
+    , handlers = []
     }
 ]
