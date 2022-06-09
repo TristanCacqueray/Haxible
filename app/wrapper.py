@@ -82,19 +82,25 @@ class PlaybookRunner:
         return [run_result, task_result]
 
 try:
-    inventory = sys.argv[1]
+    (inventory, playPath) = (sys.argv[1], sys.argv[2])
 except IndexError:
     print("usage: wrapper.py inventory")
     exit(1)
 runner = PlaybookRunner(inventory)
 # TODO: check if ansible.cfg needs to be supplied.
-# TODO: use the playPath (instead of the inventory) for the library location.
-module_loader.add_directory(os.path.dirname(inventory) + "/library")
+paths = set()
+def add_library_path(path):
+    if path not in paths and path and os.path.isdir(path + "/library"):
+        module_loader.add_directory(path + "/library")
+        paths.add(path)
+add_library_path(os.path.dirname(playPath))
 
 def run_task(inputs):
     # The Haxl DataSource provides the play without tasks, the task to run
     # and extra environment vars for the play.
-    [play, task, taskVars] = inputs
+    [path, play, task, taskVars] = inputs
+    add_library_path(path)
+
     # Prepare the final play structure.
     if taskVars:
         play.setdefault("vars", {})

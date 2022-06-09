@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , source = ""
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -146,6 +147,7 @@
             , String "localhost"
             )
         ]
+    , source = "test/playbooks"
     , exprs =
         [ Expr
             { binder = Binder "stat0"
@@ -262,6 +264,7 @@
             , String "zuul_executor"
             )
         ]
+    , source = "test/playbooks"
     , exprs =
         [ Expr
             { binder = Binder "file0"
@@ -378,6 +381,7 @@
             , String "nodepool_launcher"
             )
         ]
+    , source = "test/playbooks"
     , exprs =
         [ Expr
             { binder = Binder "file1"
@@ -484,6 +488,7 @@
             , String "localhost"
             )
         ]
+    , source = "test/playbooks"
     , exprs =
         [ Expr
             { binder = Binder "debug1"

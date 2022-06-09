@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , source = ""
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -81,6 +82,7 @@
             , String "localhost"
             )
         ]
+    , source = "test/playbooks"
     , exprs =
         [ Expr
             { binder = Binder "resultsTaskstasksprintyaml00"
@@ -210,6 +212,7 @@
             ]
         }
     , playAttrs = []
+    , source = "test/playbooks"
     , exprs =
         [ Expr
             { binder = Binder "debug2"
@@ -242,6 +245,7 @@
             ]
         }
     , playAttrs = []
+    , source = "test/playbooks/./tasks"
     , exprs =
         [ Expr
             { binder = Binder "debug1"
@@ -281,6 +285,7 @@
             ]
         }
     , playAttrs = []
+    , source = "test/playbooks/./tasks"
     , exprs =
         [ Expr
             { binder = Binder "debug0"

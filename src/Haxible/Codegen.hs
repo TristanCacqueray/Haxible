@@ -18,7 +18,12 @@ renderScript inventory playPath defs =
       "module Main (main) where\n",
       "import Haxible.Eval\n",
       "main :: IO ()",
-      "main = runHaxible " <> quote (from inventory) <> " " <> quote (from playPath) <> " (playbook [] [] [])\n"
+      "main = runHaxible "
+        <> Text.unwords
+          [ quote (from inventory),
+            quote (from playPath),
+            "(playbook [] [] [])\n"
+          ]
     ]
       <> concatMap renderDefinition defs
 
@@ -26,7 +31,8 @@ renderDefinition :: Definition -> [Text]
 renderDefinition def =
   [ def.name <> " :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]",
     def.name <> " parentPlayAttrs taskAttrs taskVars = do",
-    "  let playAttrs = " <> concatList [playAttrs, "parentPlayAttrs"]
+    "  let playAttrs = " <> concatList [playAttrs, "parentPlayAttrs"],
+    "      src = " <> quote (from def.source)
   ]
     <> (mappend "  " <$> concatMap renderExpr def.exprs)
     <> ["  pure $ " <> outputList, ""]
@@ -99,7 +105,7 @@ renderExpr e = whenBinder <> loopBinder <> [from e.binder <> " <- " <> Text.unwo
 
     callExpr = case e.term of
       ModuleCall CallModule {module_, params} ->
-        [ "runTask playAttrs",
+        [ "runTask src playAttrs",
           quote module_,
           paren (concatList [textList (mkJsonArg <$> [(module_, params)] <> e.taskAttrs), "taskAttrs"]),
           vars
@@ -127,7 +133,7 @@ textReq xs = textList $ (\req -> "(" <> quote req.name <> ", " <> mkOrigin req.o
 debugCall :: [Requirement] -> Text -> Text
 debugCall reqs template =
   Text.unwords
-    [ "runTask playAttrs",
+    [ "runTask \"\" playAttrs",
       quote "debug",
       textList (mkJsonArg <$> [("debug", mkObj [("msg", String template)])]),
       paren (concatList [textReq reqs, "taskVars"])

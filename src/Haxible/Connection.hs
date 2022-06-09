@@ -21,7 +21,9 @@ import System.Process (Pid, getPid)
 import System.Process.Typed
 
 data TaskCall = TaskCall
-  { -- | The playbook attributes, such as `hosts` or `become`.
+  { -- | The directory where the task is defined, to enable python library path
+    taskPath :: FilePath,
+    -- | The playbook attributes, such as `hosts` or `become`.
     playAttrs :: Vars,
     -- | The module name for debug purpose, it is more convenient to access than reading it from the moduleObject.
     module_ :: Text,
@@ -89,8 +91,8 @@ cleanVar = \case
         <> ["_ansible_no_log", "_ansible_verbose_always"]
 
 -- | Creates the Python interpreters.
-withConnections :: Int -> FilePath -> (Connections -> IO ()) -> IO ()
-withConnections count inventory callback =
+withConnections :: Int -> FilePath -> FilePath -> (Connections -> IO ()) -> IO ()
+withConnections count inventory playPath callback =
   bracket (Data.Pool.newPool poolConfig) Data.Pool.destroyAllResources go
   where
     go pool = do
@@ -100,7 +102,12 @@ withConnections count inventory callback =
 
       let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
-            let callParams = [mkObj taskCall.playAttrs, mkObj taskCall.taskAttrs, mkObj taskCall.taskVars]
+            let callParams =
+                  [ String (from taskCall.taskPath),
+                    mkObj taskCall.playAttrs,
+                    mkObj taskCall.taskAttrs,
+                    mkObj taskCall.taskVars
+                  ]
             pid <- fromMaybe (error "no pid?!") <$> getPid (unsafeProcessHandle p)
             say (addSep termWidth (formatTask pid taskCall))
             hPutStrLn (getStdin p) (toStrict $ encode callParams)
@@ -121,7 +128,7 @@ withConnections count inventory callback =
             startProcess
               . setStdin createPipe
               . setStdout createPipe
-              $ proc "python" ["./app/wrapper.py", inventory],
+              $ proc "python" ["./app/wrapper.py", inventory, playPath],
           freeResource = \p -> do
             hClose (getStdin p)
             stopProcess p,

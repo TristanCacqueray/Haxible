@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , source = ""
     , exprs =
         [ Expr
             { binder = Binder "resultsLocalhost0"
@@ -106,6 +107,7 @@
                 )
             )
         ]
+    , source = "test/playbooks"
     , exprs =
         [ Expr
             { binder = Binder "debugInstallPackages0"

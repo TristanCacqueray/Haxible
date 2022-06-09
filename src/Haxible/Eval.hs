@@ -106,9 +106,9 @@ loopResult xs = Object $ Data.Aeson.KeyMap.fromList attrs
       ]
         <> play
 
-runTask :: Vars -> Text -> Vars -> Vars -> AnsibleHaxl Value
-runTask playAttrs module_ taskAttrs baseTaskVars =
-  addModule <$> dataFetch (RunTask (TaskCall {playAttrs, taskAttrs, taskVars, module_}))
+runTask :: FilePath -> Vars -> Text -> Vars -> Vars -> AnsibleHaxl Value
+runTask taskPath playAttrs module_ taskAttrs baseTaskVars =
+  addModule <$> dataFetch (RunTask (TaskCall {taskPath, playAttrs, taskAttrs, taskVars, module_}))
   where
     addModule = \case
       Object obj -> Object $ Data.Aeson.KeyMap.insert "__haxible_module" (String module_) obj
@@ -125,7 +125,7 @@ runTask playAttrs module_ taskAttrs baseTaskVars =
       | otherwise = [(k, cleanVar v)]
 
 runHaxible :: FilePath -> FilePath -> AnsibleHaxl [Value] -> IO ()
-runHaxible inventory playPath action = withConnections 5 inventory $ \connections -> do
+runHaxible inventory playPath action = withConnections 5 inventory playPath $ \connections -> do
   ansibleState <- initHaxibleState connections
   ansibleEnv <- initEnv (stateSet ansibleState stateEmpty) ()
   xs <- handle printError (runHaxl ansibleEnv action)

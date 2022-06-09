@@ -30,7 +30,7 @@ type Task = BaseTask TaskValue
 data TaskValue
   = Module Value
   | Role RoleValue
-  | Tasks Text [Task]
+  | Tasks FilePath Text [Task]
   | Facts Vars
   | CacheableFacts Value Vars
   | Block BlockValue
@@ -39,6 +39,7 @@ data TaskValue
 data RoleValue = RoleValue
   { tasks :: [Task],
     defaults :: [(Text, Value)],
+    rolePath :: FilePath,
     name :: Text
   }
   deriving (Eq, Show)
@@ -79,21 +80,23 @@ resolveTask task = do
       let role_name = from $ fromMaybe "missing name" $ preview (key "name" . _String) $ task.params
           name = from role_name
           task_name = from $ fromMaybe "main" $ preview (key "tasks_from" . _String) $ task.params
-      role_path <- getRolePath role_name $ "tasks" </> task_name <> ".yaml"
+      role_tasks <- getRolePath role_name $ "tasks" </> task_name <> ".yaml"
       role_defaults <- getRolePath role_name $ "defaults" </> "main.yaml"
       JsonVars defaults <- liftIO do
         defaultExist <- doesFileExist role_defaults
         if defaultExist then decodeFile role_defaults else pure (JsonVars [])
-      withFile role_path $ \baseTasks -> do
+      rolePath <- getRolePath role_name ""
+      withFile role_tasks $ \baseTasks -> do
         tasks <- traverse resolveTask baseTasks
-        pure $ Role RoleValue {name, tasks, defaults}
+        pure $ Role RoleValue {name, rolePath, tasks, defaults}
 
     includeTasks = do
       source <- asks source
       let task_name = from $ fromMaybe "missing name" $ preview _String $ task.params
           task_path = takeDirectory source </> task_name
+          task_dir = takeDirectory task_path
       withFile task_path $ \baseTasks -> do
-        Tasks (from task_name) <$> traverse resolveTask baseTasks
+        Tasks task_dir (from task_name) <$> traverse resolveTask baseTasks
 
     block = do
       tasks <- resolveBlock task.params
@@ -115,6 +118,7 @@ resolveTask task = do
 
 -- | Transform a 'PlaySyntax' into a resolved 'Play'
 resolveImport :: FilePath -> PlaySyntax -> IO Play
-resolveImport source (BasePlay baseTasks attrs) = do
+resolveImport source (BasePlay baseTasks _ attrs) = do
   tasks <- runReaderT (traverse resolveTask baseTasks) (Env source source [])
-  pure $ BasePlay {tasks, attrs}
+  let playPath = takeDirectory source
+  pure $ BasePlay {tasks, playPath, attrs}

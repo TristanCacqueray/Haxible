@@ -30,13 +30,14 @@ data Definition = Definition
     provides :: [Resource],
     outputs :: Environment,
     playAttrs :: Vars,
+    source :: FilePath,
     exprs :: [Expr]
   }
   deriving (Show, Eq)
 
-emptyDefinition :: Text -> Definition
-emptyDefinition name =
-  Definition {name, requires = [], provides = [], outputs = Environment [], playAttrs = [], exprs = []}
+emptyDefinition :: Text -> FilePath -> Definition
+emptyDefinition name source =
+  Definition {name, requires = [], provides = [], outputs = Environment [], playAttrs = [], exprs = [], source}
 
 -- | An expression is a single instruction.
 data Expr = Expr
@@ -243,7 +244,7 @@ roleExpr :: Task -> RoleValue -> State Env Expr
 roleExpr task role = do
   when (isJust $ lookup "register" task.attrs) (error "Register include_role is not supported")
   Binder name <- freshName "role" role.name
-  roleDef <- normalizeDefinition name role.tasks
+  roleDef <- normalizeDefinition role.rolePath name role.tasks
   modify (#definitions %~ (roleDef :))
 
   expr <- moduleExpr task Null
@@ -253,11 +254,11 @@ roleExpr task role = do
     taskAttrs = getTaskAttrs task
     taskVars = getTaskVars task <> role.defaults
 
-tasksExpr :: Task -> Text -> [Task] -> State Env Expr
-tasksExpr task includeName tasks = do
+tasksExpr :: FilePath -> Task -> Text -> [Task] -> State Env Expr
+tasksExpr tasksPath task includeName tasks = do
   when (isJust $ lookup "register" task.attrs) (error "Register include_tasks is not supported")
   Binder name <- freshName "tasks" includeName
-  tasksDef <- normalizeDefinition name tasks
+  tasksDef <- normalizeDefinition tasksPath name tasks
   modify (#definitions %~ (tasksDef :))
 
   expr <- moduleExpr task Null
@@ -288,19 +289,19 @@ factsExpr task cacheable name value = do
   when (isJust (lookup "loop" task.attrs)) $ error "set_fact loop is not supported"
   pure $ Expr {binder, requires, provides, outputs, requirements, loop, term, taskAttrs, when_}
 
-blockExpr :: Task -> BlockValue -> State Env Expr
-blockExpr task block = do
+blockExpr :: FilePath -> Task -> BlockValue -> State Env Expr
+blockExpr parentPath task block = do
   binder <- freshName "block" (fromMaybe "" task.name)
   let name = from binder
 
   (outs, dc) <- case block.rescues of
     [] -> do
-      blockDef <- normalizeDefinition name block.tasks
+      blockDef <- normalizeDefinition parentPath name block.tasks
       modify (#definitions %~ (blockDef :))
       pure (blockDef.outputs, DefinitionCall)
     _ -> do
-      blockDef <- normalizeDefinition (name <> "Main") block.tasks
-      rescueDef <- normalizeDefinition (name <> "Rescue") block.rescues
+      blockDef <- normalizeDefinition parentPath (name <> "Main") block.tasks
+      rescueDef <- normalizeDefinition parentPath (name <> "Rescue") block.rescues
       modify (#definitions %~ ([rescueDef, blockDef] <>))
       pure (rescueDef.outputs, BlockRescueCall)
 
@@ -310,15 +311,15 @@ blockExpr task block = do
       taskAttrs = getTaskAttrs task
   pure $ expr {binder, outputs, taskAttrs, term = dc CallDefinition {name, taskVars}}
 
-normalizeTask :: Task -> State Env [Expr]
-normalizeTask task = do
+normalizeTask :: FilePath -> Task -> State Env [Expr]
+normalizeTask taskPath task = do
   exprs <- case task.params of
     Module v -> (: []) <$> moduleExpr task v
     Role r -> (: []) <$> roleExpr task r
-    Tasks name xs -> (: []) <$> tasksExpr task name xs
+    Tasks tasksPath name xs -> (: []) <$> tasksExpr tasksPath task name xs
     Facts vars -> traverse (uncurry (factsExpr task Nothing)) vars
     CacheableFacts cacheable vars -> traverse (uncurry (factsExpr task (Just cacheable))) vars
-    Block bv -> (: []) <$> blockExpr task bv
+    Block bv -> (: []) <$> blockExpr taskPath task bv
   pure $ map addLoopReq exprs
   where
     addLoopReq expr = expr {loop, requirements = extraReq <> expr.requirements}
@@ -329,23 +330,23 @@ normalizeTask task = do
       Nothing -> (Nothing, [])
     getLoopVar = preview (key "loop_var" . _String)
 
-normalizeDefinition :: Text -> [Task] -> State Env Definition
-normalizeDefinition name tasks = do
-  exprs <- concat <$> traverse normalizeTask tasks
+normalizeDefinition :: FilePath -> Text -> [Task] -> State Env Definition
+normalizeDefinition source name tasks = do
+  exprs <- concat <$> traverse (normalizeTask source) tasks
   let provides = nub $ concatMap (.provides) exprs
       requires = nub $ filter (`notElem` provides) $ concatMap (.requires) exprs
       outputs = Environment $ (\e -> (e.binder, e.outputs)) <$> exprs
-  pure $ Definition {name, exprs, requires, provides, outputs, playAttrs = []}
+  pure $ Definition {name, exprs, requires, provides, outputs, playAttrs = [], source}
 
 normalizePlay :: Play -> State Env Definition
 normalizePlay play = do
   Binder name <- freshName "play" (playName play)
-  addPlayAttrs <$> normalizeDefinition name play.tasks
+  addPlayAttrs <$> normalizeDefinition play.playPath name play.tasks
   where
     addPlayAttrs def = def {playAttrs = play.attrs}
 
 -- | Extract the hosts from a play attributes:
--- >>> playName BasePlay {tasks = [], attrs = [("hosts", [json|"localhost"|])]}
+-- >>> playName BasePlay {tasks = [], playPath = "", attrs = [("hosts", [json|"localhost"|])]}
 -- "localhost"
 playName :: Play -> Text
 playName play = fromMaybe "" (preview _String =<< lookup "hosts" play.attrs)
@@ -376,4 +377,4 @@ normalizePlaybook plays =
           taskAttrs = []
       pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, requirements = [], loop = Nothing, term, taskAttrs, when_}
     topLevel :: [Expr] -> Definition
-    topLevel exprs = (emptyDefinition "playbook") {exprs}
+    topLevel exprs = (emptyDefinition "playbook" "") {exprs}

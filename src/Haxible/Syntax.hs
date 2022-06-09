@@ -20,6 +20,7 @@ import Haxible.Prelude
 
 data BasePlay task = BasePlay
   { tasks :: [task],
+    playPath :: FilePath,
     -- | The list of attributes such as `become` or `gather_facts`.
     attrs :: [(Text, Value)]
   }
@@ -60,7 +61,7 @@ instance FromJSON PlaySyntax where
     roles <- map mkRoleTask <$> (v `getList` "roles")
     post_tasks <- v `getList` "post_tasks"
     pure $
-      BasePlay (pre_tasks <> roles <> tasks <> post_tasks) (items nonPlayAttributes v)
+      BasePlay (pre_tasks <> roles <> tasks <> post_tasks) "" (items nonPlayAttributes v)
     where
       getList v k = fromMaybe [] <$> v .:? k
       mkRoleTask name =

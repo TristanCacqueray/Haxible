@@ -15,6 +15,7 @@ main = runHaxible "inventory.yaml" "test/playbooks/register-between-play.yaml" (
 playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playbook parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
+      src = ""
   resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
   resultsLocalhost1 <- playLocalhost1 playAttrs (taskAttrs) ([("r1", resultsLocalhost0 !! 0)] <> taskVars)
   pure $ resultsLocalhost0 <> resultsLocalhost1
@@ -22,12 +23,14 @@ playbook parentPlayAttrs taskAttrs taskVars = do
 playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
-  stat0 <- runTask playAttrs "stat" ([("stat", [json|{"path":"/"}|])] <> taskAttrs) (taskVars)
+      src = "test/playbooks"
+  stat0 <- runTask src playAttrs "stat" ([("stat", [json|{"path":"/"}|])] <> taskAttrs) (taskVars)
   pure $ [stat0]
 
 playLocalhost1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost1 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
-  debug0 <- runTask playAttrs "debug" ([("debug", [json|{"msg":"r1 is {{ r1 }}"}|])] <> taskAttrs) (taskVars)
+      src = "test/playbooks"
+  debug0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"r1 is {{ r1 }}"}|])] <> taskAttrs) (taskVars)
   pure $ [debug0]
 
