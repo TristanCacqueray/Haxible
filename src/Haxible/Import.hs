@@ -57,7 +57,6 @@ resolveTask task = do
     "include_tasks" -> includeTasks
     "set_fact" -> setFact
     "block" -> block
-    "add_host" -> error "add_host is not implemented"
     x
       | x `elem` notImplemented -> do
           source <- asks source
@@ -65,7 +64,7 @@ resolveTask task = do
       | otherwise -> pure $ Module task.params
   pure $ task {params = taskValue}
   where
-    notImplemented = ["add_host", "import_playbook", "import_role"]
+    notImplemented = ["add_host", "import_playbook", "import_role", "meta"]
     withFile fp go = do
       hist <- asks history
       when (fp `elem` hist) $
