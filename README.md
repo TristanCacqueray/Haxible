@@ -119,6 +119,11 @@ Thanks to the Haxl library, the order of the operations is automatically arrange
 
 ![demo timing](./test/playbooks/demo.png)
 
+Here is a production zuul-jobs pre run report that demonstrates almost 2x improvement:
+
+![zuul-jobs](./doc/zuul-jobs.png)
+
+
 ## Usage
 
 Install the toolchain using [ghcup](https://www.haskell.org/ghcup/).
