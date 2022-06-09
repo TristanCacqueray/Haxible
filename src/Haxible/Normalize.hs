@@ -104,7 +104,7 @@ dependencyName = \case
   Register n -> n
   Path p ->
     -- a fake variable that is used to force the dependency relationship
-    Text.replace "/" "_" p
+    "_fake_" <> cleanName p
 dependencyValue = \case
   Register n -> n
   Path p -> p
@@ -228,10 +228,7 @@ moduleExpr task value = do
   pure $ Expr {binder, requires, provides, outputs, requirements, loop = Nothing, term, taskAttrs, when_}
   where
     when_ = lookup "when" task.attrs
-    destPath = Path <$> (ignoreJinjaPath =<< (getAttr "path" <|> getAttr "dest"))
-    ignoreJinjaPath p
-      | "{{" `Text.isInfixOf` p = Nothing
-      | otherwise = Just p
+    destPath = Path <$> (getAttr "path" <|> getAttr "dest")
     register = Register <$> (preview _String =<< lookup "register" task.attrs)
     getAttr n = preview (key n . _String) value
     taskAttrs = getPropagableAttrs task.attrs

@@ -1,0 +1,24 @@
+- hosts: localhost
+  vars:
+    info_dir: "/tmp/info"
+  tasks:
+    - name: Install packages...
+      debug:
+        msg: "Installing podman"
+      register: _provider
+
+    - name: Start service
+      debug:
+        msg: "Running podman run -it --rm quay.io/software-factory/ci-log-processor"
+      vars:
+        requires: _provider
+
+    - name: Create info directory
+      file:
+        path: "{{ info_dir }}"
+        state: directory
+
+    - name: Copy info log
+      copy:
+        content: "Log"
+        dest: "{{ info_dir }}/log"

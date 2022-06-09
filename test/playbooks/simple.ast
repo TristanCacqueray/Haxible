@@ -205,7 +205,7 @@
                         ( Binder "stat0" )
                     }
                 , Requirement
-                    { name = "_etc"
+                    { name = "_fake_Etc"
                     , origin = Direct
                         ( Binder "stat0" )
                     }
@@ -325,7 +325,7 @@
                         ( Binder "file0" )
                     }
                 , Requirement
-                    { name = "_tmp_zuul"
+                    { name = "_fake_TmpZuul"
                     , origin = Direct
                         ( Binder "file0" )
                     }
@@ -428,7 +428,7 @@
             , outputs = Right []
             , requirements =
                 [ Requirement
-                    { name = "_tmp_nodepool"
+                    { name = "_fake_TmpNodepool"
                     , origin = Direct
                         ( Binder "file1" )
                     }

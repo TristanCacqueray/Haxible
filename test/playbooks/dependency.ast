@@ -1,0 +1,284 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "debugInstallPackages0"
+                    , dep = Register "_provider"
+                    }
+                , Resource
+                    { name = Binder "fileCreateInfoDirectory0"
+                    , dep = Path "{{ info_dir }}"
+                    }
+                , Resource
+                    { name = Binder "copyCopyInfoLog0"
+                    , dep = Path "{{ info_dir }}/log"
+                    }
+                ]
+            , outputs = Right []
+            , requirements = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "debugInstallPackages0"
+            , dep = Register "_provider"
+            }
+        , Resource
+            { name = Binder "fileCreateInfoDirectory0"
+            , dep = Path "{{ info_dir }}"
+            }
+        , Resource
+            { name = Binder "copyCopyInfoLog0"
+            , dep = Path "{{ info_dir }}/log"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debugInstallPackages0"
+                , Right
+                    [ Resource
+                        { name = Binder "debugInstallPackages0"
+                        , dep = Register "_provider"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "debugStartService0"
+                , Right []
+                )
+            ,
+                ( Binder "fileCreateInfoDirectory0"
+                , Right
+                    [ Resource
+                        { name = Binder "fileCreateInfoDirectory0"
+                        , dep = Path "{{ info_dir }}"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "copyCopyInfoLog0"
+                , Right
+                    [ Resource
+                        { name = Binder "copyCopyInfoLog0"
+                        , dep = Path "{{ info_dir }}/log"
+                        }
+                    ]
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ,
+            ( "vars"
+            , Object
+                ( fromList
+                    [
+                        ( "info_dir"
+                        , String "/tmp/info"
+                        )
+                    ]
+                )
+            )
+        ]
+    , exprs =
+        [ Expr
+            { binder = Binder "debugInstallPackages0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "debugInstallPackages0"
+                    , dep = Register "_provider"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "debugInstallPackages0"
+                    , dep = Register "_provider"
+                    }
+                ]
+            , requirements = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Install packages..."
+                    )
+                ]
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "Installing podman"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debugStartService0"
+            , requires =
+                [ Resource
+                    { name = Binder "debugInstallPackages0"
+                    , dep = Register "_provider"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , requirements =
+                [ Requirement
+                    { name = "_provider"
+                    , origin = Direct
+                        ( Binder "debugInstallPackages0" )
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Start service"
+                    )
+                ]
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "Running podman run -it --rm quay.io/software-factory/ci-log-processor"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "fileCreateInfoDirectory0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "fileCreateInfoDirectory0"
+                    , dep = Path "{{ info_dir }}"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "fileCreateInfoDirectory0"
+                    , dep = Path "{{ info_dir }}"
+                    }
+                ]
+            , requirements = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Create info directory"
+                    )
+                ]
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "file"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "path"
+                                , String "{{ info_dir }}"
+                                )
+                            ,
+                                ( "state"
+                                , String "directory"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "copyCopyInfoLog0"
+            , requires =
+                [ Resource
+                    { name = Binder "fileCreateInfoDirectory0"
+                    , dep = Path "{{ info_dir }}"
+                    }
+                ]
+            , provides =
+                [ Resource
+                    { name = Binder "copyCopyInfoLog0"
+                    , dep = Path "{{ info_dir }}/log"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "copyCopyInfoLog0"
+                    , dep = Path "{{ info_dir }}/log"
+                    }
+                ]
+            , requirements =
+                [ Requirement
+                    { name = "_fake_InfoDir"
+                    , origin = Direct
+                        ( Binder "fileCreateInfoDirectory0" )
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "name"
+                    , String "Copy info log"
+                    )
+                ]
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "copy"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "content"
+                                , String "Log"
+                                )
+                            ,
+                                ( "dest"
+                                , String "{{ info_dir }}/log"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        ]
+    }
+]
