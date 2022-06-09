@@ -5,7 +5,7 @@
     - name: Call task in a loop
       debug:
         msg: "loop {{ item }}"
-      loop: ["A", "B", "C"]
+      with_items: ["A", "B", "C"]
       register: loop_res
 
     - name: Loop var

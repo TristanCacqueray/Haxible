@@ -14,6 +14,7 @@ import Data.Aeson
 import Data.Aeson.Key qualified
 import Data.Aeson.KeyMap qualified
 import Data.ByteString (readFile)
+import Data.Text qualified as Text
 import Data.Yaml qualified (decodeEither')
 import Haxible.Prelude
 
@@ -81,9 +82,9 @@ instance FromJSON TaskSyntax where
       <$> v .:? "name"
       <*> pure module_
       <*> pure params
-      <*> pure (items [module_] v)
+      <*> pure (first (Text.replace "with_items" "loop") <$> items [module_] v)
     where
-      nonModuleAttributes = ["name", "register", "loop", "loop_control", "rescue", "vars", "when"] <> propagableAttrs
+      nonModuleAttributes = ["name", "register", "with_items", "loop", "loop_control", "rescue", "vars", "when"] <> propagableAttrs
 
 propagableAttrs :: [Text]
 propagableAttrs =
