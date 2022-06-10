@@ -169,6 +169,17 @@
             , loop = Nothing
             , taskAttrs =
                 [
+                    ( "vars"
+                    , Object
+                        ( fromList
+                            [
+                                ( "requires"
+                                , String "_provider"
+                                )
+                            ]
+                        )
+                    )
+                ,
                     ( "name"
                     , String "Start service"
                     )

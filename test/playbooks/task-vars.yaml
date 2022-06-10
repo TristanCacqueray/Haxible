@@ -1,0 +1,6 @@
+- hosts: localhost
+  tasks:
+    - debug:
+        var: my_var
+      vars:
+        my_var: 42

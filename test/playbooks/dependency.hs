@@ -24,7 +24,7 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|]), ("vars", [json|{"info_dir":"/tmp/info"}|])] <> parentPlayAttrs
       src = "test/playbooks"
   debugInstallPackages0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Installing podman"}|]), ("name", [json|"Install packages..."|])] <> taskAttrs) (taskVars)
-  debugStartService0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Running podman run -it --rm quay.io/software-factory/ci-log-processor"}|]), ("name", [json|"Start service"|])] <> taskAttrs) ([("_provider", debugInstallPackages0)] <> taskVars)
+  debugStartService0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Running podman run -it --rm quay.io/software-factory/ci-log-processor"}|]), ("vars", [json|{"requires":"_provider"}|]), ("name", [json|"Start service"|])] <> taskAttrs) ([("_provider", debugInstallPackages0)] <> taskVars)
   fileCreateInfoDirectory0 <- runTask src playAttrs "file" ([("file", [json|{"path":"{{ info_dir }}","state":"directory"}|]), ("name", [json|"Create info directory"|])] <> taskAttrs) (taskVars)
   copyCopyInfoLog0 <- runTask src playAttrs "copy" ([("copy", [json|{"content":"Log","dest":"{{ info_dir }}/log"}|]), ("name", [json|"Copy info log"|])] <> taskAttrs) ([("_fake_InfoDir", fileCreateInfoDirectory0)] <> taskVars)
   pure $ [debugInstallPackages0] <> [debugStartService0] <> [fileCreateInfoDirectory0] <> [copyCopyInfoLog0]

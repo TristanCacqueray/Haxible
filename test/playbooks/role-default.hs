@@ -23,7 +23,7 @@ playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
       src = "test/playbooks"
-  facts0 <- extractFact <$> runTask src playAttrs "set_fact" ([("set_fact", [json|{"adder_commit":"v{{ version }}"}|])] <> taskAttrs) (taskVars)
+  facts0 <- extractFact <$> runTask src playAttrs "set_fact" ([("set_fact", [json|{"adder_commit":"v{{ version }}"}|]), ("vars", [json|{"version":"42"}|])] <> taskAttrs) (taskVars)
   resultsAdder0 <- roleAdder0 playAttrs (taskAttrs) ([("adder_commit", facts0)] <> [("x", [json|1|]), ("y", [json|2|]), ("adder_version", [json|"42 {{ adder_commit | default('HEAD') }}"|])] <> taskVars)
   pure $ [facts0] <> resultsAdder0
 

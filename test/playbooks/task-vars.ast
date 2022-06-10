@@ -1,0 +1,87 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , source = ""
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "debug0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs =
+                [
+                    ( "vars"
+                    , Object
+                        ( fromList
+                            [
+                                ( "my_var"
+                                , Number 42.0
+                                )
+                            ]
+                        )
+                    )
+                ]
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "var"
+                                , String "my_var"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        ]
+    , handlers = []
+    }
+]

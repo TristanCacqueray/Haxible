@@ -83,7 +83,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , taskAttrs = []
+            , taskAttrs =
+                [
+                    ( "vars"
+                    , Object
+                        ( fromList
+                            [
+                                ( "version"
+                                , String "42"
+                                )
+                            ]
+                        )
+                    )
+                ]
             , term = ModuleCall
                 ( CallModule
                     { module_ = "set_fact"
