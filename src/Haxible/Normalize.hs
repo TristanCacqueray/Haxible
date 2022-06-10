@@ -20,7 +20,7 @@ import Haxible.Prelude
 import Haxible.Syntax (propagableAttrs)
 
 -- $setup
--- >>> let mkTask attrs = BaseTask {name = Nothing, module_ = "", params = Module "", attrs}
+-- >>> let mkTask attrs = BaseTask {name = Nothing, module_ = "", params = Module Nothing "", attrs}
 -- >>> let mkRes name = Resource (Binder name) (Register name)
 
 -- | A definition is like a function, to represent a play, a role, or a list of tasks.
@@ -222,14 +222,14 @@ samePathCommand fp = \case
   Command fp' | fp == fp' -> True
   _ -> False
 
-moduleExpr :: FilePath -> Task -> Value -> State Env Expr
-moduleExpr taskPath task value = do
+moduleExpr :: FilePath -> Task -> Maybe Text -> Value -> State Env Expr
+moduleExpr taskPath task template value = do
   binder <- freshName task.module_ (fromMaybe "" task.name)
 
   availables <- gets availables
 
   -- Look for requirements and provides
-  let moduleRequires = getRequires availables (value : attrs)
+  let moduleRequires = getRequires availables (value : templateAttr : attrs)
       moduleProvides = Resource binder <$> maybeToList register <> maybeToList destPath
   -- Command defined in the same block/tasks/role are automatically inter-dependent.
   let commandRequires
@@ -255,6 +255,10 @@ moduleExpr taskPath task value = do
     getAttr n = preview (key n . _String) value
     taskAttrs = getPropagableAttrs task.attrs
     attrs = fromMaybe Null . flip lookup task.attrs <$> ("vars" : propagableAttrs)
+    templateAttr = maybe Null String template
+
+callExpr :: Task -> State Env Expr
+callExpr t = moduleExpr "" t Nothing Null
 
 getPropagableAttrs :: Vars -> Vars
 getPropagableAttrs = filter (`elemFst` ("name" : propagableAttrs))
@@ -268,7 +272,7 @@ roleExpr task role = do
   roleDef <- normalizeDefinitionWithHandlers role.handlers role.rolePath name role.tasks
   modify (#definitions %~ (roleDef :))
 
-  expr <- moduleExpr "" task Null
+  expr <- callExpr task
   binder <- freshName "results" role.name
   pure $ expr {binder, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
   where
@@ -282,7 +286,7 @@ tasksExpr tasksPath task includeName tasks = do
   tasksDef <- normalizeDefinition tasksPath name tasks
   modify (#definitions %~ (tasksDef :))
 
-  expr <- moduleExpr "" task Null
+  expr <- callExpr task
   binder <- freshName "results" name
   let outputs = Left tasksDef.outputs
   pure $ expr {binder, outputs, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
@@ -326,7 +330,7 @@ blockExpr parentPath task block = do
       modify (#definitions %~ ([rescueDef, blockDef] <>))
       pure (rescueDef.outputs, BlockRescueCall)
 
-  expr <- moduleExpr "" task Null
+  expr <- callExpr task
   let outputs = Left outs
       taskVars = getTaskVars task
       taskAttrs = getTaskAttrs task
@@ -335,7 +339,7 @@ blockExpr parentPath task block = do
 normalizeTask :: FilePath -> Task -> State Env [Expr]
 normalizeTask taskPath task = do
   exprs <- case task.params of
-    Module v -> (: []) <$> moduleExpr taskPath task v
+    Module t v -> (: []) <$> moduleExpr taskPath task t v
     Role r -> (: []) <$> roleExpr task r
     Tasks tasksPath name xs -> (: []) <$> tasksExpr tasksPath task name xs
     Facts vars -> traverse (uncurry (factsExpr task Nothing)) vars

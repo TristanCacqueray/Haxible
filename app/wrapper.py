@@ -93,6 +93,7 @@ def add_library_path(path):
     if path not in paths and path and os.path.isdir(path + "/library"):
         module_loader.add_directory(path + "/library")
         paths.add(path)
+os.chdir(os.path.dirname(playPath))
 add_library_path(os.path.dirname(playPath))
 
 def run_task(inputs):

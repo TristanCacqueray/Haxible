@@ -28,7 +28,7 @@ type Play = BasePlay Task
 type Task = BaseTask TaskValue
 
 data TaskValue
-  = Module Value
+  = Module (Maybe Text) Value
   | Handler Text Value
   | Role RoleValue
   | Tasks FilePath Text [Task]
@@ -52,8 +52,14 @@ data BlockValue = BlockValue
   }
   deriving (Eq, Show)
 
-resolveTask :: TaskSyntax -> Importer Task
-resolveTask task = do
+resolveTask :: FilePath -> TaskSyntax -> Importer Task
+resolveTask basePath task = do
+  templateContent <- case task.module_ of
+    "template" -> do
+      txt <- readTemplate (fromMaybe (error "template missing src") (preview (key "src" . _String) task.params))
+      pure $ Just (from txt)
+    _ -> pure Nothing
+
   taskValue <- case task.module_ of
     "include_role" -> includeRole
     "include_tasks" -> includeTasks
@@ -63,7 +69,8 @@ resolveTask task = do
       | x `elem` notImplemented -> do
           source <- asks source
           error $ source <> ": " <> from x <> ": NotImplemented"
-      | otherwise -> pure $ Module task.params
+      | otherwise -> pure $ Module templateContent task.params
+
   pure $ task {params = taskValue}
   where
     notImplemented = ["add_host", "import_playbook", "import_role", "meta"]
@@ -92,7 +99,7 @@ resolveTask task = do
         handlerExist <- liftIO $ doesFileExist handler_path
         if handlerExist then map resolveHandler <$> decodeFile handler_path else pure []
       withFile role_tasks $ \baseTasks -> do
-        tasks <- traverse resolveTask baseTasks
+        tasks <- traverse (resolveTask rolePath) baseTasks
         pure $ Role RoleValue {name, handlers, rolePath, tasks, defaults}
 
     includeTasks = do
@@ -101,7 +108,7 @@ resolveTask task = do
           task_path = takeDirectory source </> task_name
           task_dir = takeDirectory task_path
       withFile task_path $ \baseTasks -> do
-        Tasks task_dir (from task_name) <$> traverse resolveTask baseTasks
+        Tasks task_dir (from task_name) <$> traverse (resolveTask task_dir) baseTasks
 
     block = do
       tasks <- resolveBlock task.params
@@ -110,10 +117,14 @@ resolveTask task = do
     resolveBlock :: Value -> Importer [Task]
     resolveBlock = \case
       Null -> pure []
-      v -> traverse resolveTask . unwrapJSON . fromJSON $ v
+      v -> traverse (resolveTask basePath) . unwrapJSON . fromJSON $ v
     unwrapJSON = \case
       Error e -> error $ "Unexpected json: " <> e
       Success a -> a
+
+    readTemplate (from -> name) = do
+      let templatePath = basePath </> "templates" </> name
+      liftIO (readFile templatePath)
 
     setFact = do
       let JsonVars vars = unwrapJSON . fromJSON $ task.params
@@ -133,7 +144,7 @@ resolveHandler task = task {params = Handler name task.params}
 -- | Transform a 'PlaySyntax' into a resolved 'Play'
 resolveImport :: FilePath -> PlaySyntax -> IO Play
 resolveImport source (BasePlay baseTasks baseHandlers _ attrs) = do
-  tasks <- runReaderT (traverse resolveTask baseTasks) (Env source source [])
-  let handlers = resolveHandler <$> baseHandlers
   let playPath = takeDirectory source
+  tasks <- runReaderT (traverse (resolveTask playPath) baseTasks) (Env source source [])
+  let handlers = resolveHandler <$> baseHandlers
   pure $ BasePlay {tasks, handlers, playPath, attrs}

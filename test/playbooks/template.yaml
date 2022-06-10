@@ -1,0 +1,10 @@
+- hosts: localhost
+  tasks:
+    - set_fact:
+        greet: "Haxible"
+    - template:
+        dest: "/tmp/haxible.txt"
+        src: file.j2
+      register: res
+    - debug:
+        var: res

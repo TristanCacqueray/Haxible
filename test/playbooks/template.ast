@@ -1,0 +1,228 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , source = ""
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "greet"
+                    }
+                , Resource
+                    { name = Binder "template0"
+                    , dep = Register "res"
+                    }
+                , Resource
+                    { name = Binder "template0"
+                    , dep = Path "/tmp/haxible.txt"
+                    }
+                ]
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "facts0"
+            , dep = Register "greet"
+            }
+        , Resource
+            { name = Binder "template0"
+            , dep = Register "res"
+            }
+        , Resource
+            { name = Binder "template0"
+            , dep = Path "/tmp/haxible.txt"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "facts0"
+                , Right
+                    [ Resource
+                        { name = Binder "facts0"
+                        , dep = Register "greet"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "template0"
+                , Right
+                    [ Resource
+                        { name = Binder "template0"
+                        , dep = Register "res"
+                        }
+                    , Resource
+                        { name = Binder "template0"
+                        , dep = Path "/tmp/haxible.txt"
+                        }
+                    ]
+                )
+            ,
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "facts0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "greet"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "greet"
+                    }
+                ]
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "set_fact"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "greet"
+                                , String "Haxible"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "template0"
+            , requires =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "greet"
+                    }
+                ]
+            , provides =
+                [ Resource
+                    { name = Binder "template0"
+                    , dep = Register "res"
+                    }
+                , Resource
+                    { name = Binder "template0"
+                    , dep = Path "/tmp/haxible.txt"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "template0"
+                    , dep = Register "res"
+                    }
+                , Resource
+                    { name = Binder "template0"
+                    , dep = Path "/tmp/haxible.txt"
+                    }
+                ]
+            , inputs =
+                [ Requirement
+                    { name = "greet"
+                    , origin = Direct
+                        ( Binder "facts0" )
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "template"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "dest"
+                                , String "/tmp/haxible.txt"
+                                )
+                            ,
+                                ( "src"
+                                , String "file.j2"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug0"
+            , requires =
+                [ Resource
+                    { name = Binder "template0"
+                    , dep = Register "res"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , inputs =
+                [ Requirement
+                    { name = "res"
+                    , origin = Direct
+                        ( Binder "template0" )
+                    }
+                , Requirement
+                    { name = "_fake_TmpHaxibleTxt"
+                    , origin = Direct
+                        ( Binder "template0" )
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "var"
+                                , String "res"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        ]
+    , handlers = []
+    }
+]
