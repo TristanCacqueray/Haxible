@@ -75,9 +75,11 @@ class TaskRunner:
         )
         self.strategy = strategy_loader.get("linear", self.tqm)
 
-    def run(self, playbook):
+    def run(self, playbook, facts=None):
         loggy(f"Running {playbook}")
-        # TODO: handle gather_facts once per session if needed
+        for (host, host_facts) in (facts.items() if facts else []):
+            self.variable_manager.set_host_facts(host, host_facts)
+        # Host facts must be gathered manually using the ansible.builtin.gather_facts module
         playbook["gather_facts"] = False
         play = Play().load(playbook)
         # Simulate the tqm.run() function to perform our single task play
@@ -100,7 +102,8 @@ class TaskRunner:
             exit(1)
         elif len(self.cb.results) == 1:
             # If the task run on a single host, returns its value directly.
-            task_result = list(self.cb.results.values())[0]
+            [(host, value)] = list(self.cb.results.items())
+            task_result = {**value, **{"__haxible_host": host}}
         else:
             # For multi host results, the output is a Map Host Result.
             # Later, the registered value will be substituted back
@@ -109,7 +112,7 @@ class TaskRunner:
 
         # Returns the code and the result.
         result = [run_result, task_result]
-        loggy(f"-> {result}")
+        loggy(f"-> {json.dumps(result)}")
         return result
 
     async def async_run(self, playbook):
@@ -151,7 +154,7 @@ def main():
     def run_task(inputs):
         # The Haxl DataSource provides the play without tasks, the task to run
         # and extra environment vars for the play.
-        [path, play, task, taskVars] = inputs
+        [path, play, task, taskVars, facts] = inputs
         add_library_path(path)
 
         # Prepare the final play structure.
@@ -160,7 +163,7 @@ def main():
             play["vars"].update(taskVars)
         play["tasks"] = [task]
         # Call ansible-playbook
-        result = runner.run(play.copy())
+        result = runner.run(play.copy(), facts)
         # Record the full play structure in the task for debug purpose.
         result[1]["__haxible_play"] = play
         return result

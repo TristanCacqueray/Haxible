@@ -1,7 +1,6 @@
 module Haxible.Report (reportTiming) where
 
 import Data.Aeson
-import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Text qualified as Text
 import Haxible.Prelude

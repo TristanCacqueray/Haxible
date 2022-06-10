@@ -8,6 +8,7 @@ module Haxible.Prelude
     quote,
     Text,
     LByteString,
+    Data.Map.Map,
     Data.Aeson.Value (..),
     Data.Aeson.Result (..),
     Data.Aeson.fromJSON,
@@ -52,6 +53,7 @@ import Data.Foldable
 import Data.Generics.Labels ()
 import Data.List qualified
 import Data.List.NonEmpty qualified
+import Data.Map qualified
 import Data.Maybe
 import Data.Text (Text)
 import Data.Text qualified as Text

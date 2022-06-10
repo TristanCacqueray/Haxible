@@ -11,6 +11,7 @@ module Haxible.Import
   )
 where
 
+import Data.Text qualified as Text
 import Haxible.Prelude
 import Haxible.Syntax
 
@@ -61,7 +62,7 @@ resolveTask basePath task = do
       pure $ Just (from txt)
     _ -> pure Nothing
 
-  taskValue <- case task.module_ of
+  taskValue <- case Text.replace "ansible.builtin." "" task.module_ of
     "include_role" -> includeRole
     "include_tasks" -> includeTasks
     "set_fact" -> setFact
@@ -75,7 +76,7 @@ resolveTask basePath task = do
 
   pure $ task {params = taskValue}
   where
-    notImplemented = ["add_host", "import_playbook", "import_role", "meta"]
+    notImplemented = ["add_host", "import_playbook", "import_role", "meta", "gather_facts"]
     withFile fp go = do
       hist <- asks history
       when (fp `elem` hist) $

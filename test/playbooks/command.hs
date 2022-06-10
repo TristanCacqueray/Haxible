@@ -16,12 +16,12 @@ playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playbook parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
       src = ""
-  resultsLocalhosts0 <- playLocalhosts0 playAttrs (taskAttrs) (taskVars)
-  pure $ resultsLocalhosts0
+  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
+  pure $ resultsLocalhost0
 
-playLocalhosts0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhosts0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhosts"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
       src = "test/playbooks"
   command0 <- runTask src playAttrs "command" ([("command", [json|"echo 1"|])] <> taskAttrs) (taskVars)
   command1 <- runTask src playAttrs "command" ([("command", [json|"echo 2"|])] <> taskAttrs) ([("_fake_TestPlaybooks", command0)] <> taskVars)

@@ -8,7 +8,7 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhosts0"
+            { binder = Binder "resultsLocalhost0"
             , requires = []
             , provides =
                 [ Resource
@@ -27,7 +27,7 @@
             , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
-                    { name = "playLocalhosts0"
+                    { name = "playLocalhost0"
                     , taskVars = []
                     }
                 )
@@ -36,7 +36,7 @@
     , handlers = []
     }
 , Definition
-    { name = "playLocalhosts0"
+    { name = "playLocalhost0"
     , requires = []
     , provides =
         [ Resource
@@ -73,7 +73,7 @@
     , playAttrs =
         [
             ( "hosts"
-            , String "localhosts"
+            , String "localhost"
             )
         ]
     , source = "test/playbooks"

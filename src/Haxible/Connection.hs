@@ -1,12 +1,14 @@
 -- | This module contains the logic to interact with the python wrapper
 module Haxible.Connection (Connections (..), TaskCall (..), withConnections, cleanVar) where
 
+import Control.Concurrent.MVar
 import Control.Exception (bracket)
 import Data.Aeson (eitherDecodeStrict, encode)
 import Data.Aeson.KeyMap qualified
 import Data.ByteString (hGetLine, toStrict)
 import Data.ByteString.Char8 (hPutStrLn)
 import Data.Hashable (Hashable)
+import Data.Map qualified as Map
 import Data.Pool qualified
 import Data.Text qualified as Text
 import Data.Text.Encoding (decodeUtf8)
@@ -82,7 +84,7 @@ cleanVar = \case
     -- TODO: keep in sync with the wrapper and the data source
     addedKey =
       ["__haxible_play", "__haxible_start", "__haxible_end", "__haxible_module", "__haxible_notify"]
-        <> ["__haxible_multi_hosts"]
+        <> ["__haxible_multi_hosts", "__haxible_host"]
         <> ["_ansible_no_log", "_ansible_verbose_always", "__ansible_delegated_vars"]
 
 -- | Creates the Python interpreters.
@@ -95,13 +97,42 @@ withConnections count inventory playPath callback =
       withColor <- hSupportsANSIColor stdout
       say (addSep termWidth "PLAY [concurrent]" <> "\n")
 
-      let runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
+      factsVars <- newMVar mempty
+
+      let getFacts :: Vars -> Process Handle Handle () -> Map Text Value -> IO (Map Text Value, Maybe Value)
+          getFacts playAttrs p factsCache = case Map.lookup playHost factsCache of
+            -- TODO: store per facts type, e.g. network, host, ...
+            Just facts -> pure (factsCache, Just facts)
+            Nothing
+              | fromMaybe True (preview _Bool =<< lookup "gather_facts" playAttrs) -> gatherFacts
+              | otherwise -> pure (factsCache, Nothing)
+            where
+              gatherFacts = do
+                let getFactsCall = TaskCall "" playAttrs "gather_facts" [("ansible.builtin.gather_facts", Null)] []
+                res <- runTask' getFactsCall p Nothing
+                case res of
+                  (0, v) ->
+                    let factsRes = case preview (key "__haxible_host" . _String) v of
+                          Just h -> mkObj [(h, v)]
+                          Nothing -> v
+                        newFactsCache = Map.insert playHost factsRes factsCache
+                     in pure (newFactsCache, Just (cleanVar factsRes))
+                  v -> error $ "Can't get facts: " <> unsafeFrom (encode v)
+              playHost = fromMaybe (error "Play is missing hosts") (preview _String =<< lookup "hosts" playAttrs)
+
+          runTask :: TaskCall -> Process Handle Handle () -> IO (Int, Value)
           runTask taskCall p = do
+            -- set facts if necessary
+            playFacts <- modifyMVar factsVars (getFacts taskCall.playAttrs p)
+            runTask' taskCall p playFacts
+
+          runTask' taskCall p playFacts = do
             let callParams =
                   [ String (from taskCall.taskPath),
                     mkObj taskCall.playAttrs,
                     mkObj taskCall.taskAttrs,
-                    mkObj taskCall.taskVars
+                    mkObj taskCall.taskVars,
+                    fromMaybe (Object mempty) playFacts
                   ]
             pid <- fromMaybe (error "no pid?!") <$> getPid (unsafeProcessHandle p)
             say (addSep termWidth (formatTask pid taskCall))
@@ -110,7 +141,8 @@ withConnections count inventory playPath callback =
             output <- hGetLine (getStdout p)
             case eitherDecodeStrict output of
               Right res -> do
-                sayString (formatResult withColor pid res)
+                when (taskCall.module_ /= "gather_facts") do
+                  sayString (formatResult withColor pid res)
                 pure res
               Left err -> error $ show output <> ": " <> err
 

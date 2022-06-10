@@ -1,0 +1,68 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , source = ""
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsAll0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playAll0"
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "playAll0"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "all"
+            )
+        ]
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "debug0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = String "var=ansible_processor_cores"
+                    }
+                )
+            }
+        ]
+    , handlers = []
+    }
+]
