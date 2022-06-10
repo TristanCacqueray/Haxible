@@ -33,6 +33,7 @@ data TaskValue
   | Role RoleValue
   | Tasks FilePath Text [Task]
   | Facts Vars
+  | IncludeVars Value
   | CacheableFacts Value Vars
   | Block BlockValue
   deriving (Eq, Show)
@@ -65,6 +66,7 @@ resolveTask basePath task = do
     "include_tasks" -> includeTasks
     "set_fact" -> setFact
     "block" -> block
+    "include_vars" -> pure $ IncludeVars task.params
     x
       | x `elem` notImplemented -> do
           source <- asks source

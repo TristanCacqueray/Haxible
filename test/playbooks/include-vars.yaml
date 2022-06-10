@@ -1,0 +1,5 @@
+- hosts: localhost
+  tasks:
+    - include_vars: "./roles/adder/defaults/main.yaml"
+    - debug:
+        msg: "adder_version = {{ adder_version }}"

@@ -79,6 +79,7 @@ data Dependency
   | Path Text
   | -- Command module in the same path creates dependency
     Command FilePath
+  | IncludedVars FilePath
   deriving (Eq, Show)
 
 -- | A binder is a haskell variable name.
@@ -110,10 +111,12 @@ dependencyName = \case
     -- a fake variable that is used to force the dependency relationship
     "_fake_" <> cleanName p
   Command fp -> "_fake_" <> cleanName (from fp)
+  IncludedVars fp -> "_fakev_" <> cleanName (from fp)
 dependencyValue = \case
   Register n -> n
   Path p -> p
   Command _ -> "__haxible_command"
+  IncludedVars _ -> "__haxible_included_vars"
 
 -- | The requirements indicates what binders are used by an expression.
 data Requirement = Requirement {name :: Text, origin :: Origin} deriving (Show, Eq)
@@ -222,6 +225,11 @@ samePathCommand fp = \case
   Command fp' | fp == fp' -> True
   _ -> False
 
+samePathVars :: FilePath -> Dependency -> Bool
+samePathVars fp = \case
+  IncludedVars fp' | fp == fp' -> True
+  _ -> False
+
 moduleExpr :: FilePath -> Task -> Maybe Text -> Value -> State Env Expr
 moduleExpr taskPath task template value = do
   binder <- freshName task.module_ (fromMaybe "" task.name)
@@ -238,8 +246,10 @@ moduleExpr taskPath task template value = do
       commandProvides
         | task.module_ == "command" = [Resource binder (Command taskPath)]
         | otherwise = []
+  -- Included vars in the same block/tasks/role are automatically required
+  let includedVarsRequires = filter (samePathVars taskPath . (.dep)) availables
 
-  let requires = commandRequires <> moduleRequires
+  let requires = includedVarsRequires <> commandRequires <> moduleRequires
       provides = commandProvides <> moduleProvides
   modify (\env -> env {availables = provides <> availables})
 
@@ -315,6 +325,26 @@ factsExpr task cacheable name value = do
   when (isJust (lookup "loop" task.attrs)) $ error "set_fact loop is not supported"
   pure $ Expr {binder, requires, provides, outputs, inputs, loop, term, taskAttrs, when_}
 
+includeVarsExpr :: FilePath -> Task -> Value -> State Env Expr
+includeVarsExpr taskPath task value = do
+  binder <- freshName "vars" (fromMaybe "" task.name)
+  expr <- moduleExpr taskPath task Nothing value
+  let resource = Resource binder dep
+      provides = [resource]
+      outputs = case dep of
+        -- Don't propagate locally included vars to the caller
+        IncludedVars _ -> Right []
+        _ -> Right provides
+  modify (\env -> env {availables = resource : env.availables})
+  pure $ expr {binder, provides, outputs, term}
+  where
+    term = ModuleCall (CallModule "include_vars" value)
+    dep = case preview (key "name" . _String) value of
+      -- If the include_vars has a name attribute, then it's just a regular register
+      Just n -> Register n
+      -- Otherwise, we need special care to propagate each individual vars.
+      Nothing -> IncludedVars taskPath
+
 blockExpr :: FilePath -> Task -> BlockValue -> State Env Expr
 blockExpr parentPath task block = do
   binder <- freshName "block" (fromMaybe "" task.name)
@@ -344,6 +374,7 @@ normalizeTask taskPath task = do
     Role r -> (: []) <$> roleExpr task r
     Tasks tasksPath name xs -> (: []) <$> tasksExpr tasksPath task name xs
     Facts vars -> traverse (uncurry (factsExpr task Nothing)) vars
+    IncludeVars v -> (: []) <$> includeVarsExpr taskPath task v
     CacheableFacts cacheable vars -> traverse (uncurry (factsExpr task (Just cacheable))) vars
     Block bv -> (: []) <$> blockExpr taskPath task bv
     Handler {} -> error "The impossible has happened: handler can't be in task list"

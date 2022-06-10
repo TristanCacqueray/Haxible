@@ -1,0 +1,121 @@
+[ Definition
+    { name = "playbook"
+    , requires = []
+    , provides = []
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , source = ""
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsLocalhost0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "vars0"
+                    , dep = IncludedVars "test/playbooks"
+                    }
+                ]
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                ( CallDefinition
+                    { name = "playLocalhost0"
+                    , taskVars = []
+                    }
+                )
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "playLocalhost0"
+    , requires = []
+    , provides =
+        [ Resource
+            { name = Binder "vars0"
+            , dep = IncludedVars "test/playbooks"
+            }
+        ]
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "vars0"
+                , Right []
+                )
+            ,
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "vars0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "vars0"
+                    , dep = IncludedVars "test/playbooks"
+                    }
+                ]
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "include_vars"
+                    , params = String "./roles/adder/defaults/main.yaml"
+                    }
+                )
+            }
+        , Expr
+            { binder = Binder "debug0"
+            , requires =
+                [ Resource
+                    { name = Binder "vars0"
+                    , dep = IncludedVars "test/playbooks"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , inputs =
+                [ Requirement
+                    { name = "_fakev_TestPlaybooks"
+                    , origin = Direct
+                        ( Binder "vars0" )
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                ( CallModule
+                    { module_ = "debug"
+                    , params = Object
+                        ( fromList
+                            [
+                                ( "msg"
+                                , String "adder_version = {{ adder_version }}"
+                                )
+                            ]
+                        )
+                    }
+                )
+            }
+        ]
+    , handlers = []
+    }
+]
