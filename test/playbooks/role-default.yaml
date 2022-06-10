@@ -1,0 +1,11 @@
+- hosts: localhost
+  tasks:
+    - set_fact:
+        adder_commit: "v{{ version }}"
+      vars:
+        version: "42"
+    - include_role:
+        name: adder
+      vars:
+        x: 1
+        y: 2

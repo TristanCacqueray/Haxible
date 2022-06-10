@@ -17,8 +17,8 @@ playbook parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
       src = ""
   resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
-  resultsBackend0 <- playBackend0 playAttrs (taskAttrs) ([("answer", resultsLocalhost0 !! 0)] <> taskVars)
-  pure $ resultsLocalhost0 <> resultsBackend0
+  resultsLocalhost1 <- playLocalhost1 playAttrs (taskAttrs) ([("answer", resultsLocalhost0 !! 0)] <> taskVars)
+  pure $ resultsLocalhost0 <> resultsLocalhost1
 
 playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
@@ -28,11 +28,11 @@ playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
   assert0 <- runTask src playAttrs "assert" ([("assert", [json|{"that":["answer['msg'] == '42'"]}|])] <> taskAttrs) ([("answer", debug0)] <> taskVars)
   pure $ [debug0] <> [assert0]
 
-playBackend0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playBackend0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"backend"|])] <> parentPlayAttrs
+playLocalhost1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost1 parentPlayAttrs taskAttrs taskVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> parentPlayAttrs
       src = "test/playbooks"
-  resultsAdder0 <- roleAdder0 playAttrs (taskAttrs) ([("x", [json|"{{ answer['msg'] }}"|]), ("y", [json|"21"|])] <> taskVars)
+  resultsAdder0 <- roleAdder0 playAttrs (taskAttrs) ([("x", [json|"{{ answer['msg'] }}"|]), ("y", [json|"21"|]), ("adder_version", [json|"42 {{ adder_commit | default('HEAD') }}"|])] <> taskVars)
   debug1 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Over!"}|])] <> taskAttrs) (taskVars)
   pure $ resultsAdder0 <> [debug1]
 
@@ -40,7 +40,6 @@ roleAdder0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 roleAdder0 parentPlayAttrs taskAttrs taskVars = do
   let playAttrs = parentPlayAttrs
       src = "test/playbooks/roles/adder"
-  debugAddingNumbers0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Adding {{ x }} + {{ y }}"}|]), ("name", [json|"Adding numbers"|])] <> taskAttrs) (taskVars)
-  assertCheckingResults0 <- runTask src playAttrs "assert" ([("assert", [json|{"that":["x == '42' and y == '21'","add_result['msg'] == 'Adding 42 + 21'"]}|]), ("name", [json|"Checking results"|])] <> taskAttrs) ([("add_result", debugAddingNumbers0)] <> taskVars)
-  pure $ [debugAddingNumbers0] <> [assertCheckingResults0]
+  debugAddingNumbers0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Adding {{ x }} + {{ y }} with {{ adder_version }}"}|]), ("name", [json|"Adding numbers"|])] <> taskAttrs) (taskVars)
+  pure $ [debugAddingNumbers0]
 

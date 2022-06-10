@@ -1,1 +1,1 @@
-{}
+adder_version: "42 {{ adder_commit | default('HEAD') }}"

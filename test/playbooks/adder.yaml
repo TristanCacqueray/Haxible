@@ -9,7 +9,7 @@
         that:
           - "answer['msg'] == '42'"
 
-- hosts: backend
+- hosts: localhost
   gather_facts: no
   tasks:
     - name: Calling adder

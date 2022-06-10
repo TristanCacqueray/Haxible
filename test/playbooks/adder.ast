@@ -29,7 +29,7 @@
                 )
             }
         , Expr
-            { binder = Binder "resultsBackend0"
+            { binder = Binder "resultsLocalhost1"
             , requires =
                 [ Resource
                     { name = Binder "debug0"
@@ -50,7 +50,7 @@
             , taskAttrs = []
             , term = DefinitionCall
                 ( CallDefinition
-                    { name = "playBackend0"
+                    { name = "playLocalhost1"
                     , taskVars = []
                     }
                 )
@@ -168,7 +168,7 @@
     , handlers = []
     }
 , Definition
-    { name = "playBackend0"
+    { name = "playLocalhost1"
     , requires =
         [ Resource
             { name = Binder "debug0"
@@ -195,7 +195,7 @@
             )
         ,
             ( "hosts"
-            , String "backend"
+            , String "localhost"
             )
         ]
     , source = "test/playbooks"
@@ -225,6 +225,10 @@
                         ,
                             ( "y"
                             , String "21"
+                            )
+                        ,
+                            ( "adder_version"
+                            , String "42 {{ adder_commit | default('HEAD') }}"
                             )
                         ]
                     }
@@ -276,10 +280,6 @@
                         }
                     ]
                 )
-            ,
-                ( Binder "assertCheckingResults0"
-                , Right []
-                )
             ]
         }
     , playAttrs = []
@@ -316,49 +316,7 @@
                         ( fromList
                             [
                                 ( "msg"
-                                , String "Adding {{ x }} + {{ y }}"
-                                )
-                            ]
-                        )
-                    }
-                )
-            }
-        , Expr
-            { binder = Binder "assertCheckingResults0"
-            , requires =
-                [ Resource
-                    { name = Binder "debugAddingNumbers0"
-                    , dep = Register "add_result"
-                    }
-                ]
-            , provides = []
-            , outputs = Right []
-            , inputs =
-                [ Requirement
-                    { name = "add_result"
-                    , origin = Direct
-                        ( Binder "debugAddingNumbers0" )
-                    }
-                ]
-            , when_ = Nothing
-            , loop = Nothing
-            , taskAttrs =
-                [
-                    ( "name"
-                    , String "Checking results"
-                    )
-                ]
-            , term = ModuleCall
-                ( CallModule
-                    { module_ = "assert"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "that"
-                                , Array
-                                    [ String "x == '42' and y == '21'"
-                                    , String "add_result['msg'] == 'Adding 42 + 21'"
-                                    ]
+                                , String "Adding {{ x }} + {{ y }} with {{ adder_version }}"
                                 )
                             ]
                         )

@@ -10,7 +10,12 @@
         [ Expr
             { binder = Binder "resultsLocalhost0"
             , requires = []
-            , provides = []
+            , provides =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "adder_commit"
+                    }
+                ]
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
@@ -29,23 +34,25 @@
 , Definition
     { name = "playLocalhost0"
     , requires = []
-    , provides = []
+    , provides =
+        [ Resource
+            { name = Binder "facts0"
+            , dep = Register "adder_commit"
+            }
+        ]
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "debug0"
-                , Right []
+                ( Binder "facts0"
+                , Right
+                    [ Resource
+                        { name = Binder "facts0"
+                        , dep = Register "adder_commit"
+                        }
+                    ]
                 )
             ,
                 ( Binder "resultsAdder0"
-                , Right []
-                )
-            ,
-                ( Binder "debug1"
-                , Right []
-                )
-            ,
-                ( Binder "debug2"
                 , Right []
                 )
             ]
@@ -55,41 +62,36 @@
             ( "hosts"
             , String "localhost"
             )
-        ,
-            ( "vars"
-            , Object
-                ( fromList
-                    [
-                        ( "x"
-                        , String "42"
-                        )
-                    ,
-                        ( "y"
-                        , String "21"
-                        )
-                    ]
-                )
-            )
         ]
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "debug0"
+            { binder = Binder "facts0"
             , requires = []
-            , provides = []
-            , outputs = Right []
+            , provides =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "adder_commit"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "adder_commit"
+                    }
+                ]
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
             , term = ModuleCall
                 ( CallModule
-                    { module_ = "debug"
+                    { module_ = "set_fact"
                     , params = Object
                         ( fromList
                             [
-                                ( "msg"
-                                , String "a pre task"
+                                ( "adder_commit"
+                                , String "v{{ version }}"
                                 )
                             ]
                         )
@@ -98,10 +100,21 @@
             }
         , Expr
             { binder = Binder "resultsAdder0"
-            , requires = []
+            , requires =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "adder_commit"
+                    }
+                ]
             , provides = []
             , outputs = Right []
-            , inputs = []
+            , inputs =
+                [ Requirement
+                    { name = "adder_commit"
+                    , origin = Direct
+                        ( Binder "facts0" )
+                    }
+                ]
             , when_ = Nothing
             , loop = Nothing
             , taskAttrs = []
@@ -110,56 +123,18 @@
                     { name = "roleAdder0"
                     , taskVars =
                         [
+                            ( "x"
+                            , Number 1.0
+                            )
+                        ,
+                            ( "y"
+                            , Number 2.0
+                            )
+                        ,
                             ( "adder_version"
                             , String "42 {{ adder_commit | default('HEAD') }}"
                             )
                         ]
-                    }
-                )
-            }
-        , Expr
-            { binder = Binder "debug1"
-            , requires = []
-            , provides = []
-            , outputs = Right []
-            , inputs = []
-            , when_ = Nothing
-            , loop = Nothing
-            , taskAttrs = []
-            , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "a task"
-                                )
-                            ]
-                        )
-                    }
-                )
-            }
-        , Expr
-            { binder = Binder "debug2"
-            , requires = []
-            , provides = []
-            , outputs = Right []
-            , inputs = []
-            , when_ = Nothing
-            , loop = Nothing
-            , taskAttrs = []
-            , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "a post task"
-                                )
-                            ]
-                        )
                     }
                 )
             }

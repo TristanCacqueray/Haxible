@@ -10,7 +10,7 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/play.yaml" (playbook [] [] [])
+main = runHaxible "inventory.yaml" "test/playbooks/role-default.yaml" (playbook [] [] [])
 
 playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playbook parentPlayAttrs taskAttrs taskVars = do
@@ -21,13 +21,11 @@ playbook parentPlayAttrs taskAttrs taskVars = do
 
 playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|]), ("vars", [json|{"x":"42","y":"21"}|])] <> parentPlayAttrs
+  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
       src = "test/playbooks"
-  debug0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"a pre task"}|])] <> taskAttrs) (taskVars)
-  resultsAdder0 <- roleAdder0 playAttrs (taskAttrs) ([("adder_version", [json|"42 {{ adder_commit | default('HEAD') }}"|])] <> taskVars)
-  debug1 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"a task"}|])] <> taskAttrs) (taskVars)
-  debug2 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"a post task"}|])] <> taskAttrs) (taskVars)
-  pure $ [debug0] <> resultsAdder0 <> [debug1] <> [debug2]
+  facts0 <- extractFact <$> runTask src playAttrs "set_fact" ([("set_fact", [json|{"adder_commit":"v{{ version }}"}|])] <> taskAttrs) (taskVars)
+  resultsAdder0 <- roleAdder0 playAttrs (taskAttrs) ([("adder_commit", facts0)] <> [("x", [json|1|]), ("y", [json|2|]), ("adder_version", [json|"42 {{ adder_commit | default('HEAD') }}"|])] <> taskVars)
+  pure $ [facts0] <> resultsAdder0
 
 roleAdder0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
 roleAdder0 parentPlayAttrs taskAttrs taskVars = do

@@ -272,7 +272,8 @@ roleExpr task role = do
   roleDef <- normalizeDefinitionWithHandlers role.handlers role.rolePath name role.tasks
   modify (#definitions %~ (roleDef :))
 
-  expr <- callExpr task
+  -- Create a fake task value with role defaults so that requires are looked for in them
+  expr <- moduleExpr "" task Nothing (mkObj role.defaults)
   binder <- freshName "results" role.name
   pure $ expr {binder, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
   where
