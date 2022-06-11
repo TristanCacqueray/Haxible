@@ -10,27 +10,31 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/register-between-play.yaml" (playbook [] [] [])
+main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/register-between-play.yaml" expect (playbook [] [])
+  where expect = []
 
-playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playbook parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+playbook playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
-  resultsLocalhost1 <- playLocalhost1 playAttrs (taskAttrs) ([("r1", resultsLocalhost0 !! 0)] <> taskVars)
+  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
+  resultsLocalhost1 <- playLocalhost1 playAttrs  ([("r1", resultsLocalhost0 !! 0)] <> localVars)
   pure $ resultsLocalhost0 <> resultsLocalhost1
 
-playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  stat0 <- runTask src playAttrs "stat" ([("stat", [json|{"path":"/"}|])] <> taskAttrs) (taskVars)
+  stat0 <- runTask src playAttrs defaultVars "stat" ([("stat", [json|{"path":"/"}|])]) localVars
   pure $ [stat0]
 
-playLocalhost1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost1 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost1 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost1 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  debug0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"r1 is {{ r1 }}"}|])] <> taskAttrs) (taskVars)
+  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"r1 is {{ r1 }}"}|])]) localVars
   pure $ [debug0]
 

@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -24,13 +25,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -76,6 +76,10 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
@@ -91,6 +95,7 @@
                 )
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -111,6 +116,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -118,18 +124,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "set_fact"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "fact_var"
-                                , String "{{ play_var }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "set_fact"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "fact_var"
+                            , String "{{ play_var }}"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "factsExtraFact0"
@@ -160,6 +164,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -167,22 +172,20 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "set_fact"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "cacheable"
-                                , Bool True
-                                )
-                            ,
-                                ( "extra_var"
-                                , String "extra-{{ fact_var }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "set_fact"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "cacheable"
+                            , Bool True
+                            )
+                        ,
+                            ( "extra_var"
+                            , String "extra-{{ fact_var }}"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "debug0"
@@ -203,20 +206,19 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "var"
-                                , String "extra_var"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "var"
+                            , String "extra_var"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

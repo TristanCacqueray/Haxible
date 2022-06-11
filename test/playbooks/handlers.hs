@@ -10,21 +10,24 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/handlers.yaml" (playbook [] [] [])
+main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/handlers.yaml" expect (playbook [] [])
+  where expect = []
 
-playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playbook parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+playbook playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
+  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 playAttrs' localVars = do
+  let playAttrs = [("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  command0 <- runTask src playAttrs "command" ([("command", [json|"echo change config"|]), ("notify", [json|"Run Handler"|])] <> taskAttrs) (taskVars)
-  command1 <- runTask src playAttrs "command" ([("command", [json|"echo noop"|]), ("changed_when", [json|false|]), ("notify", [json|"Run Other Handler"|])] <> taskAttrs) ([("_fake_TestPlaybooks", command0)] <> taskVars)
+  command0 <- runTask src playAttrs defaultVars "command" ([("command", [json|"echo change config"|]), ("notify", [json|"Run Handler"|])]) localVars
+  command1 <- runTask src playAttrs defaultVars "command" ([("command", [json|"echo noop"|]), ("changed_when", [json|false|]), ("notify", [json|"Run Other Handler"|])]) ([("_fake_TestPlaybooks", command0)] <> localVars)
   let res = [command0] <> [command1]
   playLocalhost0Handlers playAttrs res
   pure res

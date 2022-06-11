@@ -10,39 +10,44 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/includer.yaml" (playbook [] [] [])
+main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/includer.yaml" expect (playbook [] [])
+  where expect = []
 
-playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playbook parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+playbook playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
+  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
   let loop_ = [[json|"Haxible"|], [json|"World"|]]
   let loopFun loop_item = do
-        tasksTasksGreetYaml0 playAttrs (taskAttrs) ([("item", loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> taskVars)
+        tasksTasksGreetYaml0 playAttrs  ([("item", loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> localVars)
   resultsTaskstasksgreetyaml00 <- traverseInclude loopFun loop_
-  debug0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}|])] <> taskAttrs) ([("included_result", resultsTaskstasksgreetyaml00 !! 0), ("nested_included_result", resultsTaskstasksgreetyaml00 !! 2)] <> taskVars)
+  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}|])]) ([("included_result", resultsTaskstasksgreetyaml00 !! 0), ("nested_included_result", resultsTaskstasksgreetyaml00 !! 2)] <> localVars)
   pure $ resultsTaskstasksgreetyaml00 <> [debug0]
 
-tasksTasksGreetYaml0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-tasksTasksGreetYaml0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+tasksTasksGreetYaml0 :: Vars -> Vars -> AnsibleHaxl [Value]
+tasksTasksGreetYaml0 playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = "test/playbooks/./tasks"
-  debugIncludedTask0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Hello {{ include_param }}"}|]), ("name", [json|"Included task"|])] <> taskAttrs) (taskVars)
-  resultsTasksothertasksyaml00 <- tasksOtherTasksYaml0 playAttrs (taskAttrs) (taskVars)
+  debugIncludedTask0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Hello {{ include_param }}"}|]), ("name", [json|"Included task"|])]) localVars
+  resultsTasksothertasksyaml00 <- tasksOtherTasksYaml0 playAttrs  localVars
   pure $ [debugIncludedTask0] <> resultsTasksothertasksyaml00
 
-tasksOtherTasksYaml0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-tasksOtherTasksYaml0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+tasksOtherTasksYaml0 :: Vars -> Vars -> AnsibleHaxl [Value]
+tasksOtherTasksYaml0 playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = "test/playbooks/./tasks/."
-  debugUnusedInclude0 <- runTask src playAttrs "debug" ([("debug", [json|null|]), ("name", [json|"Unused include"|])] <> taskAttrs) (taskVars)
-  debugNestedIncludedTask0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"Nested {{ include_param }}"}|]), ("name", [json|"Nested included task"|])] <> taskAttrs) (taskVars)
+  debugUnusedInclude0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|null|]), ("name", [json|"Unused include"|])]) localVars
+  debugNestedIncludedTask0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Nested {{ include_param }}"}|]), ("name", [json|"Nested included task"|])]) localVars
   pure $ [debugUnusedInclude0] <> [debugNestedIncludedTask0]
 

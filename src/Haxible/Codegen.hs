@@ -1,3 +1,4 @@
+-- | This module contains the logic to render the Haxl code.
 module Haxible.Codegen (renderScript) where
 
 import Data.Aeson (encode)
@@ -5,8 +6,8 @@ import Data.Text qualified as Text
 import Haxible.Normalize
 import Haxible.Prelude
 
-renderScript :: FilePath -> FilePath -> [Definition] -> Text
-renderScript inventory playPath defs =
+renderScript :: FilePath -> FilePath -> [Definition] -> [Value] -> Text
+renderScript inventory playPath defs expectedResults =
   Text.unlines $
     [ "#!/usr/bin/env cabal",
       "-- Generated with haxible",
@@ -18,20 +19,26 @@ renderScript inventory playPath defs =
       "module Main (main) where\n",
       "import Haxible.Eval\n",
       "main :: IO ()",
-      "main = runHaxible "
+      "main = Haxible.Eval.runHaxible "
         <> Text.unwords
           [ quote (from inventory),
             quote (from playPath),
-            "(playbook [] [] [])\n"
-          ]
+            "expect (playbook [] [])"
+          ],
+      "  where expect = " <> textList (embedJSON <$> expectedResults),
+      ""
     ]
       <> concatMap renderDefinition defs
 
 renderDefinition :: Definition -> [Text]
 renderDefinition def =
-  [ def.name <> " :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]",
-    def.name <> " parentPlayAttrs taskAttrs taskVars = do",
-    "  let playAttrs = " <> concatList [playAttrs, "parentPlayAttrs"],
+  [ def.name <> " :: Vars -> Vars -> AnsibleHaxl [Value]",
+    def.name <> " playAttrs' localVars = do",
+    -- The initial playbook does not have playAttrs (because it is a list of play),
+    -- Then each individual play adds its playAttrs to the list,
+    -- Finally every other definitions will use the playAttrs of the caller.
+    "  let playAttrs = " <> concatList [playAttrs, "playAttrs'"],
+    "      defaultVars = " <> textList (mkJsonArg <$> def.defaultVars),
     "      src = " <> quote (from def.source)
   ]
     <> (mappend "  " <$> concatMap renderExpr def.exprs)
@@ -41,6 +48,7 @@ renderDefinition def =
     handlersOrReturn = case def.handlers of
       [] -> ["  pure $ " <> outputList]
       xs ->
+        -- When there are handlers defined, call their definition with the list of results.
         [ "  let res = " <> outputList,
           "  " <> def.name <> "Handlers playAttrs res",
           "  pure res",
@@ -51,8 +59,8 @@ renderDefinition def =
     outputList = Text.intercalate " <> " (toOutput <$> def.exprs)
     toOutput expr = case expr.term of
       -- Module call produces a single value
-      ModuleCall _ -> "[" <> from expr.binder <> "]"
-      -- Otherwise we got a list of values
+      ModuleCall {} -> "[" <> from expr.binder <> "]"
+      -- Otherwise definitions provides a list of values
       _ -> from expr.binder
 
 renderHandlers :: Text -> [(Text, Text, Vars)] -> [Text]
@@ -62,6 +70,7 @@ renderHandlers name handlers =
   ]
     <> (mappend "  " <$> map renderHandler handlers)
   where
+    -- Call every handler with the result, the 'notifyHandler' runs the task when one of the result notifies it
     renderHandler (handler, action, taskAttrs) =
       Text.unwords
         ["notifyHandler playAttrs res", quote handler, quote action, textList (mkJsonArg <$> taskAttrs)]
@@ -79,19 +88,19 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
                 <> (mappend "      " <$> (whenBinder <> whenExpr callExpr))
             ],
           let traverser = case e.term of
-                ModuleCall _ -> "traverseLoop"
-                DefinitionCall _ -> "traverseInclude"
-                BlockRescueCall _ -> "traverseInclude"
+                ModuleCall {} -> "traverseLoop"
+                DefinitionCall {} -> "traverseInclude"
            in [traverser, "loopFun", "loop_"]
         )
       Nothing -> (whenBinder, whenExpr (factExtract <> callExpr))
 
-    whenExpr inner
-      | isJust e.when_ = [Text.unwords ["if when_ then", paren (Text.unwords inner), "else pure", skipResult]]
-      | otherwise = [Text.unwords inner]
+    whenExpr (Text.unwords -> inner)
+      | isJust e.when_ = [Text.unwords ["if when_ then", paren inner, "else pure", skipResult]]
+      | otherwise = [inner]
       where
+        -- A fake result list with one value for each expected result.
         skipResult = case e.term of
-          ModuleCall _ -> embedJSON skippedOutput
+          ModuleCall {} -> embedJSON skippedOutput
           _ -> textList (embedJSON <$> skipResults [] e.outputs)
         skipResults acc = \case
           Left (Environment xs) -> concatMap (skipResults acc . snd) xs
@@ -99,25 +108,27 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
         skippedOutput = [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
 
     -- Bind the when value
-    whenBinder = case e.when_ of
-      Just (Bool True) -> ["let when_ = True"]
-      Just (Bool False) -> ["let when_ = False"]
-      Just (String v) -> [Text.unwords ["when_", "<-", "extractWhen", "<$>", callDebug (toJinja v)]]
-      Just (Array v) -> [Text.unwords ["when_", "<-", "all extractWhen <$> sequence", textList (callDebug <$> (toJinjas <$> toList v))]]
-      Just v -> error $ "Expected a string for when, got: " <> unsafeFrom (encode v)
-      Nothing -> []
+    whenBinder =
+      Text.unwords <$> case e.when_ of
+        Just (Bool True) -> [["let when_ = True"]]
+        Just (Bool False) -> [["let when_ = False"]]
+        Just (String v) -> [["when_ <- extractWhen <$>", evalJinja (toJinja v)]]
+        -- If the value is a list, then we evaluate each expression and check they are all all True.
+        Just (Array v) -> [["when_ <- all extractWhen <$> sequence", textList (evalJinja <$> (toJinjas <$> toList v))]]
+        Just v -> error $ "Expected a string for when, got: " <> unsafeFrom (encode v)
+        Nothing -> []
       where
-        -- we resolve the when value with every vars
-        callDebug = debugCall e.inputs
+        evalJinja = debugCall e.inputs
 
     -- Bind the loop value
     loopBinder = \case
       Array xs -> ["let loop_ = " <> textList (embedJSON <$> toList xs)]
-      String v -> [Text.unwords ["loop_", "<-", "extractLoop", "<$>", callDebug v]]
+      String v -> [Text.unwords ["loop_", "<-", "extractLoop", "<$>", evalJinja v]]
       v -> error $ "Invalid loop expression: " <> unsafeFrom (encode v)
       where
         -- we resolve the loop value with every vars, but the loop var
-        callDebug = debugCall (filter (not . loopVar) e.inputs)
+        evalVars = filter (not . loopVar) e.inputs
+        evalJinja = debugCall evalVars
         loopVar req
           | req.origin == LoopVar = True
           | otherwise = False
@@ -128,27 +139,25 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
       | otherwise = []
       where
         extractFact = case e.term of
-          ModuleCall cm | cm.module_ == "set_fact" -> True
+          ModuleCall {module_} | module_ == "set_fact" -> True
           _ -> False
 
-    vars = paren (concatList [textReq e.inputs, "taskVars"])
-
     callExpr = case e.term of
-      ModuleCall CallModule {module_, params} ->
-        [ "runTask src playAttrs",
+      ModuleCall {module_, params} ->
+        [ "runTask src playAttrs defaultVars",
           quote module_,
-          paren (concatList [textList (mkJsonArg <$> [(module_, params)] <> e.taskAttrs), "taskAttrs"]),
-          vars
+          paren (textList (mkJsonArg <$> [(module_, params)] <> e.taskAttrs)),
+          paren (concatList [textReq e.inputs, "localVars"])
         ]
-      DefinitionCall CallDefinition {name, taskVars} ->
-        [name, "playAttrs"] <> callParams e.taskAttrs taskVars
-      BlockRescueCall CallDefinition {name, taskVars} ->
-        ["tryRescue", paren (name <> "Main playAttrs"), paren (name <> "Rescue playAttrs")]
-          <> callParams e.taskAttrs taskVars
+      DefinitionCall {defName, taskVars}
+        | not e.rescue -> [defName, "playAttrs"] <> callParams e.taskAttrs taskVars
+        | otherwise ->
+            ["tryRescue", paren (defName <> "Main playAttrs"), paren (defName <> "Rescue playAttrs")]
+              <> callParams e.taskAttrs taskVars
 
     callParams taskAttrs taskVars =
-      [ paren (concatList [textList (mkJsonArg <$> taskAttrs), "taskAttrs"]),
-        paren (concatList [textReq e.inputs, textList (mkJsonArg <$> taskVars), "taskVars"])
+      [ paren (concatList [textList (mkJsonArg <$> taskAttrs)]),
+        paren (concatList [textReq e.inputs, textList (mkJsonArg <$> taskVars), "localVars"])
       ]
 
 textReq :: [Requirement] -> Text
@@ -163,7 +172,7 @@ textReq xs = textList $ (\req -> "(" <> quote req.name <> ", " <> mkOrigin req.o
 debugCall :: [Requirement] -> Text -> Text
 debugCall reqs template =
   Text.unwords
-    [ "runTask \"\" playAttrs",
+    [ "runTask \"\" playAttrs defaultVars",
       quote "debug",
       textList
         ( mkJsonArg
@@ -171,7 +180,7 @@ debugCall reqs template =
                   ("debug", mkObj [("msg", String template)])
                 ]
         ),
-      paren (concatList [textReq reqs, "taskVars"])
+      paren (concatList [textReq reqs, "localVars"])
     ]
 
 toJinja :: Text -> Text
@@ -183,10 +192,12 @@ toJinjas = \case
   v -> error $ "Expected a string, got: " <> unsafeFrom (encode v)
 
 -- | Add parenthesis
--- >>> paren "toto"
--- "(toto)"
+-- >>> paren "to to"
+-- "(to to)"
 paren :: Text -> Text
-paren = Text.cons '(' . flip Text.snoc ')'
+paren v
+  | ' ' `Text.elem` v = Text.cons '(' (Text.snoc v ')')
+  | otherwise = v
 
 -- | Create json quasi quote
 -- >>> embedJSON Null

@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -24,13 +25,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -103,10 +103,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -168,18 +173,17 @@
                     , String "World"
                     ]
                 )
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "tasksTasksGreetYaml0"
-                    , taskVars =
-                        [
-                            ( "include_param"
-                            , String "{{ item }}"
-                            )
-                        ]
-                    }
-                )
+                { defName = "tasksTasksGreetYaml0"
+                , taskVars =
+                    [
+                        ( "include_param"
+                        , String "{{ item }}"
+                        )
+                    ]
+                }
             }
         , Expr
             { binder = Binder "debug0"
@@ -209,22 +213,21 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Result is {{ included_result }},
-                                  nested {{ nested_included_result}}
-                                  "
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Result is {{ included_result }},
+                              nested {{ nested_included_result}}
+                              "
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []
@@ -279,6 +282,7 @@
             ]
         }
     , playAttrs = []
+    , defaultVars = []
     , source = "test/playbooks/./tasks"
     , exprs =
         [ Expr
@@ -299,6 +303,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -306,18 +311,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Hello {{ include_param }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Hello {{ include_param }}"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "resultsTasksothertasksyaml00"
@@ -350,13 +353,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "tasksOtherTasksYaml0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "tasksOtherTasksYaml0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -397,6 +399,7 @@
             ]
         }
     , playAttrs = []
+    , defaultVars = []
     , source = "test/playbooks/./tasks/."
     , exprs =
         [ Expr
@@ -417,6 +420,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -424,11 +428,9 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Null
-                    }
-                )
+                { module_ = "debug"
+                , params = Null
+                }
             }
         , Expr
             { binder = Binder "debugNestedIncludedTask0"
@@ -448,6 +450,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -455,18 +458,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Nested {{ include_param }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Nested {{ include_param }}"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

@@ -10,34 +10,39 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/rescue.yaml" (playbook [] [] [])
+main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/rescue.yaml" expect (playbook [] [])
+  where expect = [[json|{"changed":false,"msg":"rescue task"}|], [json|{"block_result":{"changed":false,"msg":"rescue task"},"changed":false}|]]
 
-playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playbook parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+playbook playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
+  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  block0 <- tryRescue (block0Main playAttrs) (block0Rescue playAttrs) (taskAttrs) (taskVars)
-  debug0 <- runTask src playAttrs "debug" ([("debug", [json|{"var":"block_result"}|])] <> taskAttrs) ([("block_result", block0 !! 0)] <> taskVars)
+  block0 <- tryRescue (block0Main playAttrs) (block0Rescue playAttrs)  localVars
+  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"var":"block_result"}|])]) ([("block_result", block0 !! 0)] <> localVars)
   pure $ block0 <> [debug0]
 
-block0Rescue :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-block0Rescue parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+block0Rescue :: Vars -> Vars -> AnsibleHaxl [Value]
+block0Rescue playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  debugRescueTask0 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"rescue task"}|]), ("name", [json|"rescue task"|])] <> taskAttrs) (taskVars)
+  debugRescueTask0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"rescue task"}|]), ("name", [json|"rescue task"|])]) localVars
   pure $ [debugRescueTask0]
 
-block0Main :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-block0Main parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+block0Main :: Vars -> Vars -> AnsibleHaxl [Value]
+block0Main playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  commandBlockTask0 <- runTask src playAttrs "command" ([("command", [json|"exit 1"|]), ("name", [json|"block task"|])] <> taskAttrs) (taskVars)
+  commandBlockTask0 <- runTask src playAttrs defaultVars "command" ([("command", [json|"exit 1"|]), ("name", [json|"block task"|])]) localVars
   pure $ [commandBlockTask0]
 

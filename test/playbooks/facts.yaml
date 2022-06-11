@@ -1,4 +1,5 @@
 - hosts: localhost
+  gather_facts: no
   vars:
     play_var: "play-var"
   tasks:

@@ -10,19 +10,22 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/task-vars.yaml" (playbook [] [] [])
+main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/task-vars.yaml" expect (playbook [] [])
+  where expect = [[json|{"changed":false,"my_var":42}|]]
 
-playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playbook parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+playbook playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
+  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  debug0 <- runTask src playAttrs "debug" ([("debug", [json|{"var":"my_var"}|]), ("vars", [json|{"my_var":42}|])] <> taskAttrs) (taskVars)
+  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"var":"my_var"}|]), ("vars", [json|{"my_var":42}|])]) localVars
   pure $ [debug0]
 

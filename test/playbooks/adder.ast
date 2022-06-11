@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -20,13 +21,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         , Expr
             { binder = Binder "resultsLocalhost1"
@@ -47,13 +47,12 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost1"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost1"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -94,6 +93,7 @@
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -114,20 +114,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "42"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "42"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "assert0"
@@ -148,21 +147,20 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "assert"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "that"
-                                , Array
-                                    [ String "answer['msg'] == '42'" ]
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "assert"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "that"
+                            , Array
+                                [ String "answer['msg'] == '42'" ]
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []
@@ -198,6 +196,7 @@
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -213,26 +212,21 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "roleAdder0"
-                    , taskVars =
-                        [
-                            ( "x"
-                            , String "{{ answer['msg'] }}"
-                            )
-                        ,
-                            ( "y"
-                            , String "21"
-                            )
-                        ,
-                            ( "adder_version"
-                            , String "42 {{ adder_commit | default('HEAD') }}"
-                            )
-                        ]
-                    }
-                )
+                { defName = "roleAdder0"
+                , taskVars =
+                    [
+                        ( "x"
+                        , String "{{ answer['msg'] }}"
+                        )
+                    ,
+                        ( "y"
+                        , String "21"
+                        )
+                    ]
+                }
             }
         , Expr
             { binder = Binder "debug1"
@@ -242,20 +236,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Over!"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Over!"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []
@@ -283,6 +276,12 @@
             ]
         }
     , playAttrs = []
+    , defaultVars =
+        [
+            ( "adder_version"
+            , String "42 {{ adder_commit | default('HEAD') }}"
+            )
+        ]
     , source = "test/playbooks/roles/adder"
     , exprs =
         [ Expr
@@ -303,6 +302,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -310,18 +310,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Adding {{ x }} + {{ y }} with {{ adder_version }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Adding {{ x }} + {{ y }} with {{ adder_version }}"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

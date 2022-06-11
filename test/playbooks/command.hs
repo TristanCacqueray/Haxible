@@ -10,20 +10,23 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/command.yaml" (playbook [] [] [])
+main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/command.yaml" expect (playbook [] [])
+  where expect = []
 
-playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playbook parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+playbook playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
+  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 playAttrs' localVars = do
+  let playAttrs = [("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  command0 <- runTask src playAttrs "command" ([("command", [json|"echo 1"|])] <> taskAttrs) (taskVars)
-  command1 <- runTask src playAttrs "command" ([("command", [json|"echo 2"|])] <> taskAttrs) ([("_fake_TestPlaybooks", command0)] <> taskVars)
+  command0 <- runTask src playAttrs defaultVars "command" ([("command", [json|"echo 1"|])]) localVars
+  command1 <- runTask src playAttrs defaultVars "command" ([("command", [json|"echo 2"|])]) ([("_fake_TestPlaybooks", command0)] <> localVars)
   pure $ [command0] <> [command1]
 

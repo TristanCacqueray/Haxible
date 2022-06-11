@@ -4,8 +4,6 @@ module Haxible.Normalize
     Definition (..),
     Expr (..),
     Term (..),
-    CallModule (..),
-    CallDefinition (..),
     Origin (..),
     Requirement (..),
     Environment (..),
@@ -30,6 +28,9 @@ data Definition = Definition
     provides :: [Resource],
     outputs :: Environment,
     playAttrs :: Vars,
+    -- | roles defaults vars, that are added to the lowest priority
+    defaultVars :: Vars,
+    -- | The location of the tasks, to enable loading adjacent python module in a `library` folder.
     source :: FilePath,
     exprs :: [Expr],
     handlers :: [(Text, Text, Vars)]
@@ -38,7 +39,7 @@ data Definition = Definition
 
 emptyDefinition :: Text -> FilePath -> Definition
 emptyDefinition name source =
-  Definition {name, requires = [], provides = [], outputs = Environment [], playAttrs = [], exprs = [], handlers = [], source}
+  Definition {name, requires = [], provides = [], outputs = Environment [], playAttrs = [], defaultVars = [], exprs = [], handlers = [], source}
 
 -- | An expression is a single instruction.
 data Expr = Expr
@@ -49,6 +50,7 @@ data Expr = Expr
     inputs :: [Requirement],
     when_ :: Maybe Value,
     loop :: Maybe Value,
+    rescue :: Bool,
     taskAttrs :: Vars,
     term :: Term
   }
@@ -56,15 +58,8 @@ data Expr = Expr
 
 -- | A term is the expression value.
 data Term
-  = ModuleCall CallModule
-  | DefinitionCall CallDefinition
-  | BlockRescueCall CallDefinition
-  deriving (Show, Eq)
-
-data CallModule = CallModule {module_ :: Text, params :: Value}
-  deriving (Show, Eq)
-
-data CallDefinition = CallDefinition {name :: Text, taskVars :: Vars}
+  = ModuleCall {module_ :: Text, params :: Value}
+  | DefinitionCall {defName :: Text, taskVars :: Vars}
   deriving (Show, Eq)
 
 -- | A resource is a global object such as a registered result or a file path.
@@ -149,9 +144,12 @@ solveInputs defs = map updateCallEnv defs
     setCallEnv (acc, (avail, nested)) expr = (newExpr : acc, (newAvail, newNested))
       where
         (newAvail, newNested) = case expr.term of
-          ModuleCall _ -> ((expr.binder, expr.provides) : avail, nested)
-          DefinitionCall dc -> (avail, (expr.binder, getOutputs dc.name) : nested)
-          BlockRescueCall rc -> (avail, (expr.binder, getOutputs (rc.name <> "Rescue")) : nested)
+          ModuleCall {} -> ((expr.binder, expr.provides) : avail, nested)
+          DefinitionCall {defName} ->
+            let name
+                  | not expr.rescue = defName
+                  | otherwise = defName <> "Rescue"
+             in (avail, (expr.binder, getOutputs name) : nested)
         newExpr = expr {inputs = expr.inputs <> directRequirement <> nestedRequirement}
 
         reMatch :: [Resource] -> Bool
@@ -254,11 +252,12 @@ moduleExpr taskPath task template value = do
   modify (\env -> env {availables = provides <> availables})
 
   -- Create the expr
-  let term = ModuleCall CallModule {module_ = task.module_, params = value}
+  let term = ModuleCall {module_ = task.module_, params = value}
       inputs = []
       outputs = Right provides
-  pure $ Expr {binder, requires, provides, outputs, inputs, loop = Nothing, term, taskAttrs, when_}
+  pure $ Expr {binder, requires, provides, outputs, inputs, loop = Nothing, term, taskAttrs, when_, rescue}
   where
+    rescue = False
     when_ = lookup "when" task.attrs
     destPath = Path <$> (getAttr "path" <|> getAttr "dest")
     register = Register <$> (preview _String =<< lookup "register" task.attrs)
@@ -278,29 +277,29 @@ getPropagableAttrs = filter (`elemFst` ("name" : propagableAttrs))
 roleExpr :: Task -> RoleValue -> State Env Expr
 roleExpr task role = do
   when (isJust $ lookup "register" task.attrs) (error "Register include_role is not supported")
-  Binder name <- freshName "role" role.name
-  roleDef <- normalizeDefinitionWithHandlers role.handlers role.rolePath name role.tasks
-  modify (#definitions %~ (roleDef :))
+  Binder defName <- freshName "role" role.name
+  roleDef <- normalizeDefinitionWithHandlers role.handlers role.rolePath defName role.tasks
+  modify (#definitions %~ (roleDef {defaultVars = role.defaults} :))
 
   -- Create a fake task value with role defaults so that requires are looked for in them
   expr <- moduleExpr "" task Nothing (mkObj role.defaults)
   binder <- freshName "results" role.name
-  pure $ expr {binder, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
+  pure $ expr {binder, taskAttrs, term = DefinitionCall {defName, taskVars}}
   where
     taskAttrs = getTaskAttrs task
-    taskVars = getTaskVars task <> role.defaults
+    taskVars = getTaskVars task
 
 tasksExpr :: FilePath -> Task -> Text -> [Task] -> State Env Expr
 tasksExpr tasksPath task includeName tasks = do
   when (isJust $ lookup "register" task.attrs) (error "Register include_tasks is not supported")
-  Binder name <- freshName "tasks" includeName
-  tasksDef <- normalizeDefinition tasksPath name tasks
+  Binder defName <- freshName "tasks" includeName
+  tasksDef <- normalizeDefinition tasksPath defName tasks
   modify (#definitions %~ (tasksDef :))
 
   expr <- callExpr task
-  binder <- freshName "results" name
+  binder <- freshName "results" defName
   let outputs = Left tasksDef.outputs
-  pure $ expr {binder, outputs, taskAttrs, term = DefinitionCall CallDefinition {name, taskVars}}
+  pure $ expr {binder, outputs, taskAttrs, term = DefinitionCall {defName, taskVars}}
   where
     taskVars = getTaskVars task
     taskAttrs = getTaskAttrs task
@@ -316,14 +315,15 @@ factsExpr task cacheable name value = do
       outputs = Right provides
       params = mkObj $ [(name, value)] <> maybe [] (\v -> [("cacheable", v)]) cacheable
       taskAttrs = (filter ((==) "vars" . fst) task.attrs) <> getPropagableAttrs task.attrs
-      term = ModuleCall CallModule {module_ = "set_fact", params}
+      term = ModuleCall {module_ = "set_fact", params}
       loop = Nothing
+      rescue = False
       inputs = []
       when_ = lookup "when" task.attrs
   modify (\env -> env {availables = resource : availables})
   -- expr <- moduleExpr task value
   when (isJust (lookup "loop" task.attrs)) $ error "set_fact loop is not supported"
-  pure $ Expr {binder, requires, provides, outputs, inputs, loop, term, taskAttrs, when_}
+  pure $ Expr {binder, requires, provides, outputs, inputs, loop, term, taskAttrs, when_, rescue}
 
 includeVarsExpr :: FilePath -> Task -> Value -> State Env Expr
 includeVarsExpr taskPath task value = do
@@ -338,7 +338,7 @@ includeVarsExpr taskPath task value = do
   modify (\env -> env {availables = resource : env.availables})
   pure $ expr {binder, provides, outputs, term}
   where
-    term = ModuleCall (CallModule "include_vars" value)
+    term = ModuleCall {module_ = "include_vars", params = value}
     dep = case preview (key "name" . _String) value of
       -- If the include_vars has a name attribute, then it's just a regular register
       Just n -> Register n
@@ -348,24 +348,24 @@ includeVarsExpr taskPath task value = do
 blockExpr :: FilePath -> Task -> BlockValue -> State Env Expr
 blockExpr parentPath task block = do
   binder <- freshName "block" (fromMaybe "" task.name)
-  let name = from binder
+  let defName = from binder
 
-  (outs, dc) <- case block.rescues of
+  (outs, rescue) <- case block.rescues of
     [] -> do
-      blockDef <- normalizeDefinition parentPath name block.tasks
+      blockDef <- normalizeDefinition parentPath defName block.tasks
       modify (#definitions %~ (blockDef :))
-      pure (blockDef.outputs, DefinitionCall)
+      pure (blockDef.outputs, False)
     _ -> do
-      blockDef <- normalizeDefinition parentPath (name <> "Main") block.tasks
-      rescueDef <- normalizeDefinition parentPath (name <> "Rescue") block.rescues
+      blockDef <- normalizeDefinition parentPath (defName <> "Main") block.tasks
+      rescueDef <- normalizeDefinition parentPath (defName <> "Rescue") block.rescues
       modify (#definitions %~ ([rescueDef, blockDef] <>))
-      pure (rescueDef.outputs, BlockRescueCall)
+      pure (rescueDef.outputs, True)
 
   expr <- callExpr task
   let outputs = Left outs
       taskVars = getTaskVars task
       taskAttrs = getTaskAttrs task
-  pure $ expr {binder, outputs, taskAttrs, term = dc CallDefinition {name, taskVars}}
+  pure $ expr {binder, outputs, taskAttrs, rescue, term = DefinitionCall {defName, taskVars}}
 
 normalizeTask :: FilePath -> Task -> State Env [Expr]
 normalizeTask taskPath task = do
@@ -396,7 +396,7 @@ normalizeDefinitionWithHandlers handlersTask source name tasks = do
       requires = nub $ filter (`notElem` provides) $ concatMap (.requires) exprs
       outputs = Environment $ (\e -> (e.binder, e.outputs)) <$> exprs
       handlers = mkHandlers <$> handlersTask
-  pure $ Definition {name, exprs, handlers, requires, provides, outputs, playAttrs = [], source}
+  pure $ Definition {name, exprs, handlers, requires, provides, outputs, playAttrs = [], defaultVars = [], source}
   where
     mkHandlers task = case task.params of
       Handler n v -> (n, task.module_, [(task.module_, v)] <> filter ((/=) "listen" . fst) task.attrs)
@@ -443,10 +443,11 @@ normalizePlaybook plays =
   where
     topLevelCall (play, def) = do
       binder <- freshName "results" (playName play)
-      let term = DefinitionCall CallDefinition {name = def.name, taskVars = []}
+      let term = DefinitionCall {defName = def.name, taskVars = []}
           outputs = Right []
           when_ = Nothing
           taskAttrs = []
-      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, inputs = [], loop = Nothing, term, taskAttrs, when_}
+          rescue = False
+      pure $ Expr {binder, requires = def.requires, provides = def.provides, outputs, inputs = [], loop = Nothing, term, taskAttrs, when_, rescue}
     topLevel :: [Expr] -> Definition
     topLevel exprs = (emptyDefinition "playbook" "") {exprs}

@@ -36,7 +36,7 @@ common common-options
     ViewPatterns
   ghc-options:
     -Wall -Wpartial-fields -Wincomplete-uni-patterns
-    -Wincomplete-record-updates -Wunused-packages
+    -Wincomplete-record-updates -Wno-partial-fields
 
 library
   import:          common-options
@@ -100,6 +100,7 @@ test-suite haxible-test
     , pretty-simple
     , tasty
     , tasty-golden
+    , tasty-hunit
     , text
 
   ghc-options:    -threaded -rtsopts -with-rtsopts=-N

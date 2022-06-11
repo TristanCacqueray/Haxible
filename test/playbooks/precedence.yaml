@@ -1,0 +1,53 @@
+# This playbook demonstrates precedence rules,
+# every tasks outputs `priority`
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - include_role: {name: "print"}
+
+- hosts: localhost
+  gather_facts: no
+  # Play vars takes priority over role defaults
+  vars: {print_arg: "priority"}
+  tasks:
+    - include_role: {name: "print"}
+
+- hosts: localhost
+  gather_facts: no
+  vars: {print_arg: "shadow"}
+  tasks:
+    - include_role: {name: "print"}
+      # Task vars takes priority over play vars
+      vars: {print_arg: "priority"}
+
+- hosts: localhost
+  gather_facts: no
+  vars: {print_arg: "shadow"}
+  tasks:
+    - block:
+        - include_role: {name: "print"}
+      # Block vars takes priority over play vars
+      vars: {print_arg: "priority"}
+
+- hosts: localhost
+  gather_facts: no
+  vars: {print_arg: "shadow"}
+  tasks:
+    - block:
+        - include_role: {name: "print"}
+          # Task vars takes priority over play/block vars
+          vars: {print_arg: "priority"}
+      vars: {print_arg: "shadow"}
+
+
+- hosts: localhost
+  gather_facts: no
+  vars: {print_arg: "shadow"}
+  tasks:
+    - block:
+      - block:
+        - include_role: {name: "print"}
+          # Task vars takes priority over play/block vars
+          vars: {print_arg: "priority"}
+        vars: {print_arg: "shadow"}
+      vars: {print_arg: "shadow"}

@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -24,13 +25,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -88,10 +88,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -112,6 +117,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -119,18 +125,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "create_network"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "name"
-                                , String "private"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "create_network"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "private"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "create_instanceCreateInstances0"
@@ -161,6 +165,7 @@
                     , String "monitoring"
                     ]
                 )
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -168,22 +173,20 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "create_instance"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "name"
-                                , String "{{ item }}"
-                                )
-                            ,
-                                ( "network"
-                                , String "{{ network.uid }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "create_instance"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "{{ item }}"
+                            )
+                        ,
+                            ( "network"
+                            , String "{{ network.uid }}"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "create_volumeCreateStorage0"
@@ -203,6 +206,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -210,18 +214,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "create_volume"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "name"
-                                , String "db"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "create_volume"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "db"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "create_instanceCreateDatabase0"
@@ -251,6 +253,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -258,26 +261,24 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "create_instance"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "name"
-                                , String "database"
-                                )
-                            ,
-                                ( "network"
-                                , String "{{ network.uid }}"
-                                )
-                            ,
-                                ( "volume"
-                                , String "{{ storage.uid }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "create_instance"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "database"
+                            )
+                        ,
+                            ( "network"
+                            , String "{{ network.uid }}"
+                            )
+                        ,
+                            ( "volume"
+                            , String "{{ storage.uid }}"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "create_objectCreateObject0"
@@ -287,6 +288,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -294,18 +296,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "create_object"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "name"
-                                , String "standalone-object"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "create_object"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "standalone-object"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "create_objectCreateNetworkObject0"
@@ -326,6 +326,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -333,18 +334,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "create_object"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "name"
-                                , String "network-{{ network.uid }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "create_object"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "name"
+                            , String "network-{{ network.uid }}"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

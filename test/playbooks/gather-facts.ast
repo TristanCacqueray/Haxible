@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -15,13 +16,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playAll0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playAll0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -44,6 +44,7 @@
             , String "all"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -54,13 +55,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = String "var=ansible_processor_cores"
-                    }
-                )
+                { module_ = "debug"
+                , params = String "var=ansible_processor_cores"
+                }
             }
         ]
     , handlers = []

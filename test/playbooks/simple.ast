@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -28,13 +29,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         , Expr
             { binder = Binder "resultsZuulExecutor0"
@@ -57,13 +57,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playZuulExecutor0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playZuulExecutor0"
+                , taskVars = []
+                }
             }
         , Expr
             { binder = Binder "resultsNodepoolLauncher0"
@@ -82,13 +81,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playNodepoolLauncher0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playNodepoolLauncher0"
+                , taskVars = []
+                }
             }
         , Expr
             { binder = Binder "resultsLocalhost1"
@@ -109,13 +107,12 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost1"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost1"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -165,10 +162,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -197,20 +199,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "stat"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "path"
-                                , String "/etc"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "stat"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "path"
+                            , String "/etc"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "command0"
@@ -246,13 +247,12 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "command"
-                    , params = String "echo etc exist: {{ etc.stat.exists }}"
-                    }
-                )
+                { module_ = "command"
+                , params = String "echo etc exist: {{ etc.stat.exists }}"
+                }
             }
         ]
     , handlers = []
@@ -302,10 +302,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "zuul_executor"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -334,24 +339,23 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "file"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "path"
-                                , String "/tmp/zuul"
-                                )
-                            ,
-                                ( "state"
-                                , String "directory"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "file"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "path"
+                            , String "/tmp/zuul"
+                            )
+                        ,
+                            ( "state"
+                            , String "directory"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "command1"
@@ -387,13 +391,12 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "command"
-                    , params = String "echo Starting executor -d /tmp/zuul"
-                    }
-                )
+                { module_ = "command"
+                , params = String "echo Starting executor -d /tmp/zuul"
+                }
             }
         ]
     , handlers = []
@@ -439,10 +442,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "nodepool_launcher"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -463,24 +471,23 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "file"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "path"
-                                , String "/tmp/nodepool"
-                                )
-                            ,
-                                ( "state"
-                                , String "directory"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "file"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "path"
+                            , String "/tmp/nodepool"
+                            )
+                        ,
+                            ( "state"
+                            , String "directory"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "command2"
@@ -511,13 +518,12 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "command"
-                    , params = String "echo Starting scheduler -d /tmp/nodepool"
-                    }
-                )
+                { module_ = "command"
+                , params = String "echo Starting scheduler -d /tmp/nodepool"
+                }
             }
         , Expr
             { binder = Binder "debug0"
@@ -527,13 +533,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Null
-                    }
-                )
+                { module_ = "debug"
+                , params = Null
+                }
             }
         ]
     , handlers = []
@@ -557,10 +562,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -576,20 +586,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "etc stats is {{ etc }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "etc stats is {{ etc }}"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

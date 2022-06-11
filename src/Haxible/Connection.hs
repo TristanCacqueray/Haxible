@@ -30,9 +30,7 @@ data TaskCall = TaskCall
     -- | The module name for debug purpose, it is more convenient to access than reading it from the moduleObject.
     module_ :: Text,
     -- | The task attributes
-    taskAttrs :: Vars,
-    -- | Extra task vars, e.g. role defaults
-    taskVars :: Vars
+    taskAttrs :: Vars
   }
   deriving (Eq, Show, Typeable, Generic, Hashable)
 
@@ -108,7 +106,7 @@ withConnections count inventory playPath callback =
               | otherwise -> pure (factsCache, Nothing)
             where
               gatherFacts = do
-                let getFactsCall = TaskCall "" playAttrs "gather_facts" [("ansible.builtin.gather_facts", Null)] []
+                let getFactsCall = TaskCall "" playAttrs "gather_facts" [("ansible.builtin.gather_facts", Null)]
                 res <- runTask' getFactsCall p Nothing
                 case res of
                   (0, v) ->
@@ -131,7 +129,6 @@ withConnections count inventory playPath callback =
                   [ String (from taskCall.taskPath),
                     mkObj taskCall.playAttrs,
                     mkObj taskCall.taskAttrs,
-                    mkObj taskCall.taskVars,
                     fromMaybe (Object mempty) playFacts
                   ]
             pid <- fromMaybe (error "no pid?!") <$> getPid (unsafeProcessHandle p)

@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -24,13 +25,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -76,6 +76,7 @@
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -96,6 +97,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "notify"
@@ -103,11 +105,9 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "command"
-                    , params = String "echo change config"
-                    }
-                )
+                { module_ = "command"
+                , params = String "echo change config"
+                }
             }
         , Expr
             { binder = Binder "command1"
@@ -138,6 +138,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "changed_when"
@@ -149,11 +150,9 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "command"
-                    , params = String "echo noop"
-                    }
-                )
+                { module_ = "command"
+                , params = String "echo noop"
+                }
             }
         ]
     , handlers =

@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -20,13 +21,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -63,6 +63,10 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
@@ -82,6 +86,7 @@
                 )
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -113,6 +118,7 @@
                     , String "C"
                     ]
                 )
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -120,18 +126,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "loop {{ item }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "loop {{ item }}"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "debugLoopVar0"
@@ -147,6 +151,7 @@
             , when_ = Nothing
             , loop = Just
                 ( String "{{ xs }}" )
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -154,18 +159,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "loop control {{ lvar }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "loop control {{ lvar }}"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "debug0"
@@ -186,20 +189,19 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "loop result is {{ loop_res }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "loop result is {{ loop_res }}"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

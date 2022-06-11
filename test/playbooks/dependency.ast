@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -28,13 +29,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -108,6 +108,7 @@
                 )
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -128,6 +129,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -135,18 +137,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Installing podman"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Installing podman"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "debugStartService0"
@@ -167,6 +167,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "vars"
@@ -185,18 +186,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Running podman run -it --rm quay.io/software-factory/ci-log-processor"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Running podman run -it --rm quay.io/software-factory/ci-log-processor"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "fileCreateInfoDirectory0"
@@ -216,6 +215,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -223,22 +223,20 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "file"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "path"
-                                , String "{{ info_dir }}"
-                                )
-                            ,
-                                ( "state"
-                                , String "directory"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "file"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "path"
+                            , String "{{ info_dir }}"
+                            )
+                        ,
+                            ( "state"
+                            , String "directory"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "copyCopyInfoLog0"
@@ -269,6 +267,7 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -276,22 +275,20 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "copy"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "content"
-                                , String "Log"
-                                )
-                            ,
-                                ( "dest"
-                                , String "{{ info_dir }}/log"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "copy"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "content"
+                            , String "Log"
+                            )
+                        ,
+                            ( "dest"
+                            , String "{{ info_dir }}/log"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

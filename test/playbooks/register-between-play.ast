@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -24,13 +25,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         , Expr
             { binder = Binder "resultsLocalhost1"
@@ -51,13 +51,12 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost1"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost1"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -94,10 +93,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -126,20 +130,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "stat"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "path"
-                                , String "/"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "stat"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "path"
+                            , String "/"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []
@@ -163,10 +166,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -182,20 +190,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "r1 is {{ r1 }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "r1 is {{ r1 }}"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

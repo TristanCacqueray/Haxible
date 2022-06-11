@@ -1,4 +1,5 @@
 - hosts: localhost
+  gather_facts: no
   tasks:
     - stat:
         path: /etc
@@ -7,6 +8,7 @@
     - command: "echo etc exist: {{ etc.stat.exists }}"
 
 - hosts: zuul_executor
+  gather_facts: no
   tasks:
     - file:
         path: /tmp/zuul
@@ -15,6 +17,7 @@
     - command: "echo Starting executor -d /tmp/zuul"
 
 - hosts: nodepool_launcher
+  gather_facts: no
   tasks:
     - file:
         path: /tmp/nodepool
@@ -23,6 +26,7 @@
     - debug:
 
 - hosts: localhost
+  gather_facts: no
   tasks:
     - debug:
         msg: "etc stats is {{ etc }}"

@@ -76,9 +76,9 @@ class TaskRunner:
         self.strategy = strategy_loader.get("linear", self.tqm)
 
     def run(self, playbook, facts=None):
-        loggy(f"Running {playbook}")
+        loggy(f"Running {json.dumps(playbook)}")
         for (host, host_facts) in (facts.items() if facts else []):
-            self.variable_manager.set_host_facts(host, host_facts)
+            self.variable_manager.set_host_facts(host, host_facts["ansible_facts"])
         # Host facts must be gathered manually using the ansible.builtin.gather_facts module
         playbook["gather_facts"] = False
         play = Play().load(playbook)
@@ -154,13 +154,8 @@ def main():
     def run_task(inputs):
         # The Haxl DataSource provides the play without tasks, the task to run
         # and extra environment vars for the play.
-        [path, play, task, taskVars, facts] = inputs
+        [path, play, task, facts] = inputs
         add_library_path(path)
-
-        # Prepare the final play structure.
-        if taskVars:
-            play.setdefault("vars", {})
-            play["vars"].update(taskVars)
         play["tasks"] = [task]
         # Call ansible-playbook
         result = runner.run(play.copy(), facts)

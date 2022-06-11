@@ -5,6 +5,7 @@ module Haxible.Prelude
     json,
     Vars,
     mkObj,
+    mkKeyMap,
     quote,
     Text,
     LByteString,
@@ -14,6 +15,7 @@ module Haxible.Prelude
     Data.Aeson.fromJSON,
     Data.Bifunctor.first,
     Data.List.nub,
+    Data.List.sort,
     Data.List.sortOn,
     Data.List.partition,
     GHC.Generics.Generic,
@@ -69,8 +71,15 @@ type LByteString = Data.ByteString.Lazy.ByteString
 
 type Vars = [(Text, Data.Aeson.Value)]
 
-mkObj :: [(Text, Data.Aeson.Value)] -> Data.Aeson.Value
-mkObj = Data.Aeson.Object . Data.Aeson.KeyMap.fromList . map (Data.Bifunctor.first Data.Aeson.Key.fromText)
+-- | Create a key map with left priority
+--
+-- >>> mkKeyMap [("a", [aesonQQ|true|]), ("a", [aesonQQ|false|])]
+-- fromList [("a",Bool True)]
+mkKeyMap :: Vars -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Value
+mkKeyMap = Data.Aeson.KeyMap.fromList . map (Data.Bifunctor.first Data.Aeson.Key.fromText) . reverse
+
+mkObj :: Vars -> Data.Aeson.Value
+mkObj = Data.Aeson.Object . mkKeyMap
 
 quote :: Text -> Text
 quote = Text.cons '"' . flip Text.snoc '"'

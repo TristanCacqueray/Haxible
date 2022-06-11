@@ -1,10 +1,12 @@
 - hosts: localhost
+  gather_facts: no
   tasks:
     - stat:
         path: /
       register: r1
 
 - hosts: localhost
+  gather_facts: no
   tasks:
     - debug:
         msg: "r1 is {{ r1 }}"

@@ -10,47 +10,53 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/simple.yaml" (playbook [] [] [])
+main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/simple.yaml" expect (playbook [] [])
+  where expect = []
 
-playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playbook parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+playbook playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
-  resultsZuulExecutor0 <- playZuulExecutor0 playAttrs (taskAttrs) (taskVars)
-  resultsNodepoolLauncher0 <- playNodepoolLauncher0 playAttrs (taskAttrs) (taskVars)
-  resultsLocalhost1 <- playLocalhost1 playAttrs (taskAttrs) ([("etc", resultsLocalhost0 !! 0)] <> taskVars)
+  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
+  resultsZuulExecutor0 <- playZuulExecutor0 playAttrs  localVars
+  resultsNodepoolLauncher0 <- playNodepoolLauncher0 playAttrs  localVars
+  resultsLocalhost1 <- playLocalhost1 playAttrs  ([("etc", resultsLocalhost0 !! 0)] <> localVars)
   pure $ resultsLocalhost0 <> resultsZuulExecutor0 <> resultsNodepoolLauncher0 <> resultsLocalhost1
 
-playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  stat0 <- runTask src playAttrs "stat" ([("stat", [json|{"path":"/etc"}|])] <> taskAttrs) (taskVars)
-  command0 <- runTask src playAttrs "command" ([("command", [json|"echo etc exist: {{ etc.stat.exists }}"|])] <> taskAttrs) ([("etc", stat0), ("_fake_Etc", stat0)] <> taskVars)
+  stat0 <- runTask src playAttrs defaultVars "stat" ([("stat", [json|{"path":"/etc"}|])]) localVars
+  command0 <- runTask src playAttrs defaultVars "command" ([("command", [json|"echo etc exist: {{ etc.stat.exists }}"|])]) ([("etc", stat0), ("_fake_Etc", stat0)] <> localVars)
   pure $ [stat0] <> [command0]
 
-playZuulExecutor0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playZuulExecutor0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"zuul_executor"|])] <> parentPlayAttrs
+playZuulExecutor0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playZuulExecutor0 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"zuul_executor"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  file0 <- runTask src playAttrs "file" ([("file", [json|{"path":"/tmp/zuul","state":"directory"}|])] <> taskAttrs) (taskVars)
-  command1 <- runTask src playAttrs "command" ([("command", [json|"echo Starting executor -d /tmp/zuul"|])] <> taskAttrs) ([("zuuldir", file0), ("_fake_TmpZuul", file0)] <> taskVars)
+  file0 <- runTask src playAttrs defaultVars "file" ([("file", [json|{"path":"/tmp/zuul","state":"directory"}|])]) localVars
+  command1 <- runTask src playAttrs defaultVars "command" ([("command", [json|"echo Starting executor -d /tmp/zuul"|])]) ([("zuuldir", file0), ("_fake_TmpZuul", file0)] <> localVars)
   pure $ [file0] <> [command1]
 
-playNodepoolLauncher0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playNodepoolLauncher0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"nodepool_launcher"|])] <> parentPlayAttrs
+playNodepoolLauncher0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playNodepoolLauncher0 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"nodepool_launcher"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  file1 <- runTask src playAttrs "file" ([("file", [json|{"path":"/tmp/nodepool","state":"directory"}|])] <> taskAttrs) (taskVars)
-  command2 <- runTask src playAttrs "command" ([("command", [json|"echo Starting scheduler -d /tmp/nodepool"|])] <> taskAttrs) ([("_fake_TmpNodepool", file1)] <> taskVars)
-  debug0 <- runTask src playAttrs "debug" ([("debug", [json|null|])] <> taskAttrs) (taskVars)
+  file1 <- runTask src playAttrs defaultVars "file" ([("file", [json|{"path":"/tmp/nodepool","state":"directory"}|])]) localVars
+  command2 <- runTask src playAttrs defaultVars "command" ([("command", [json|"echo Starting scheduler -d /tmp/nodepool"|])]) ([("_fake_TmpNodepool", file1)] <> localVars)
+  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|null|])]) localVars
   pure $ [file1] <> [command2] <> [debug0]
 
-playLocalhost1 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost1 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost1 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost1 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  debug1 <- runTask src playAttrs "debug" ([("debug", [json|{"msg":"etc stats is {{ etc }}"}|])] <> taskAttrs) (taskVars)
+  debug1 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"etc stats is {{ etc }}"}|])]) localVars
   pure $ [debug1]
 

@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -24,13 +25,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -76,10 +76,15 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -104,13 +109,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = True
             , taskAttrs = []
-            , term = BlockRescueCall
-                ( CallDefinition
-                    { name = "block0"
-                    , taskVars = []
-                    }
-                )
+            , term = DefinitionCall
+                { defName = "block0"
+                , taskVars = []
+                }
             }
         , Expr
             { binder = Binder "debug0"
@@ -135,20 +139,19 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "var"
-                                , String "block_result"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "var"
+                            , String "block_result"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []
@@ -176,6 +179,7 @@
             ]
         }
     , playAttrs = []
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -196,6 +200,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -203,18 +208,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "rescue task"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "rescue task"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []
@@ -250,6 +253,7 @@
             ]
         }
     , playAttrs = []
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -278,6 +282,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -285,11 +290,9 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "command"
-                    , params = String "exit 1"
-                    }
-                )
+                { module_ = "command"
+                , params = String "exit 1"
+                }
             }
         ]
     , handlers = []

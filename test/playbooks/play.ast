@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -15,13 +16,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -52,6 +52,10 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
@@ -71,6 +75,7 @@
                 )
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -81,20 +86,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "a pre task"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "a pre task"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "resultsAdder0"
@@ -104,18 +108,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "roleAdder0"
-                    , taskVars =
-                        [
-                            ( "adder_version"
-                            , String "42 {{ adder_commit | default('HEAD') }}"
-                            )
-                        ]
-                    }
-                )
+                { defName = "roleAdder0"
+                , taskVars = []
+                }
             }
         , Expr
             { binder = Binder "debug1"
@@ -125,20 +123,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "a task"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "a task"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "debug2"
@@ -148,20 +145,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "a post task"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "a post task"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []
@@ -189,6 +185,12 @@
             ]
         }
     , playAttrs = []
+    , defaultVars =
+        [
+            ( "adder_version"
+            , String "42 {{ adder_commit | default('HEAD') }}"
+            )
+        ]
     , source = "test/playbooks/roles/adder"
     , exprs =
         [ Expr
@@ -209,6 +211,7 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -216,18 +219,16 @@
                     )
                 ]
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "msg"
-                                , String "Adding {{ x }} + {{ y }} with {{ adder_version }}"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Adding {{ x }} + {{ y }} with {{ adder_version }}"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

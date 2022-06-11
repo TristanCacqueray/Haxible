@@ -5,6 +5,7 @@
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
+    , defaultVars = []
     , source = ""
     , exprs =
         [ Expr
@@ -28,13 +29,12 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                ( CallDefinition
-                    { name = "playLocalhost0"
-                    , taskVars = []
-                    }
-                )
+                { defName = "playLocalhost0"
+                , taskVars = []
+                }
             }
         ]
     , handlers = []
@@ -92,6 +92,7 @@
             , String "localhost"
             )
         ]
+    , defaultVars = []
     , source = "test/playbooks"
     , exprs =
         [ Expr
@@ -112,20 +113,19 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "set_fact"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "greet"
-                                , String "Haxible"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "set_fact"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "greet"
+                            , String "Haxible"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "template0"
@@ -164,24 +164,23 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "template"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "dest"
-                                , String "/tmp/haxible.txt"
-                                )
-                            ,
-                                ( "src"
-                                , String "file.j2"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "template"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "dest"
+                            , String "/tmp/haxible.txt"
+                            )
+                        ,
+                            ( "src"
+                            , String "file.j2"
+                            )
+                        ]
+                    )
+                }
             }
         , Expr
             { binder = Binder "debug0"
@@ -207,20 +206,19 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
+            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                ( CallModule
-                    { module_ = "debug"
-                    , params = Object
-                        ( fromList
-                            [
-                                ( "var"
-                                , String "res"
-                                )
-                            ]
-                        )
-                    }
-                )
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "var"
+                            , String "res"
+                            )
+                        ]
+                    )
+                }
             }
         ]
     , handlers = []

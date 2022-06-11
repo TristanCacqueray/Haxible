@@ -10,27 +10,30 @@ module Main (main) where
 import Haxible.Eval
 
 main :: IO ()
-main = runHaxible "inventory.yaml" "test/playbooks/demo.yaml" (playbook [] [] [])
+main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/demo.yaml" expect (playbook [] [])
+  where expect = []
 
-playbook :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playbook parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = parentPlayAttrs
+playbook :: Vars -> Vars -> AnsibleHaxl [Value]
+playbook playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs (taskAttrs) (taskVars)
+  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
   pure $ resultsLocalhost0
 
-playLocalhost0 :: Vars -> Vars -> Vars -> AnsibleHaxl [Value]
-playLocalhost0 parentPlayAttrs taskAttrs taskVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> parentPlayAttrs
+playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
+playLocalhost0 playAttrs' localVars = do
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
+      defaultVars = []
       src = "test/playbooks"
-  create_networkCreateNetwork0 <- runTask src playAttrs "create_network" ([("create_network", [json|{"name":"private"}|]), ("name", [json|"Create network"|])] <> taskAttrs) (taskVars)
+  create_networkCreateNetwork0 <- runTask src playAttrs defaultVars "create_network" ([("create_network", [json|{"name":"private"}|]), ("name", [json|"Create network"|])]) localVars
   let loop_ = [[json|"backend"|], [json|"frontend"|], [json|"monitoring"|]]
   let loopFun loop_item = do
-        runTask src playAttrs "create_instance" ([("create_instance", [json|{"name":"{{ item }}","network":"{{ network.uid }}"}|]), ("name", [json|"Create instances"|])] <> taskAttrs) ([("item", loop_item), ("network", create_networkCreateNetwork0)] <> taskVars)
+        runTask src playAttrs defaultVars "create_instance" ([("create_instance", [json|{"name":"{{ item }}","network":"{{ network.uid }}"}|]), ("name", [json|"Create instances"|])]) ([("item", loop_item), ("network", create_networkCreateNetwork0)] <> localVars)
   create_instanceCreateInstances0 <- traverseLoop loopFun loop_
-  create_volumeCreateStorage0 <- runTask src playAttrs "create_volume" ([("create_volume", [json|{"name":"db"}|]), ("name", [json|"Create storage"|])] <> taskAttrs) (taskVars)
-  create_instanceCreateDatabase0 <- runTask src playAttrs "create_instance" ([("create_instance", [json|{"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"}|]), ("name", [json|"Create database"|])] <> taskAttrs) ([("storage", create_volumeCreateStorage0), ("network", create_networkCreateNetwork0)] <> taskVars)
-  create_objectCreateObject0 <- runTask src playAttrs "create_object" ([("create_object", [json|{"name":"standalone-object"}|]), ("name", [json|"Create object"|])] <> taskAttrs) (taskVars)
-  create_objectCreateNetworkObject0 <- runTask src playAttrs "create_object" ([("create_object", [json|{"name":"network-{{ network.uid }}"}|]), ("name", [json|"Create network object"|])] <> taskAttrs) ([("network", create_networkCreateNetwork0)] <> taskVars)
+  create_volumeCreateStorage0 <- runTask src playAttrs defaultVars "create_volume" ([("create_volume", [json|{"name":"db"}|]), ("name", [json|"Create storage"|])]) localVars
+  create_instanceCreateDatabase0 <- runTask src playAttrs defaultVars "create_instance" ([("create_instance", [json|{"name":"database","network":"{{ network.uid }}","volume":"{{ storage.uid }}"}|]), ("name", [json|"Create database"|])]) ([("storage", create_volumeCreateStorage0), ("network", create_networkCreateNetwork0)] <> localVars)
+  create_objectCreateObject0 <- runTask src playAttrs defaultVars "create_object" ([("create_object", [json|{"name":"standalone-object"}|]), ("name", [json|"Create object"|])]) localVars
+  create_objectCreateNetworkObject0 <- runTask src playAttrs defaultVars "create_object" ([("create_object", [json|{"name":"network-{{ network.uid }}"}|]), ("name", [json|"Create network object"|])]) ([("network", create_networkCreateNetwork0)] <> localVars)
   pure $ [create_networkCreateNetwork0] <> [create_instanceCreateInstances0] <> [create_volumeCreateStorage0] <> [create_instanceCreateDatabase0] <> [create_objectCreateObject0] <> [create_objectCreateNetworkObject0]
 
