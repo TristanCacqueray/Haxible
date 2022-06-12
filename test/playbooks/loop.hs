@@ -18,8 +18,8 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
@@ -34,6 +34,21 @@ playLocalhost0 playAttrs' localVars = do
   let loopFun loop_item = do
         runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"loop control {{ lvar }}"}|]), ("name", [json|"Loop var"|])]) ([("lvar", loop_item)] <> localVars)
   debugLoopVar0 <- traverseLoop loopFun loop_
-  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"loop result is {{ loop_res }}"}|])]) ([("loop_res", debugCallTaskInALoop0)] <> localVars)
-  pure $ [debugCallTaskInALoop0] <> [debugLoopVar0] <> [debug0]
+  let loop_ = [[json|"0"|], [json|"1"|]]
+  let loopFun loop_item = do
+        blockNestedLoop0 playAttrs ([("lvar", loop_item)] <> localVars <> defaultVars)
+  resultsBlockNestedLoop0 <- traverseInclude loopFun loop_
+  debug1 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"loop result is {{ loop_res }}"}|])]) ([("loop_res", debugCallTaskInALoop0)] <> localVars)
+  pure $ [debugCallTaskInALoop0] <> [debugLoopVar0] <> resultsBlockNestedLoop0 <> [debug1]
+
+blockNestedLoop0 :: Vars -> Vars -> AnsibleHaxl [Value]
+blockNestedLoop0 playAttrs' localVars = do
+  let playAttrs = playAttrs'
+      defaultVars = []
+      src = "test/playbooks"
+  let loop_ = [[json|"a"|], [json|"b"|]]
+  let loopFun loop_item = do
+        runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Nested loop {{ lvar }} {{ item }}"}|])]) ([("item", loop_item)] <> localVars)
+  debug0 <- traverseLoop loopFun loop_
+  pure $ [debug0]
 

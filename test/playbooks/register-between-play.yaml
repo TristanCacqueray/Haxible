@@ -1,8 +1,8 @@
 - hosts: localhost
   gather_facts: no
   tasks:
-    - stat:
-        path: /
+    - debug:
+        msg: "r1 value"
       register: r1
 
 - hosts: localhost

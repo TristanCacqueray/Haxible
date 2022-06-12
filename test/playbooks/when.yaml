@@ -1,4 +1,5 @@
 - hosts: localhost
+  gather_facts: no
   tasks:
     - include_tasks: ./tasks/print.yaml
       vars:

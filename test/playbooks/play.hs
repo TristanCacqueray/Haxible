@@ -18,8 +18,8 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
@@ -27,10 +27,10 @@ playLocalhost0 playAttrs' localVars = do
       defaultVars = []
       src = "test/playbooks"
   debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"a pre task"}|])]) localVars
-  resultsAdder0 <- roleAdder0 playAttrs  localVars
+  resultsRoleAdder0 <- roleAdder0 playAttrs (localVars <> defaultVars)
   debug1 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"a task"}|])]) localVars
   debug2 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"a post task"}|])]) localVars
-  pure $ [debug0] <> resultsAdder0 <> [debug1] <> [debug2]
+  pure $ [debug0] <> resultsRoleAdder0 <> [debug1] <> [debug2]
 
 roleAdder0 :: Vars -> Vars -> AnsibleHaxl [Value]
 roleAdder0 playAttrs' localVars = do

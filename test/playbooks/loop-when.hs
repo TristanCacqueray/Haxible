@@ -18,12 +18,12 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
-  let playAttrs = [("hosts", [json|"localhost"|]), ("vars", [json|{"xs":[{"enabled":true,"msg":"Hello"},{"enabled":false,"msg":"Exit"}]}|])] <> playAttrs'
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|]), ("vars", [json|{"xs":[{"enabled":true,"msg":"Hello"},{"enabled":false,"msg":"Exit"}]}|])] <> playAttrs'
       defaultVars = []
       src = "test/playbooks"
   loop_ <- extractLoop <$> runTask "" playAttrs defaultVars "debug" [("name", [json|"Resolving template {{ xs }}"|]), ("debug", [json|{"msg":"{{ xs }}"}|])] localVars

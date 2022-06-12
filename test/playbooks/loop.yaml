@@ -16,5 +16,14 @@
       loop_control:
         loop_var: "lvar"
 
+    - name: Nested loop
+      block:
+        - debug:
+            msg: "Nested loop {{ lvar }} {{ item }}"
+          loop: ["a", "b"]
+      loop: ["0", "1"]
+      loop_control:
+        loop_var: "lvar"
+
     - debug:
         msg: "loop result is {{ loop_res }}"

@@ -63,7 +63,7 @@ renderDefinition def =
       -- Otherwise definitions provides a list of values
       _ -> from expr.binder
 
-renderHandlers :: Text -> [(Text, Text, Vars)] -> [Text]
+renderHandlers :: Text -> [HandlerExpr] -> [Text]
 renderHandlers name handlers =
   [ name <> "Handlers :: Vars -> [Value] -> AnsibleHaxl ()",
     name <> "Handlers playAttrs res = do"
@@ -71,9 +71,9 @@ renderHandlers name handlers =
     <> (mappend "  " <$> map renderHandler handlers)
   where
     -- Call every handler with the result, the 'notifyHandler' runs the task when one of the result notifies it
-    renderHandler (handler, action, taskAttrs) =
+    renderHandler HandlerExpr {listen, module_, handlerAttrs} =
       Text.unwords
-        ["notifyHandler playAttrs res", quote handler, quote action, textList (mkJsonArg <$> taskAttrs)]
+        ["notifyHandler playAttrs res", quote listen, quote module_, textList (mkJsonArg <$> handlerAttrs)]
 
 renderExpr :: Expr -> [Text]
 renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
@@ -92,7 +92,7 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
                 DefinitionCall {} -> "traverseInclude"
            in [traverser, "loopFun", "loop_"]
         )
-      Nothing -> (whenBinder, whenExpr (factExtract <> callExpr))
+      Nothing -> (whenBinder, whenExpr callExpr)
 
     whenExpr (Text.unwords -> inner)
       | isJust e.when_ = [Text.unwords ["if when_ then", paren inner, "else pure", skipResult]]
@@ -133,15 +133,6 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
           | req.origin == LoopVar = True
           | otherwise = False
 
-    -- Inject extractFact call when needed
-    factExtract
-      | extractFact = ["extractFact", "<$>"]
-      | otherwise = []
-      where
-        extractFact = case e.term of
-          ModuleCall {module_} | module_ == "set_fact" -> True
-          _ -> False
-
     callExpr = case e.term of
       ModuleCall {module_, params} ->
         [ "runTask src playAttrs defaultVars",
@@ -149,16 +140,13 @@ renderExpr e = preCode <> [from e.binder <> " <- " <> Text.unwords finalExpr]
           paren (textList (mkJsonArg <$> [(module_, params)] <> e.taskAttrs)),
           paren (concatList [textReq e.inputs, "localVars"])
         ]
-      DefinitionCall {defName, taskVars}
-        | not e.rescue -> [defName, "playAttrs"] <> callParams e.taskAttrs taskVars
+      DefinitionCall {defName, taskVars, rescue}
+        | not rescue -> [defName, "playAttrs", callParams taskVars]
         | otherwise ->
-            ["tryRescue", paren (defName <> "Main playAttrs"), paren (defName <> "Rescue playAttrs")]
-              <> callParams e.taskAttrs taskVars
+            ["tryRescue", defName <> "Main", defName <> "Rescue", "playAttrs", callParams taskVars]
 
-    callParams taskAttrs taskVars =
-      [ paren (concatList [textList (mkJsonArg <$> taskAttrs)]),
-        paren (concatList [textReq e.inputs, textList (mkJsonArg <$> taskVars), "localVars"])
-      ]
+    callParams taskVars =
+      paren (concatList [textReq e.inputs, textList (mkJsonArg <$> taskVars), "localVars <> defaultVars"])
 
 textReq :: [Requirement] -> Text
 textReq xs = textList $ (\req -> "(" <> quote req.name <> ", " <> mkOrigin req.origin <> ")") <$> xs

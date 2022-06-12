@@ -132,7 +132,7 @@ resolveTask basePath task = do
     setFact = do
       let JsonVars vars = unwrapJSON . fromJSON $ task.params
       pure $ case lookup "cacheable" vars of
-        Just v -> CacheableFacts v (filter (\var -> fst var /= "cacheable") vars)
+        Just v -> CacheableFacts v (filter ((/=) "cacheable" . fst) vars)
         Nothing -> Facts vars
 
 resolveHandler :: TaskSyntax -> Task

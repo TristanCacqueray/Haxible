@@ -1,4 +1,5 @@
 - hosts: localhost
+  gather_facts: no
   tasks:
     - include_vars: "./roles/adder/defaults/main.yaml"
     - debug:

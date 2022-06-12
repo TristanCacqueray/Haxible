@@ -11,29 +11,29 @@ import Haxible.Eval
 
 main :: IO ()
 main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/when.yaml" expect (playbook [] [])
-  where expect = []
+  where expect = [[json|{"changed":false,"msg":"Print task Hello!"}|], [json|{"changed":false,"skip_reason":"Conditional result was False"}|], [json|{"changed":false,"skip_reason":"Conditional result was False"}|], [json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
 
 playbook :: Vars -> Vars -> AnsibleHaxl [Value]
 playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
-  let playAttrs = [("hosts", [json|"localhost"|])] <> playAttrs'
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
       defaultVars = []
       src = "test/playbooks"
-  resultsTaskstasksprintyaml00 <- tasksTasksPrintYaml0 playAttrs  ([("print_arg", [json|"Hello!"|])] <> localVars)
+  resultsTasksTasksPrintYaml0 <- tasksTasksPrintYaml0 playAttrs ([("print_arg", [json|"Hello!"|])] <> localVars <> defaultVars)
   let when_ = False
-  resultsTaskstasksprintyaml10 <- if when_ then (tasksTasksPrintYaml1 playAttrs  ([("print_arg", [json|"Hello!"|])] <> localVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
+  resultsTasksTasksPrintYaml1 <- if when_ then (tasksTasksPrintYaml1 playAttrs ([("print_arg", [json|"Hello!"|])] <> localVars <> defaultVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
   let when_ = True
-  block0 <- if when_ then (block0 playAttrs  localVars) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
+  resultsBlock0 <- if when_ then (block0 playAttrs (localVars <> defaultVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
   when_ <- all extractWhen <$> sequence [runTask "" playAttrs defaultVars "debug" [("name", [json|"Resolving template {{ true or false }}"|]), ("debug", [json|{"msg":"{{ true or false }}"}|])] localVars, runTask "" playAttrs defaultVars "debug" [("name", [json|"Resolving template {{ true and false }}"|]), ("debug", [json|{"msg":"{{ true and false }}"}|])] localVars]
   debug3 <- if when_ then (runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Should be skipped"}|])]) localVars) else pure [json|{"changed":false,"skip_reason":"Conditional result was False"}|]
-  pure $ resultsTaskstasksprintyaml00 <> resultsTaskstasksprintyaml10 <> block0 <> [debug3]
+  pure $ resultsTasksTasksPrintYaml0 <> resultsTasksTasksPrintYaml1 <> resultsBlock0 <> [debug3]
 
 block0 :: Vars -> Vars -> AnsibleHaxl [Value]
 block0 playAttrs' localVars = do

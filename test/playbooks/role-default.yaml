@@ -1,4 +1,5 @@
 - hosts: localhost
+  gather_facts: no
   tasks:
     - set_fact:
         adder_commit: "v{{ version }}"

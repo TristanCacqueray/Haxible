@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,7 +7,7 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires = []
             , provides =
                 [ Resource
@@ -29,15 +27,15 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsZuulExecutor0"
+            { binder = Binder "resultsPlayZuulExecutor0"
             , requires = []
             , provides =
                 [ Resource
@@ -57,15 +55,15 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playZuulExecutor0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsNodepoolLauncher0"
+            { binder = Binder "resultsPlayNodepoolLauncher0"
             , requires = []
             , provides =
                 [ Resource
@@ -81,15 +79,15 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playNodepoolLauncher0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsLocalhost1"
+            { binder = Binder "resultsPlayLocalhost1"
             , requires =
                 [ Resource
                     { name = Binder "stat0"
@@ -102,16 +100,16 @@
                 [ Requirement
                     { name = "etc"
                     , origin = Nested
-                        ( Binder "resultsLocalhost0" ) 0
+                        ( Binder "resultsPlayLocalhost0" ) 0
                     }
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost1"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -119,21 +117,6 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "stat0"
-            , dep = Register "etc"
-            }
-        , Resource
-            { name = Binder "stat0"
-            , dep = Path "/etc"
-            }
-        , Resource
-            { name = Binder "command0"
-            , dep = Command "test/playbooks"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -199,7 +182,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "stat"
@@ -247,7 +229,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "command"
@@ -259,21 +240,6 @@
     }
 , Definition
     { name = "playZuulExecutor0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "file0"
-            , dep = Register "zuuldir"
-            }
-        , Resource
-            { name = Binder "file0"
-            , dep = Path "/tmp/zuul"
-            }
-        , Resource
-            { name = Binder "command1"
-            , dep = Command "test/playbooks"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -339,7 +305,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "file"
@@ -391,7 +356,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "command"
@@ -403,17 +367,6 @@
     }
 , Definition
     { name = "playNodepoolLauncher0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "file1"
-            , dep = Path "/tmp/nodepool"
-            }
-        , Resource
-            { name = Binder "command2"
-            , dep = Command "test/playbooks"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -471,7 +424,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "file"
@@ -518,7 +470,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "command"
@@ -533,7 +484,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -545,13 +495,6 @@
     }
 , Definition
     { name = "playLocalhost1"
-    , requires =
-        [ Resource
-            { name = Binder "stat0"
-            , dep = Register "etc"
-            }
-        ]
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -586,7 +529,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"

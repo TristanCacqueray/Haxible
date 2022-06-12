@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,9 +7,13 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires =
                 [ Resource
+                    { name = Binder "resultsTasksOtherTasksYaml0"
+                    , dep = Register "nested_included_result"
+                    }
+                , Resource
                     { name = Binder "debugNestedIncludedTask0"
                     , dep = Register "nested_included_result"
                     }
@@ -20,16 +22,29 @@
                     , dep = Register "included_result"
                     }
                 ]
-            , provides = []
+            , provides =
+                [ Resource
+                    { name = Binder "resultsTasksTasksGreetYaml0"
+                    , dep = Register "included_result"
+                    }
+                , Resource
+                    { name = Binder "resultsTasksTasksGreetYaml0"
+                    , dep = Register "_unused"
+                    }
+                , Resource
+                    { name = Binder "resultsTasksTasksGreetYaml0"
+                    , dep = Register "nested_included_result"
+                    }
+                ]
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -37,21 +52,10 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires =
-        [ Resource
-            { name = Binder "debugNestedIncludedTask0"
-            , dep = Register "nested_included_result"
-            }
-        , Resource
-            { name = Binder "debugIncludedTask0"
-            , dep = Register "included_result"
-            }
-        ]
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "resultsTaskstasksgreetyaml00"
+                ( Binder "resultsTasksTasksGreetYaml0"
                 , Left
                     ( Environment
                         { getEnv =
@@ -65,7 +69,7 @@
                                     ]
                                 )
                             ,
-                                ( Binder "resultsTasksothertasksyaml00"
+                                ( Binder "resultsTasksOtherTasksYaml0"
                                 , Left
                                     ( Environment
                                         { getEnv =
@@ -115,9 +119,22 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "resultsTaskstasksgreetyaml00"
+            { binder = Binder "resultsTasksTasksGreetYaml0"
             , requires = []
-            , provides = []
+            , provides =
+                [ Resource
+                    { name = Binder "resultsTasksTasksGreetYaml0"
+                    , dep = Register "included_result"
+                    }
+                , Resource
+                    { name = Binder "resultsTasksTasksGreetYaml0"
+                    , dep = Register "_unused"
+                    }
+                , Resource
+                    { name = Binder "resultsTasksTasksGreetYaml0"
+                    , dep = Register "nested_included_result"
+                    }
+                ]
             , outputs = Left
                 ( Environment
                     { getEnv =
@@ -131,7 +148,7 @@
                                 ]
                             )
                         ,
-                            ( Binder "resultsTasksothertasksyaml00"
+                            ( Binder "resultsTasksOtherTasksYaml0"
                             , Left
                                 ( Environment
                                     { getEnv =
@@ -173,7 +190,6 @@
                     , String "World"
                     ]
                 )
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "tasksTasksGreetYaml0"
@@ -183,12 +199,25 @@
                         , String "{{ item }}"
                         )
                     ]
+                , rescue = False
                 }
             }
         , Expr
             { binder = Binder "debug0"
             , requires =
                 [ Resource
+                    { name = Binder "resultsTasksTasksGreetYaml0"
+                    , dep = Register "included_result"
+                    }
+                , Resource
+                    { name = Binder "resultsTasksTasksGreetYaml0"
+                    , dep = Register "nested_included_result"
+                    }
+                , Resource
+                    { name = Binder "resultsTasksOtherTasksYaml0"
+                    , dep = Register "nested_included_result"
+                    }
+                , Resource
                     { name = Binder "debugNestedIncludedTask0"
                     , dep = Register "nested_included_result"
                     }
@@ -203,17 +232,16 @@
                 [ Requirement
                     { name = "included_result"
                     , origin = Nested
-                        ( Binder "resultsTaskstasksgreetyaml00" ) 0
+                        ( Binder "resultsTasksTasksGreetYaml0" ) 0
                     }
                 , Requirement
                     { name = "nested_included_result"
                     , origin = Nested
-                        ( Binder "resultsTaskstasksgreetyaml00" ) 2
+                        ( Binder "resultsTasksTasksGreetYaml0" ) 2
                     }
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -234,13 +262,6 @@
     }
 , Definition
     { name = "tasksTasksGreetYaml0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "debugIncludedTask0"
-            , dep = Register "included_result"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -253,7 +274,7 @@
                     ]
                 )
             ,
-                ( Binder "resultsTasksothertasksyaml00"
+                ( Binder "resultsTasksOtherTasksYaml0"
                 , Left
                     ( Environment
                         { getEnv =
@@ -303,7 +324,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -323,9 +343,18 @@
                 }
             }
         , Expr
-            { binder = Binder "resultsTasksothertasksyaml00"
+            { binder = Binder "resultsTasksOtherTasksYaml0"
             , requires = []
-            , provides = []
+            , provides =
+                [ Resource
+                    { name = Binder "resultsTasksOtherTasksYaml0"
+                    , dep = Register "_unused"
+                    }
+                , Resource
+                    { name = Binder "resultsTasksOtherTasksYaml0"
+                    , dep = Register "nested_included_result"
+                    }
+                ]
             , outputs = Left
                 ( Environment
                     { getEnv =
@@ -353,11 +382,11 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "tasksOtherTasksYaml0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -365,17 +394,6 @@
     }
 , Definition
     { name = "tasksOtherTasksYaml0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "debugUnusedInclude0"
-            , dep = Register "_unused"
-            }
-        , Resource
-            { name = Binder "debugNestedIncludedTask0"
-            , dep = Register "nested_included_result"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -420,7 +438,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -450,7 +467,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"

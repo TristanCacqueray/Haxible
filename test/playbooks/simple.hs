@@ -18,11 +18,11 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  resultsZuulExecutor0 <- playZuulExecutor0 playAttrs  localVars
-  resultsNodepoolLauncher0 <- playNodepoolLauncher0 playAttrs  localVars
-  resultsLocalhost1 <- playLocalhost1 playAttrs  ([("etc", resultsLocalhost0 !! 0)] <> localVars)
-  pure $ resultsLocalhost0 <> resultsZuulExecutor0 <> resultsNodepoolLauncher0 <> resultsLocalhost1
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  resultsPlayZuulExecutor0 <- playZuulExecutor0 playAttrs (localVars <> defaultVars)
+  resultsPlayNodepoolLauncher0 <- playNodepoolLauncher0 playAttrs (localVars <> defaultVars)
+  resultsPlayLocalhost1 <- playLocalhost1 playAttrs ([("etc", resultsPlayLocalhost0 !! 0)] <> localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0 <> resultsPlayZuulExecutor0 <> resultsPlayNodepoolLauncher0 <> resultsPlayLocalhost1
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do

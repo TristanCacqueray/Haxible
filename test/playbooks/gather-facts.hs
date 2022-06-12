@@ -18,8 +18,8 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsAll0 <- playAll0 playAttrs  localVars
-  pure $ resultsAll0
+  resultsPlayAll0 <- playAll0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayAll0
 
 playAll0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playAll0 playAttrs' localVars = do

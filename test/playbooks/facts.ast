@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,7 +7,7 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires = []
             , provides =
                 [ Resource
@@ -25,11 +23,11 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -37,17 +35,6 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "factsSimpleFact0"
-            , dep = Register "fact_var"
-            }
-        , Resource
-            { name = Binder "factsExtraFact0"
-            , dep = Register "extra_var"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -116,7 +103,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -164,7 +150,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -206,7 +191,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"

@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,18 +7,18 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires = []
             , provides = []
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -28,12 +26,10 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "resultsTaskstasksprintyaml00"
+                ( Binder "resultsTasksTasksPrintYaml0"
                 , Left
                     ( Environment
                         { getEnv =
@@ -46,7 +42,7 @@
                     )
                 )
             ,
-                ( Binder "resultsTaskstasksprintyaml10"
+                ( Binder "resultsTasksTasksPrintYaml1"
                 , Left
                     ( Environment
                         { getEnv =
@@ -59,7 +55,7 @@
                     )
                 )
             ,
-                ( Binder "block0"
+                ( Binder "resultsBlock0"
                 , Left
                     ( Environment
                         { getEnv =
@@ -79,6 +75,10 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
@@ -87,7 +87,7 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "resultsTaskstasksprintyaml00"
+            { binder = Binder "resultsTasksTasksPrintYaml0"
             , requires = []
             , provides = []
             , outputs = Left
@@ -103,7 +103,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "tasksTasksPrintYaml0"
@@ -113,10 +112,11 @@
                         , String "Hello!"
                         )
                     ]
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsTaskstasksprintyaml10"
+            { binder = Binder "resultsTasksTasksPrintYaml1"
             , requires = []
             , provides = []
             , outputs = Left
@@ -132,7 +132,6 @@
             , inputs = []
             , when_ = Just ( Bool False )
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "tasksTasksPrintYaml1"
@@ -142,10 +141,11 @@
                         , String "Hello!"
                         )
                     ]
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "block0"
+            { binder = Binder "resultsBlock0"
             , requires = []
             , provides = []
             , outputs = Left
@@ -161,11 +161,11 @@
             , inputs = []
             , when_ = Just ( Bool True )
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "block0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
@@ -181,7 +181,6 @@
                     ]
                 )
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -200,8 +199,6 @@
     }
 , Definition
     { name = "block0"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -222,7 +219,6 @@
             , inputs = []
             , when_ = Just ( Bool False )
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -234,8 +230,6 @@
     }
 , Definition
     { name = "tasksTasksPrintYaml1"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -256,7 +250,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -275,8 +268,6 @@
     }
 , Definition
     { name = "tasksTasksPrintYaml0"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -297,7 +288,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"

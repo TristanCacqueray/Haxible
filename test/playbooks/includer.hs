@@ -18,8 +18,8 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
@@ -28,10 +28,10 @@ playLocalhost0 playAttrs' localVars = do
       src = "test/playbooks"
   let loop_ = [[json|"Haxible"|], [json|"World"|]]
   let loopFun loop_item = do
-        tasksTasksGreetYaml0 playAttrs  ([("item", loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> localVars)
-  resultsTaskstasksgreetyaml00 <- traverseInclude loopFun loop_
-  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}|])]) ([("included_result", resultsTaskstasksgreetyaml00 !! 0), ("nested_included_result", resultsTaskstasksgreetyaml00 !! 2)] <> localVars)
-  pure $ resultsTaskstasksgreetyaml00 <> [debug0]
+        tasksTasksGreetYaml0 playAttrs ([("item", loop_item)] <> [("include_param", [json|"{{ item }}"|])] <> localVars <> defaultVars)
+  resultsTasksTasksGreetYaml0 <- traverseInclude loopFun loop_
+  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Result is {{ included_result }},\nnested {{ nested_included_result}}\n"}|])]) ([("included_result", resultsTasksTasksGreetYaml0 !! 0), ("nested_included_result", resultsTasksTasksGreetYaml0 !! 2)] <> localVars)
+  pure $ resultsTasksTasksGreetYaml0 <> [debug0]
 
 tasksTasksGreetYaml0 :: Vars -> Vars -> AnsibleHaxl [Value]
 tasksTasksGreetYaml0 playAttrs' localVars = do
@@ -39,8 +39,8 @@ tasksTasksGreetYaml0 playAttrs' localVars = do
       defaultVars = []
       src = "test/playbooks/./tasks"
   debugIncludedTask0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Hello {{ include_param }}"}|]), ("name", [json|"Included task"|])]) localVars
-  resultsTasksothertasksyaml00 <- tasksOtherTasksYaml0 playAttrs  localVars
-  pure $ [debugIncludedTask0] <> resultsTasksothertasksyaml00
+  resultsTasksOtherTasksYaml0 <- tasksOtherTasksYaml0 playAttrs (localVars <> defaultVars)
+  pure $ [debugIncludedTask0] <> resultsTasksOtherTasksYaml0
 
 tasksOtherTasksYaml0 :: Vars -> Vars -> AnsibleHaxl [Value]
 tasksOtherTasksYaml0 playAttrs' localVars = do

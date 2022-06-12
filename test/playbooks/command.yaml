@@ -1,5 +1,6 @@
 # This playbook demonstrate implicit dependency between commands
 - hosts: localhost
+  gather_facts: no
   tasks:
     - command: echo 1
     - command: echo 2

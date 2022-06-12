@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,7 +7,7 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires = []
             , provides =
                 [ Resource
@@ -21,37 +19,31 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsLocalhost1"
-            , requires =
+            { binder = Binder "resultsPlayLocalhost1"
+            , requires = []
+            , provides =
                 [ Resource
-                    { name = Binder "debug0"
-                    , dep = Register "answer"
+                    { name = Binder "resultsRoleAdder0"
+                    , dep = Register "add_result"
                     }
                 ]
-            , provides = []
             , outputs = Right []
-            , inputs =
-                [ Requirement
-                    { name = "answer"
-                    , origin = Nested
-                        ( Binder "resultsLocalhost0" ) 0
-                    }
-                ]
+            , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost1"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -59,13 +51,6 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "debug0"
-            , dep = Register "answer"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -114,7 +99,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -147,7 +131,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "assert"
@@ -167,18 +150,25 @@
     }
 , Definition
     { name = "playLocalhost1"
-    , requires =
-        [ Resource
-            { name = Binder "debug0"
-            , dep = Register "answer"
-            }
-        ]
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "resultsAdder0"
-                , Right []
+                ( Binder "resultsRoleAdder0"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debugAddingNumbers0"
+                                , Right
+                                    [ Resource
+                                        { name = Binder "debugAddingNumbers0"
+                                        , dep = Register "add_result"
+                                        }
+                                    ]
+                                )
+                            ]
+                        }
+                    )
                 )
             ,
                 ( Binder "debug1"
@@ -200,19 +190,32 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "resultsAdder0"
-            , requires =
+            { binder = Binder "resultsRoleAdder0"
+            , requires = []
+            , provides =
                 [ Resource
-                    { name = Binder "debug0"
-                    , dep = Register "answer"
+                    { name = Binder "resultsRoleAdder0"
+                    , dep = Register "add_result"
                     }
                 ]
-            , provides = []
-            , outputs = Right []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debugAddingNumbers0"
+                            , Right
+                                [ Resource
+                                    { name = Binder "debugAddingNumbers0"
+                                    , dep = Register "add_result"
+                                    }
+                                ]
+                            )
+                        ]
+                    }
+                )
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "roleAdder0"
@@ -226,6 +229,7 @@
                         , String "21"
                         )
                     ]
+                , rescue = False
                 }
             }
         , Expr
@@ -236,7 +240,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -255,13 +258,6 @@
     }
 , Definition
     { name = "roleAdder0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "debugAddingNumbers0"
-            , dep = Register "add_result"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -302,7 +298,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"

@@ -89,6 +89,7 @@ instance FromJSON TaskSyntax where
     where
       nonModuleAttributes = ["name", "register", "with_items", "loop", "loop_control", "rescue", "vars", "when", "notify", "listen"] <> propagableAttrs
 
+-- | These attributes are passed to the ansible executor, they are not managed by Haxible.
 propagableAttrs :: [Text]
 propagableAttrs =
   [ "retries",
@@ -100,7 +101,8 @@ propagableAttrs =
     "run_once",
     "delegate_to",
     "no_log",
-    "notify"
+    "notify",
+    "with_first_found"
   ]
 
 decodeFile :: (Show a, FromJSON a, MonadIO m) => FilePath -> m a

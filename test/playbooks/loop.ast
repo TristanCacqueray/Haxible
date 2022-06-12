@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,7 +7,7 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires = []
             , provides =
                 [ Resource
@@ -21,11 +19,11 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -33,13 +31,6 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "debugCallTaskInALoop0"
-            , dep = Register "loop_res"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -56,7 +47,20 @@
                 , Right []
                 )
             ,
-                ( Binder "debug0"
+                ( Binder "resultsBlockNestedLoop0"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug0"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
+                )
+            ,
+                ( Binder "debug1"
                 , Right []
                 )
             ]
@@ -118,7 +122,6 @@
                     , String "C"
                     ]
                 )
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -151,7 +154,6 @@
             , when_ = Nothing
             , loop = Just
                 ( String "{{ xs }}" )
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
@@ -171,7 +173,41 @@
                 }
             }
         , Expr
-            { binder = Binder "debug0"
+            { binder = Binder "resultsBlockNestedLoop0"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug0"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
+            , inputs =
+                [ Requirement
+                    { name = "lvar"
+                    , origin = LoopVar
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Just
+                ( Array
+                    [ String "0"
+                    , String "1"
+                    ]
+                )
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "blockNestedLoop0"
+                , taskVars = []
+                , rescue = False
+                }
+            }
+        , Expr
+            { binder = Binder "debug1"
             , requires =
                 [ Resource
                     { name = Binder "debugCallTaskInALoop0"
@@ -189,7 +225,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -198,6 +233,54 @@
                         [
                             ( "msg"
                             , String "loop result is {{ loop_res }}"
+                            )
+                        ]
+                    )
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "blockNestedLoop0"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug0"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs = []
+    , defaultVars = []
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "debug0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , inputs =
+                [ Requirement
+                    { name = "item"
+                    , origin = LoopVar
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Just
+                ( Array
+                    [ String "a"
+                    , String "b"
+                    ]
+                )
+            , taskAttrs = []
+            , term = ModuleCall
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Nested loop {{ lvar }} {{ item }}"
                             )
                         ]
                     )

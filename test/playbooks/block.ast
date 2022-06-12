@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,23 +7,28 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires =
                 [ Resource
                     { name = Binder "debugBlockTask1"
                     , dep = Register "block_result"
                     }
                 ]
-            , provides = []
+            , provides =
+                [ Resource
+                    { name = Binder "resultsBlock0"
+                    , dep = Register "block_result"
+                    }
+                ]
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -33,17 +36,10 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires =
-        [ Resource
-            { name = Binder "debugBlockTask1"
-            , dep = Register "block_result"
-            }
-        ]
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "block0"
+                ( Binder "resultsBlock0"
                 , Left
                     ( Environment
                         { getEnv =
@@ -84,9 +80,14 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "block0"
+            { binder = Binder "resultsBlock0"
             , requires = []
-            , provides = []
+            , provides =
+                [ Resource
+                    { name = Binder "resultsBlock0"
+                    , dep = Register "block_result"
+                    }
+                ]
             , outputs = Left
                 ( Environment
                     { getEnv =
@@ -109,17 +110,26 @@
             , inputs = []
             , when_ = Just ( Bool True )
             , loop = Nothing
-            , rescue = False
-            , taskAttrs = []
+            , taskAttrs =
+                [
+                    ( "run_once"
+                    , Bool True
+                    )
+                ]
             , term = DefinitionCall
                 { defName = "block0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
             { binder = Binder "debug0"
             , requires =
                 [ Resource
+                    { name = Binder "resultsBlock0"
+                    , dep = Register "block_result"
+                    }
+                , Resource
                     { name = Binder "debugBlockTask1"
                     , dep = Register "block_result"
                     }
@@ -130,12 +140,11 @@
                 [ Requirement
                     { name = "block_result"
                     , origin = Nested
-                        ( Binder "block0" ) 1
+                        ( Binder "resultsBlock0" ) 1
                     }
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -154,13 +163,6 @@
     }
 , Definition
     { name = "block0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "debugBlockTask1"
-            , dep = Register "block_result"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -190,11 +192,14 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
                     , String "block task"
+                    )
+                ,
+                    ( "run_once"
+                    , Bool True
                     )
                 ]
             , term = ModuleCall
@@ -227,11 +232,14 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs =
                 [
                     ( "name"
                     , String "block task"
+                    )
+                ,
+                    ( "run_once"
+                    , Bool True
                     )
                 ]
             , term = ModuleCall

@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,7 +7,7 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires = []
             , provides =
                 [ Resource
@@ -29,11 +27,11 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -41,21 +39,6 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "facts0"
-            , dep = Register "greet"
-            }
-        , Resource
-            { name = Binder "template0"
-            , dep = Register "res"
-            }
-        , Resource
-            { name = Binder "template0"
-            , dep = Path "/tmp/haxible.txt"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
@@ -88,6 +71,10 @@
         }
     , playAttrs =
         [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
             ( "hosts"
             , String "localhost"
             )
@@ -113,7 +100,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "set_fact"
@@ -164,7 +150,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "template"
@@ -206,7 +191,6 @@
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"

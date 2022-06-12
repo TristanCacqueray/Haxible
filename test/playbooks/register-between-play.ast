@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,34 +7,30 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires = []
             , provides =
                 [ Resource
-                    { name = Binder "stat0"
+                    { name = Binder "debug0"
                     , dep = Register "r1"
-                    }
-                , Resource
-                    { name = Binder "stat0"
-                    , dep = Path "/"
                     }
                 ]
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsLocalhost1"
+            { binder = Binder "resultsPlayLocalhost1"
             , requires =
                 [ Resource
-                    { name = Binder "stat0"
+                    { name = Binder "debug0"
                     , dep = Register "r1"
                     }
                 ]
@@ -46,16 +40,16 @@
                 [ Requirement
                     { name = "r1"
                     , origin = Nested
-                        ( Binder "resultsLocalhost0" ) 0
+                        ( Binder "resultsPlayLocalhost0" ) 0
                     }
                 ]
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost1"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -63,29 +57,14 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires = []
-    , provides =
-        [ Resource
-            { name = Binder "stat0"
-            , dep = Register "r1"
-            }
-        , Resource
-            { name = Binder "stat0"
-            , dep = Path "/"
-            }
-        ]
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "stat0"
+                ( Binder "debug0"
                 , Right
                     [ Resource
-                        { name = Binder "stat0"
+                        { name = Binder "debug0"
                         , dep = Register "r1"
-                        }
-                    , Resource
-                        { name = Binder "stat0"
-                        , dep = Path "/"
                         }
                     ]
                 )
@@ -105,40 +84,31 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "stat0"
+            { binder = Binder "debug0"
             , requires = []
             , provides =
                 [ Resource
-                    { name = Binder "stat0"
+                    { name = Binder "debug0"
                     , dep = Register "r1"
-                    }
-                , Resource
-                    { name = Binder "stat0"
-                    , dep = Path "/"
                     }
                 ]
             , outputs = Right
                 [ Resource
-                    { name = Binder "stat0"
+                    { name = Binder "debug0"
                     , dep = Register "r1"
-                    }
-                , Resource
-                    { name = Binder "stat0"
-                    , dep = Path "/"
                     }
                 ]
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
-                { module_ = "stat"
+                { module_ = "debug"
                 , params = Object
                     ( fromList
                         [
-                            ( "path"
-                            , String "/"
+                            ( "msg"
+                            , String "r1 value"
                             )
                         ]
                     )
@@ -149,17 +119,10 @@
     }
 , Definition
     { name = "playLocalhost1"
-    , requires =
-        [ Resource
-            { name = Binder "stat0"
-            , dep = Register "r1"
-            }
-        ]
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "debug0"
+                ( Binder "debug1"
                 , Right []
                 )
             ]
@@ -178,10 +141,10 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "debug0"
+            { binder = Binder "debug1"
             , requires =
                 [ Resource
-                    { name = Binder "stat0"
+                    { name = Binder "debug0"
                     , dep = Register "r1"
                     }
                 ]
@@ -190,7 +153,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"

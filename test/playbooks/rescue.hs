@@ -18,17 +18,17 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
   let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|])] <> playAttrs'
       defaultVars = []
       src = "test/playbooks"
-  block0 <- tryRescue (block0Main playAttrs) (block0Rescue playAttrs)  localVars
-  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"var":"block_result"}|])]) ([("block_result", block0 !! 0)] <> localVars)
-  pure $ block0 <> [debug0]
+  resultsBlock0 <- tryRescue block0Main block0Rescue playAttrs (localVars <> defaultVars)
+  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"var":"block_result"}|])]) ([("block_result", resultsBlock0 !! 0)] <> localVars)
+  pure $ resultsBlock0 <> [debug0]
 
 block0Rescue :: Vars -> Vars -> AnsibleHaxl [Value]
 block0Rescue playAttrs' localVars = do

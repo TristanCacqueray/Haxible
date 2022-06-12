@@ -18,12 +18,12 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
-  let playAttrs = [("hosts", [json|"localhost"|]), ("vars", [json|{"info_dir":"/tmp/info"}|])] <> playAttrs'
+  let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|]), ("vars", [json|{"info_dir":"/tmp/info"}|])] <> playAttrs'
       defaultVars = []
       src = "test/playbooks"
   debugInstallPackages0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"Installing podman"}|]), ("name", [json|"Install packages..."|])]) localVars

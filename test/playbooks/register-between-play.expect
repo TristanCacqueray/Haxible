@@ -1,0 +1,2 @@
+- {"changed":false,"msg":"r1 value"}
+- {"changed":false,"msg":"r1 is {'changed': False, 'msg': 'r1 value'}"}

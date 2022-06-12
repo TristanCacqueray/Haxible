@@ -1,0 +1,4 @@
+- {"changed":false,"msg":"Print task Hello!"}
+- {"changed":false,"skip_reason":"Conditional result was False"}
+- {"changed":false,"skip_reason":"Conditional result was False"}
+- {"changed":false,"skip_reason":"Conditional result was False"}

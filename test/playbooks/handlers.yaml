@@ -1,4 +1,5 @@
 - hosts: localhost
+  gather_facts: no
   tasks:
     - command: "echo change config"
       notify: Run Handler

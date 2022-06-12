@@ -1,7 +1,5 @@
 [ Definition
     { name = "playbook"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv = [] }
     , playAttrs = []
@@ -9,93 +7,93 @@
     , source = ""
     , exprs =
         [ Expr
-            { binder = Binder "resultsLocalhost0"
+            { binder = Binder "resultsPlayLocalhost0"
             , requires = []
             , provides = []
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsLocalhost1"
+            { binder = Binder "resultsPlayLocalhost1"
             , requires = []
             , provides = []
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost1"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsLocalhost2"
+            { binder = Binder "resultsPlayLocalhost2"
             , requires = []
             , provides = []
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost2"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsLocalhost3"
+            { binder = Binder "resultsPlayLocalhost3"
             , requires = []
             , provides = []
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost3"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsLocalhost4"
+            { binder = Binder "resultsPlayLocalhost4"
             , requires = []
             , provides = []
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost4"
                 , taskVars = []
+                , rescue = False
                 }
             }
         , Expr
-            { binder = Binder "resultsLocalhost5"
+            { binder = Binder "resultsPlayLocalhost5"
             , requires = []
             , provides = []
             , outputs = Right []
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "playLocalhost5"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -103,13 +101,20 @@
     }
 , Definition
     { name = "playLocalhost0"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "resultsPrint0"
-                , Right []
+                ( Binder "resultsRolePrint0"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug0"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
                 )
             ]
         }
@@ -127,18 +132,27 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "resultsPrint0"
+            { binder = Binder "resultsRolePrint0"
             , requires = []
             , provides = []
-            , outputs = Right []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug0"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "rolePrint0"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -146,13 +160,20 @@
     }
 , Definition
     { name = "playLocalhost1"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "resultsPrint1"
-                , Right []
+                ( Binder "resultsRolePrint1"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug1"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
                 )
             ]
         }
@@ -181,18 +202,27 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "resultsPrint1"
+            { binder = Binder "resultsRolePrint1"
             , requires = []
             , provides = []
-            , outputs = Right []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug1"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "rolePrint1"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -200,13 +230,20 @@
     }
 , Definition
     { name = "playLocalhost2"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "resultsPrint2"
-                , Right []
+                ( Binder "resultsRolePrint2"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug2"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
                 )
             ]
         }
@@ -235,14 +272,22 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "resultsPrint2"
+            { binder = Binder "resultsRolePrint2"
             , requires = []
             , provides = []
-            , outputs = Right []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug2"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "rolePrint2"
@@ -252,6 +297,7 @@
                         , String "priority"
                         )
                     ]
+                , rescue = False
                 }
             }
         ]
@@ -259,176 +305,20 @@
     }
 , Definition
     { name = "playLocalhost3"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "block0"
+                ( Binder "resultsBlock0"
                 , Left
                     ( Environment
                         { getEnv =
                             [
-                                ( Binder "resultsPrint3"
-                                , Right []
-                                )
-                            ]
-                        }
-                    )
-                )
-            ]
-        }
-    , playAttrs =
-        [
-            ( "gather_facts"
-            , Bool False
-            )
-        ,
-            ( "hosts"
-            , String "localhost"
-            )
-        ,
-            ( "vars"
-            , Object
-                ( fromList
-                    [
-                        ( "print_arg"
-                        , String "shadow"
-                        )
-                    ]
-                )
-            )
-        ]
-    , defaultVars = []
-    , source = "test/playbooks"
-    , exprs =
-        [ Expr
-            { binder = Binder "block0"
-            , requires = []
-            , provides = []
-            , outputs = Left
-                ( Environment
-                    { getEnv =
-                        [
-                            ( Binder "resultsPrint3"
-                            , Right []
-                            )
-                        ]
-                    }
-                )
-            , inputs = []
-            , when_ = Nothing
-            , loop = Nothing
-            , rescue = False
-            , taskAttrs = []
-            , term = DefinitionCall
-                { defName = "block0"
-                , taskVars =
-                    [
-                        ( "print_arg"
-                        , String "priority"
-                        )
-                    ]
-                }
-            }
-        ]
-    , handlers = []
-    }
-, Definition
-    { name = "playLocalhost4"
-    , requires = []
-    , provides = []
-    , outputs = Environment
-        { getEnv =
-            [
-                ( Binder "block2"
-                , Left
-                    ( Environment
-                        { getEnv =
-                            [
-                                ( Binder "resultsPrint4"
-                                , Right []
-                                )
-                            ]
-                        }
-                    )
-                )
-            ]
-        }
-    , playAttrs =
-        [
-            ( "gather_facts"
-            , Bool False
-            )
-        ,
-            ( "hosts"
-            , String "localhost"
-            )
-        ,
-            ( "vars"
-            , Object
-                ( fromList
-                    [
-                        ( "print_arg"
-                        , String "shadow"
-                        )
-                    ]
-                )
-            )
-        ]
-    , defaultVars = []
-    , source = "test/playbooks"
-    , exprs =
-        [ Expr
-            { binder = Binder "block2"
-            , requires = []
-            , provides = []
-            , outputs = Left
-                ( Environment
-                    { getEnv =
-                        [
-                            ( Binder "resultsPrint4"
-                            , Right []
-                            )
-                        ]
-                    }
-                )
-            , inputs = []
-            , when_ = Nothing
-            , loop = Nothing
-            , rescue = False
-            , taskAttrs = []
-            , term = DefinitionCall
-                { defName = "block2"
-                , taskVars =
-                    [
-                        ( "print_arg"
-                        , String "shadow"
-                        )
-                    ]
-                }
-            }
-        ]
-    , handlers = []
-    }
-, Definition
-    { name = "playLocalhost5"
-    , requires = []
-    , provides = []
-    , outputs = Environment
-        { getEnv =
-            [
-                ( Binder "block4"
-                , Left
-                    ( Environment
-                        { getEnv =
-                            [
-                                ( Binder "block5"
+                                ( Binder "resultsRolePrint3"
                                 , Left
                                     ( Environment
                                         { getEnv =
                                             [
-                                                ( Binder "resultsPrint5"
+                                                ( Binder "debug3"
                                                 , Right []
                                                 )
                                             ]
@@ -466,19 +356,19 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "block4"
+            { binder = Binder "resultsBlock0"
             , requires = []
             , provides = []
             , outputs = Left
                 ( Environment
                     { getEnv =
                         [
-                            ( Binder "block5"
+                            ( Binder "resultsRolePrint3"
                             , Left
                                 ( Environment
                                     { getEnv =
                                         [
-                                            ( Binder "resultsPrint5"
+                                            ( Binder "debug3"
                                             , Right []
                                             )
                                         ]
@@ -491,34 +381,309 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
-                { defName = "block4"
+                { defName = "block0"
                 , taskVars =
                     [
                         ( "print_arg"
-                        , String "shadow"
+                        , String "priority"
                         )
                     ]
+                , rescue = False
                 }
             }
         ]
     , handlers = []
     }
 , Definition
-    { name = "block4"
-    , requires = []
-    , provides = []
+    { name = "playLocalhost4"
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "block5"
+                ( Binder "resultsBlock1"
                 , Left
                     ( Environment
                         { getEnv =
                             [
-                                ( Binder "resultsPrint5"
+                                ( Binder "resultsRolePrint4"
+                                , Left
+                                    ( Environment
+                                        { getEnv =
+                                            [
+                                                ( Binder "debug4"
+                                                , Right []
+                                                )
+                                            ]
+                                        }
+                                    )
+                                )
+                            ]
+                        }
+                    )
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
+            ( "hosts"
+            , String "localhost"
+            )
+        ,
+            ( "vars"
+            , Object
+                ( fromList
+                    [
+                        ( "print_arg"
+                        , String "shadow"
+                        )
+                    ]
+                )
+            )
+        ]
+    , defaultVars = []
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsBlock1"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "resultsRolePrint4"
+                            , Left
+                                ( Environment
+                                    { getEnv =
+                                        [
+                                            ( Binder "debug4"
+                                            , Right []
+                                            )
+                                        ]
+                                    }
+                                )
+                            )
+                        ]
+                    }
+                )
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "block1"
+                , taskVars =
+                    [
+                        ( "print_arg"
+                        , String "shadow"
+                        )
+                    ]
+                , rescue = False
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "playLocalhost5"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "resultsBlock2"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "resultsBlock3"
+                                , Left
+                                    ( Environment
+                                        { getEnv =
+                                            [
+                                                ( Binder "resultsRolePrint5"
+                                                , Left
+                                                    ( Environment
+                                                        { getEnv =
+                                                            [
+                                                                ( Binder "debug5"
+                                                                , Right []
+                                                                )
+                                                            ]
+                                                        }
+                                                    )
+                                                )
+                                            ]
+                                        }
+                                    )
+                                )
+                            ]
+                        }
+                    )
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
+            ( "hosts"
+            , String "localhost"
+            )
+        ,
+            ( "vars"
+            , Object
+                ( fromList
+                    [
+                        ( "print_arg"
+                        , String "shadow"
+                        )
+                    ]
+                )
+            )
+        ]
+    , defaultVars = []
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsBlock2"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "resultsBlock3"
+                            , Left
+                                ( Environment
+                                    { getEnv =
+                                        [
+                                            ( Binder "resultsRolePrint5"
+                                            , Left
+                                                ( Environment
+                                                    { getEnv =
+                                                        [
+                                                            ( Binder "debug5"
+                                                            , Right []
+                                                            )
+                                                        ]
+                                                    }
+                                                )
+                                            )
+                                        ]
+                                    }
+                                )
+                            )
+                        ]
+                    }
+                )
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "block2"
+                , taskVars =
+                    [
+                        ( "print_arg"
+                        , String "shadow"
+                        )
+                    ]
+                , rescue = False
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "block2"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "resultsBlock3"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "resultsRolePrint5"
+                                , Left
+                                    ( Environment
+                                        { getEnv =
+                                            [
+                                                ( Binder "debug5"
+                                                , Right []
+                                                )
+                                            ]
+                                        }
+                                    )
+                                )
+                            ]
+                        }
+                    )
+                )
+            ]
+        }
+    , playAttrs = []
+    , defaultVars = []
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsBlock3"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "resultsRolePrint5"
+                            , Left
+                                ( Environment
+                                    { getEnv =
+                                        [
+                                            ( Binder "debug5"
+                                            , Right []
+                                            )
+                                        ]
+                                    }
+                                )
+                            )
+                        ]
+                    }
+                )
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "block3"
+                , taskVars =
+                    [
+                        ( "print_arg"
+                        , String "shadow"
+                        )
+                    ]
+                , rescue = False
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "block3"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "resultsRolePrint5"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug5"
                                 , Right []
                                 )
                             ]
@@ -532,14 +697,14 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "block5"
+            { binder = Binder "resultsRolePrint5"
             , requires = []
             , provides = []
             , outputs = Left
                 ( Environment
                     { getEnv =
                         [
-                            ( Binder "resultsPrint5"
+                            ( Binder "debug5"
                             , Right []
                             )
                         ]
@@ -548,46 +713,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
-            , taskAttrs = []
-            , term = DefinitionCall
-                { defName = "block5"
-                , taskVars =
-                    [
-                        ( "print_arg"
-                        , String "shadow"
-                        )
-                    ]
-                }
-            }
-        ]
-    , handlers = []
-    }
-, Definition
-    { name = "block5"
-    , requires = []
-    , provides = []
-    , outputs = Environment
-        { getEnv =
-            [
-                ( Binder "resultsPrint5"
-                , Right []
-                )
-            ]
-        }
-    , playAttrs = []
-    , defaultVars = []
-    , source = "test/playbooks"
-    , exprs =
-        [ Expr
-            { binder = Binder "resultsPrint5"
-            , requires = []
-            , provides = []
-            , outputs = Right []
-            , inputs = []
-            , when_ = Nothing
-            , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "rolePrint5"
@@ -597,6 +722,7 @@
                         , String "priority"
                         )
                     ]
+                , rescue = False
                 }
             }
         ]
@@ -604,8 +730,6 @@
     }
 , Definition
     { name = "rolePrint5"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -631,7 +755,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -649,14 +772,21 @@
     , handlers = []
     }
 , Definition
-    { name = "block2"
-    , requires = []
-    , provides = []
+    { name = "block1"
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "resultsPrint4"
-                , Right []
+                ( Binder "resultsRolePrint4"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug4"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
                 )
             ]
         }
@@ -665,14 +795,22 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "resultsPrint4"
+            { binder = Binder "resultsRolePrint4"
             , requires = []
             , provides = []
-            , outputs = Right []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug4"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "rolePrint4"
@@ -682,6 +820,7 @@
                         , String "priority"
                         )
                     ]
+                , rescue = False
                 }
             }
         ]
@@ -689,8 +828,6 @@
     }
 , Definition
     { name = "rolePrint4"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -716,7 +853,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -735,13 +871,20 @@
     }
 , Definition
     { name = "block0"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
-                ( Binder "resultsPrint3"
-                , Right []
+                ( Binder "resultsRolePrint3"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug3"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
                 )
             ]
         }
@@ -750,18 +893,27 @@
     , source = "test/playbooks"
     , exprs =
         [ Expr
-            { binder = Binder "resultsPrint3"
+            { binder = Binder "resultsRolePrint3"
             , requires = []
             , provides = []
-            , outputs = Right []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug3"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = DefinitionCall
                 { defName = "rolePrint3"
                 , taskVars = []
+                , rescue = False
                 }
             }
         ]
@@ -769,8 +921,6 @@
     }
 , Definition
     { name = "rolePrint3"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -796,7 +946,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -815,8 +964,6 @@
     }
 , Definition
     { name = "rolePrint2"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -842,7 +989,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -861,8 +1007,6 @@
     }
 , Definition
     { name = "rolePrint1"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -888,7 +1032,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"
@@ -907,8 +1050,6 @@
     }
 , Definition
     { name = "rolePrint0"
-    , requires = []
-    , provides = []
     , outputs = Environment
         { getEnv =
             [
@@ -934,7 +1075,6 @@
             , inputs = []
             , when_ = Nothing
             , loop = Nothing
-            , rescue = False
             , taskAttrs = []
             , term = ModuleCall
                 { module_ = "debug"

@@ -18,16 +18,16 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
   let playAttrs = [("gather_facts", [json|false|]), ("hosts", [json|"localhost"|]), ("vars", [json|{"play_var":"play-var"}|])] <> playAttrs'
       defaultVars = []
       src = "test/playbooks"
-  factsSimpleFact0 <- extractFact <$> runTask src playAttrs defaultVars "set_fact" ([("set_fact", [json|{"fact_var":"{{ play_var }}"}|]), ("name", [json|"Simple fact"|])]) localVars
-  factsExtraFact0 <- extractFact <$> runTask src playAttrs defaultVars "set_fact" ([("set_fact", [json|{"cacheable":true,"extra_var":"extra-{{ fact_var }}"}|]), ("name", [json|"Extra fact"|])]) ([("fact_var", factsSimpleFact0)] <> localVars)
+  factsSimpleFact0 <- runTask src playAttrs defaultVars "set_fact" ([("set_fact", [json|{"fact_var":"{{ play_var }}"}|]), ("name", [json|"Simple fact"|])]) localVars
+  factsExtraFact0 <- runTask src playAttrs defaultVars "set_fact" ([("set_fact", [json|{"cacheable":true,"extra_var":"extra-{{ fact_var }}"}|]), ("name", [json|"Extra fact"|])]) ([("fact_var", factsSimpleFact0)] <> localVars)
   debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"var":"extra_var"}|])]) ([("extra_var", factsExtraFact0)] <> localVars)
   pure $ [factsSimpleFact0] <> [factsExtraFact0] <> [debug0]
 

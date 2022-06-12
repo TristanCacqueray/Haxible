@@ -10,6 +10,7 @@
           debug:
             msg: "block task 2"
           register: block_result
+      run_once: true
       when: true
 
     - debug:

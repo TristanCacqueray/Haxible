@@ -6,7 +6,6 @@ module Haxible.Eval
     notifyHandler,
     json,
     extractLoop,
-    extractFact,
     extractWhen,
     traverseLoop,
     traverseInclude,
@@ -28,17 +27,17 @@ import Haxible.Prelude
 import Haxible.Report
 import Haxl.Core hiding (env)
 
-type BlockFun = Vars -> AnsibleHaxl [Value]
+type BlockFun = Vars -> Vars -> AnsibleHaxl [Value]
 
 -- $setup
 -- >>> let dump = putStrLn . unsafeFrom . encode
 
 -- | Call the rescue block if the main block fails.
 tryRescue :: BlockFun -> BlockFun -> BlockFun
-tryRescue main rescue localVars = do
-  res <- tryToHaxlException (main localVars)
+tryRescue main rescue playAttrs localVars = do
+  res <- tryToHaxlException (main playAttrs localVars)
   case res of
-    Left _ -> rescue localVars
+    Left _ -> rescue playAttrs localVars
     Right x -> pure x
 
 -- | Build the loop results:
@@ -55,24 +54,6 @@ traverseLoop f xs = loopResult <$> traverse f xs
 traverseInclude :: Applicative f => (a -> f [Value]) -> [a] -> f [Value]
 traverseInclude f xs = concat <$> traverse f xs
 
--- | Extract the ansible_facts results
---
--- >>> dump $ extractFact [json|{"ansible_facts": {"key": "value"}}|]
--- "value"
---
--- Each fact are evaluated individually, so multiple result is un-expected:
---
--- >>> extractFacts [json|{"ansible_facts": {"x": 1, "y": 2}}|]
--- Left "Multiple facts found: [(\"x\",Number 1.0),(\"y\",Number 2.0)]"
-extractFacts :: Value -> Either String Value
-extractFacts v = case preview (key "ansible_facts") v of
-  Just (Object obj) -> case Data.Aeson.KeyMap.toList obj of
-    [(_, value)] -> Right value
-    xs -> Left $ "Multiple facts found: " <> show xs
-  _ -> case preview (key "skip_reason" . _String) v of
-    Just _ -> Right Null
-    Nothing -> Left $ "Can't find ansible_facts in " <> unsafeFrom (encode v)
-
 extractWhen :: Value -> Bool
 extractWhen v = case preview (key "msg") v of
   Just (Bool x) -> x
@@ -82,11 +63,6 @@ extractLoop :: Value -> [Value]
 extractLoop v = case preview (key "msg") v of
   Just (Array xs) -> toList xs
   _ -> error $ "Can't find list msg: " <> unsafeFrom (encode v)
-
-extractFact :: Value -> Value
-extractFact v = case extractFacts v of
-  Left e -> error e
-  Right x -> x
 
 -- | Process loop results
 --

@@ -18,8 +18,8 @@ playbook playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = ""
-  resultsLocalhost0 <- playLocalhost0 playAttrs  localVars
-  pure $ resultsLocalhost0
+  resultsPlayLocalhost0 <- playLocalhost0 playAttrs (localVars <> defaultVars)
+  pure $ resultsPlayLocalhost0
 
 playLocalhost0 :: Vars -> Vars -> AnsibleHaxl [Value]
 playLocalhost0 playAttrs' localVars = do
@@ -27,16 +27,16 @@ playLocalhost0 playAttrs' localVars = do
       defaultVars = []
       src = "test/playbooks"
   let when_ = True
-  block0 <- if when_ then (block0 playAttrs  localVars) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|], [json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
-  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"var":"block_result"}|])]) ([("block_result", block0 !! 1)] <> localVars)
-  pure $ block0 <> [debug0]
+  resultsBlock0 <- if when_ then (block0 playAttrs (localVars <> defaultVars)) else pure [[json|{"changed":false,"skip_reason":"Conditional result was False"}|], [json|{"changed":false,"skip_reason":"Conditional result was False"}|]]
+  debug0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"var":"block_result"}|])]) ([("block_result", resultsBlock0 !! 1)] <> localVars)
+  pure $ resultsBlock0 <> [debug0]
 
 block0 :: Vars -> Vars -> AnsibleHaxl [Value]
 block0 playAttrs' localVars = do
   let playAttrs = playAttrs'
       defaultVars = []
       src = "test/playbooks"
-  debugBlockTask0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"block task 1"}|]), ("name", [json|"block task"|])]) localVars
-  debugBlockTask1 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"block task 2"}|]), ("name", [json|"block task"|])]) localVars
+  debugBlockTask0 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"block task 1"}|]), ("name", [json|"block task"|]), ("run_once", [json|true|])]) localVars
+  debugBlockTask1 <- runTask src playAttrs defaultVars "debug" ([("debug", [json|{"msg":"block task 2"}|]), ("name", [json|"block task"|]), ("run_once", [json|true|])]) localVars
   pure $ [debugBlockTask0] <> [debugBlockTask1]
 
