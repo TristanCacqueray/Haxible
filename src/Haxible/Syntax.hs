@@ -102,10 +102,16 @@ propagableAttrs =
     "delegate_to",
     "no_log",
     "notify",
-    "with_first_found"
+    "with_first_found",
+    "become",
+    "become_method",
+    "become_user",
+    "args",
+    "environment",
+    "tags"
   ]
 
-decodeFile :: (Show a, FromJSON a, MonadIO m) => FilePath -> m a
+decodeFile :: (Show a, FromJSON a) => FilePath -> IO a
 decodeFile fp = do
   bs <- liftIO (Data.ByteString.readFile fp)
   pure $ case Data.Yaml.decodeEither' bs of

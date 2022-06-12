@@ -11,6 +11,8 @@ module Haxible.Import
   )
 where
 
+import Control.Exception (SomeException, catch)
+import Control.Exception.Base (throwIO)
 import Data.Text qualified as Text
 import Haxible.Prelude
 import Haxible.Syntax
@@ -81,7 +83,12 @@ resolveTask basePath task = do
       hist <- asks history
       when (fp `elem` hist) $
         error $ "Cyclic import detected: " <> show fp <> " already in " <> show hist
-      r <- decodeFile fp
+      r <-
+        liftIO
+          ( decodeFile fp `catch` \e -> do
+              putStrLn $ "While reading " <> basePath <> " for " <> show task
+              throwIO (e :: SomeException)
+          )
       local (\e -> e {source = fp, history = fp : hist}) $ go r
 
     getRolePath name path = do
@@ -99,8 +106,9 @@ resolveTask basePath task = do
       rolePath <- getRolePath role_name ""
       handlers <- do
         handler_path <- getRolePath role_name $ "handlers" </> "main.yaml"
-        handlerExist <- liftIO $ doesFileExist handler_path
-        if handlerExist then map resolveHandler <$> decodeFile handler_path else pure []
+        liftIO do
+          handlerExist <- doesFileExist handler_path
+          if handlerExist then map resolveHandler <$> decodeFile handler_path else pure []
       withFile role_tasks $ \baseTasks -> do
         tasks <- traverse (resolveTask rolePath) baseTasks
         pure $ Role RoleValue {name, handlers, rolePath, tasks, defaults}
