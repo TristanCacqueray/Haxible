@@ -78,7 +78,7 @@ resolveTask basePath task = do
 
   pure $ task {params = taskValue}
   where
-    notImplemented = ["add_host", "import_playbook", "import_role", "meta", "gather_facts"]
+    notImplemented = ["add_host", "import_playbook", "import_tasks", "import_role", "meta", "gather_facts"]
     withFile fp go = do
       hist <- asks history
       when (fp `elem` hist) $

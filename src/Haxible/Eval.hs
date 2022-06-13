@@ -119,7 +119,9 @@ runTask taskPath basePlayAttrs defaultVars module_ baseTaskAttrs baseLocalVars =
       Object obj -> Object $ Data.Aeson.KeyMap.insert "__haxible_module" (String module_) obj
       x -> x
 
-    localVars = filter ((/=) Null . snd) (concatMap checkManyHost baseLocalVars)
+    localVars = localVarsNotSkipped <> localVarsSkipped
+    (localVarsSkipped, localVarsNotSkipped) = partition (isJust . preview (key "skip_reason") . snd) localVarsUnsorted
+    localVarsUnsorted = filter ((/=) Null . snd) (concatMap checkManyHost (extractFacts <$> baseLocalVars))
     -- When a task run on many host, we register a single variable with all the results,
     -- thus when accessing the variable, we need to lookup the current host result.
     checkManyHost (k, v)
@@ -129,6 +131,14 @@ runTask taskPath basePlayAttrs defaultVars module_ baseTaskAttrs baseLocalVars =
                 (many_k, cleanVar v)
               ]
       | otherwise = [(k, cleanVar v)]
+
+-- | Extract facts from registered variable
+-- >>> extractFacts ("f", [json|{"ansible_facts": {"f": 42}}|])
+-- ("f",Number 42.0)
+extractFacts :: (Text, Value) -> (Text, Value)
+extractFacts (k, v) = case preview (key "ansible_facts" . key k) v of
+  Just f -> (k, f)
+  Nothing -> (k, v)
 
 runHaxible :: FilePath -> FilePath -> [Value] -> AnsibleHaxl [Value] -> IO ()
 runHaxible inventory playPath expected action = withConnections 5 inventory playPath $ \connections -> do

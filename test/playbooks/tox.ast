@@ -1,0 +1,565 @@
+[ Definition
+    { name = "playbook"
+    , outputs = Environment
+        { getEnv = [] }
+    , playAttrs = []
+    , defaultVars = []
+    , source = ""
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsPlayLocalhost0"
+            , requires =
+                [ Resource
+                    { name = Binder "resultsRoleEnsurePip0"
+                    , dep = Register "pip_command"
+                    }
+                , Resource
+                    { name = Binder "facts0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , provides =
+                [ Resource
+                    { name = Binder "resultsRoleEnsureTox0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "playLocalhost0"
+                , taskVars = []
+                , rescue = False
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "playLocalhost0"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "resultsRoleEnsureTox0"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "resultsRoleEnsurePip0"
+                                , Left
+                                    ( Environment
+                                        { getEnv =
+                                            [
+                                                ( Binder "resultsBlock0"
+                                                , Left
+                                                    ( Environment
+                                                        { getEnv =
+                                                            [
+                                                                ( Binder "debug0"
+                                                                , Right []
+                                                                )
+                                                            ,
+                                                                ( Binder "debug1"
+                                                                , Right []
+                                                                )
+                                                            ]
+                                                        }
+                                                    )
+                                                )
+                                            ,
+                                                ( Binder "facts0"
+                                                , Right
+                                                    [ Resource
+                                                        { name = Binder "facts0"
+                                                        , dep = Register "pip_command"
+                                                        }
+                                                    ]
+                                                )
+                                            ]
+                                        }
+                                    )
+                                )
+                            ,
+                                ( Binder "resultsBlock1"
+                                , Left
+                                    ( Environment
+                                        { getEnv =
+                                            [
+                                                ( Binder "debug2"
+                                                , Right []
+                                                )
+                                            ]
+                                        }
+                                    )
+                                )
+                            ]
+                        }
+                    )
+                )
+            ]
+        }
+    , playAttrs =
+        [
+            ( "gather_facts"
+            , Bool False
+            )
+        ,
+            ( "hosts"
+            , String "localhost"
+            )
+        ]
+    , defaultVars = []
+    , source = "test/playbooks"
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsRoleEnsureTox0"
+            , requires =
+                [ Resource
+                    { name = Binder "resultsRoleEnsurePip0"
+                    , dep = Register "pip_command"
+                    }
+                , Resource
+                    { name = Binder "facts0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , provides =
+                [ Resource
+                    { name = Binder "resultsRoleEnsureTox0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "resultsRoleEnsurePip0"
+                            , Left
+                                ( Environment
+                                    { getEnv =
+                                        [
+                                            ( Binder "resultsBlock0"
+                                            , Left
+                                                ( Environment
+                                                    { getEnv =
+                                                        [
+                                                            ( Binder "debug0"
+                                                            , Right []
+                                                            )
+                                                        ,
+                                                            ( Binder "debug1"
+                                                            , Right []
+                                                            )
+                                                        ]
+                                                    }
+                                                )
+                                            )
+                                        ,
+                                            ( Binder "facts0"
+                                            , Right
+                                                [ Resource
+                                                    { name = Binder "facts0"
+                                                    , dep = Register "pip_command"
+                                                    }
+                                                ]
+                                            )
+                                        ]
+                                    }
+                                )
+                            )
+                        ,
+                            ( Binder "resultsBlock1"
+                            , Left
+                                ( Environment
+                                    { getEnv =
+                                        [
+                                            ( Binder "debug2"
+                                            , Right []
+                                            )
+                                        ]
+                                    }
+                                )
+                            )
+                        ]
+                    }
+                )
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "roleEnsureTox0"
+                , taskVars = []
+                , rescue = False
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "roleEnsureTox0"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "resultsRoleEnsurePip0"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "resultsBlock0"
+                                , Left
+                                    ( Environment
+                                        { getEnv =
+                                            [
+                                                ( Binder "debug0"
+                                                , Right []
+                                                )
+                                            ,
+                                                ( Binder "debug1"
+                                                , Right []
+                                                )
+                                            ]
+                                        }
+                                    )
+                                )
+                            ,
+                                ( Binder "facts0"
+                                , Right
+                                    [ Resource
+                                        { name = Binder "facts0"
+                                        , dep = Register "pip_command"
+                                        }
+                                    ]
+                                )
+                            ]
+                        }
+                    )
+                )
+            ,
+                ( Binder "resultsBlock1"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug2"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
+                )
+            ]
+        }
+    , playAttrs = []
+    , defaultVars = []
+    , source = "test/playbooks/roles/ensure-tox"
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsRoleEnsurePip0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "resultsRoleEnsurePip0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "resultsBlock0"
+                            , Left
+                                ( Environment
+                                    { getEnv =
+                                        [
+                                            ( Binder "debug0"
+                                            , Right []
+                                            )
+                                        ,
+                                            ( Binder "debug1"
+                                            , Right []
+                                            )
+                                        ]
+                                    }
+                                )
+                            )
+                        ,
+                            ( Binder "facts0"
+                            , Right
+                                [ Resource
+                                    { name = Binder "facts0"
+                                    , dep = Register "pip_command"
+                                    }
+                                ]
+                            )
+                        ]
+                    }
+                )
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "roleEnsurePip0"
+                , taskVars = []
+                , rescue = False
+                }
+            }
+        , Expr
+            { binder = Binder "resultsBlock1"
+            , requires =
+                [ Resource
+                    { name = Binder "resultsRoleEnsurePip0"
+                    , dep = Register "pip_command"
+                    }
+                , Resource
+                    { name = Binder "facts0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug2"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
+            , inputs =
+                [ Requirement
+                    { name = "pip_command"
+                    , origin = Nested
+                        ( Binder "resultsRoleEnsurePip0" ) 2
+                    }
+                ]
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "block1"
+                , taskVars = []
+                , rescue = False
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "block1"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug2"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs = []
+    , defaultVars = []
+    , source = "test/playbooks/roles/ensure-tox"
+    , exprs =
+        [ Expr
+            { binder = Binder "debug2"
+            , requires =
+                [ Resource
+                    { name = Binder "resultsRoleEnsurePip0"
+                    , dep = Register "pip_command"
+                    }
+                , Resource
+                    { name = Binder "facts0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , provides = []
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "Running {{ pip_command }}"
+                            )
+                        ]
+                    )
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "roleEnsurePip0"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "resultsBlock0"
+                , Left
+                    ( Environment
+                        { getEnv =
+                            [
+                                ( Binder "debug0"
+                                , Right []
+                                )
+                            ,
+                                ( Binder "debug1"
+                                , Right []
+                                )
+                            ]
+                        }
+                    )
+                )
+            ,
+                ( Binder "facts0"
+                , Right
+                    [ Resource
+                        { name = Binder "facts0"
+                        , dep = Register "pip_command"
+                        }
+                    ]
+                )
+            ]
+        }
+    , playAttrs = []
+    , defaultVars = []
+    , source = "test/playbooks/roles/ensure-pip"
+    , exprs =
+        [ Expr
+            { binder = Binder "resultsBlock0"
+            , requires = []
+            , provides = []
+            , outputs = Left
+                ( Environment
+                    { getEnv =
+                        [
+                            ( Binder "debug0"
+                            , Right []
+                            )
+                        ,
+                            ( Binder "debug1"
+                            , Right []
+                            )
+                        ]
+                    }
+                )
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = DefinitionCall
+                { defName = "block0"
+                , taskVars = []
+                , rescue = False
+                }
+            }
+        , Expr
+            { binder = Binder "facts0"
+            , requires = []
+            , provides =
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , outputs = Right
+                [ Resource
+                    { name = Binder "facts0"
+                    , dep = Register "pip_command"
+                    }
+                ]
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                { module_ = "set_fact"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "cacheable"
+                            , Bool True
+                            )
+                        ,
+                            ( "pip_command"
+                            , String "/opt/bin/pip"
+                            )
+                        ]
+                    )
+                }
+            }
+        ]
+    , handlers = []
+    }
+, Definition
+    { name = "block0"
+    , outputs = Environment
+        { getEnv =
+            [
+                ( Binder "debug0"
+                , Right []
+                )
+            ,
+                ( Binder "debug1"
+                , Right []
+                )
+            ]
+        }
+    , playAttrs = []
+    , defaultVars = []
+    , source = "test/playbooks/roles/ensure-pip"
+    , exprs =
+        [ Expr
+            { binder = Binder "debug0"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "task 1"
+                            )
+                        ]
+                    )
+                }
+            }
+        , Expr
+            { binder = Binder "debug1"
+            , requires = []
+            , provides = []
+            , outputs = Right []
+            , inputs = []
+            , when_ = Nothing
+            , loop = Nothing
+            , taskAttrs = []
+            , term = ModuleCall
+                { module_ = "debug"
+                , params = Object
+                    ( fromList
+                        [
+                            ( "msg"
+                            , String "task 2"
+                            )
+                        ]
+                    )
+                }
+            }
+        ]
+    , handlers = []
+    }
+]

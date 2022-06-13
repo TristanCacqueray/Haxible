@@ -1,0 +1,6 @@
+- include_role:
+    name: ensure-pip
+
+- block:
+    - debug:
+        msg: "Running {{ pip_command }}"

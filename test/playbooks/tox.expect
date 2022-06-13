@@ -1,0 +1,4 @@
+- {"changed":false,"msg":"task 1"}
+- {"changed":false,"msg":"task 2"}
+- {"ansible_facts":{"pip_command":"/opt/bin/pip"},"changed":false}
+- {"changed":false,"msg":"Running /opt/bin/pip"}

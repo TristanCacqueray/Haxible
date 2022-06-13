@@ -1,0 +1,2 @@
+- {"ansible_facts":{"adder_commit":"v42"},"changed":false}
+- {"changed":false,"msg":"Adding 1 + 2 with 42 v42"}

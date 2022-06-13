@@ -91,6 +91,13 @@ instance From Binder Text where from (Binder b) = b
 newtype Environment = Environment {getEnv :: [(Binder, Either Environment [Resource])]}
   deriving (Show, Eq)
 
+envCount :: Environment -> Int
+envCount (Environment e) = foldl' (+) 0 $ map (getCount . snd) e
+  where
+    getCount = \case
+      Left x -> envCount x
+      Right _ -> 1
+
 dependencyValue, dependencyName :: Dependency -> Text
 dependencyName = \case
   Register n -> n
@@ -155,26 +162,34 @@ solveInputs defs = map updateCallEnv defs
             toReq :: Binder -> [Resource] -> [Requirement]
             toReq name = map (\x -> Requirement {name = dependencyName x.dep, origin = Direct name})
 
-        -- Look for available rqeuirement in nested binders (e.g. from other play)
+        -- Look for available requirement in nested binders (e.g. from other play)
         nestedRequirement :: [Requirement]
         nestedRequirement = concatMap (uncurry (go 0)) nested
           where
             go :: Int -> Binder -> Environment -> [Requirement]
             go binderPos binder =
-              concatMap (\(envPos, binderResources) -> toReq (binderPos + envPos) binder binderResources)
-                . zip [0 ..]
+              concatMap (\(envPos, binderResources) -> toReq envPos binder binderResources)
+                . setStartingPos binderPos
                 . map snd
                 . getEnv
+            setStartingPos :: Int -> [Either Environment [Resource]] -> [(Int, Either Environment [Resource])]
+            setStartingPos startingPos = reverse . snd . foldl' goSet (startingPos, [])
+              where
+                goSet :: (Int, [(Int, Either Environment [Resource])]) -> Either Environment [Resource] -> (Int, [(Int, Either Environment [Resource])])
+                goSet (curPos, acc') x = case x of
+                  Right _ -> (curPos + 1, (curPos, x) : acc')
+                  Left e -> (curPos + envCount e, (curPos, x) : acc')
+
             toReq :: Int -> Binder -> Either Environment [Resource] -> [Requirement]
             toReq resourcePos binder = \case
               Right resources
-                | reMatch resources -> concatMap (toNestedReq resourcePos binder) (zip [0 ..] resources)
+                | reMatch resources -> concatMap (toNestedReq binder) (zip [resourcePos ..] resources)
                 | otherwise -> []
               Left env -> go resourcePos binder env
-            toNestedReq :: Int -> Binder -> (Int, Resource) -> [Requirement]
-            toNestedReq resourcePos binder (pos, res)
+            toNestedReq :: Binder -> (Int, Resource) -> [Requirement]
+            toNestedReq binder (pos, res)
               | res `elem` expr.requires =
-                  [Requirement {name = dependencyName res.dep, origin = Nested binder (resourcePos + pos)}]
+                  [Requirement {name = dependencyName res.dep, origin = Nested binder pos}]
               | otherwise = []
 
 -- | Create a unique name:
@@ -283,12 +298,18 @@ definitionExpr def rescueDef task = do
 
   -- Create the definition call expression
   expr <- baseExpr "" binder task vars provides term
-  pure $ expr {outputs, taskAttrs}
+  let requires = expr.requires <> defRequires
+  pure $ expr {outputs, requires, taskAttrs}
   where
     addDefinition newDef = do
       modify (#definitions %~ (newDef {exprs = propagateTaskAttrs <$> newDef.exprs} :))
     propagateTaskAttrs :: Expr -> Expr
     propagateTaskAttrs e = e {taskAttrs = e.taskAttrs <> (filter (\(k, _) -> k `elem` propagableAttrs) task.attrs)}
+
+    defRequires =
+      concatMap (.requires) def.exprs <> case rescueDef of
+        Just def' -> concatMap (.requires) def'.exprs
+        Nothing -> []
 
     binder = Binder $ "results" <> Text.toUpper (Text.take 1 defName) <> Text.drop 1 defName
     vars = map snd def.defaultVars
@@ -358,8 +379,8 @@ normalizeTask taskPath task =
     Role r -> (: []) <$> includeRoleExpr task r
     Tasks tasksPath name xs -> (: []) <$> includeTasksExpr tasksPath task name xs
     Facts vars -> traverse (uncurry (factsExpr task Nothing)) vars
-    IncludeVars v -> (: []) <$> includeVarsExpr taskPath task v
     CacheableFacts cacheable vars -> traverse (uncurry (factsExpr task (Just cacheable))) vars
+    IncludeVars v -> (: []) <$> includeVarsExpr taskPath task v
     Block bv -> (: []) <$> blockExpr taskPath task bv
     Handler {} -> error "The impossible has happened: handler can't be in task list"
 

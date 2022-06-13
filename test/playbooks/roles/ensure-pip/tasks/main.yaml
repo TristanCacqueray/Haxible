@@ -1,0 +1,9 @@
+- block:
+    - debug:
+        msg: "task 1"
+    - debug:
+        msg: "task 2"
+
+- set_fact:
+    pip_command: "/opt/bin/pip"
+    cacheable: true

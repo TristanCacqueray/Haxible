@@ -79,8 +79,15 @@ class TaskRunner:
         loggy(f"Running {json.dumps(playbook)}")
         for (host, host_facts) in (facts.items() if facts else []):
             self.variable_manager.set_host_facts(host, host_facts["ansible_facts"])
+
         # Host facts must be gathered manually using the ansible.builtin.gather_facts module
         playbook["gather_facts"] = False
+
+        # Ansible defaults are somehow not loaded, workaround missing values here for now:
+        playvars = playbook.setdefault("vars", {})
+        for (k, v) in (("ansible_become_method", "sudo"),):
+            playvars.setdefault(k, v)
+
         play = Play().load(playbook)
         # Simulate the tqm.run() function to perform our single task play
         all_vars = self.variable_manager.get_vars(play=play)
@@ -124,7 +131,7 @@ def test():
 
     # Create the runner with an empty inventory
     runner = TaskRunner("")
-    play = dict(hosts="localhost", tasks=[dict(command="echo Hello World")])
+    play = dict(hosts="localhost", tasks=[dict(command="echo Hello World", become=True)])
     print(json.dumps(runner.run(play)))
 
     async def main():
@@ -168,7 +175,10 @@ def main():
         cmd = sys.stdin.readline()
         if not cmd:
             break
-        print(json.dumps(run_task(json.loads(cmd))), flush=True)
+        try:
+            print(json.dumps(run_task(json.loads(cmd))), flush=True)
+        except Exception as e:
+            print(json.dumps(dict(oops=str(e))))
     loggy("Runner completed")
     runner.tqm.cleanup()
     runner.loader.cleanup_all_tmp_files()

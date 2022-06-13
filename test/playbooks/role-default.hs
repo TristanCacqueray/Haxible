@@ -11,7 +11,7 @@ import Haxible.Eval
 
 main :: IO ()
 main = Haxible.Eval.runHaxible "inventory.yaml" "test/playbooks/role-default.yaml" expect (playbook [] [])
-  where expect = []
+  where expect = [[json|{"ansible_facts":{"adder_commit":"v42"},"changed":false}|], [json|{"changed":false,"msg":"Adding 1 + 2 with 42 v42"}|]]
 
 playbook :: Vars -> Vars -> AnsibleHaxl [Value]
 playbook playAttrs' localVars = do
